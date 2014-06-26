@@ -1,0 +1,5 @@
+conf/site.conf
+conf/auto.conf
+env-nilrt-xilinx-zynq
+sources/
+!sources/layers.txt
