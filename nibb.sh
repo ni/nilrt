@@ -47,6 +47,7 @@ function write_config() {
     echo Configuring for ${NIBB_MACHINE}...
     cat <<EOF > ${NIBB_ENV_FILE}
 export BBFETCH2=True
+export MACHINE="${NIBB_MACHINE}"
 export DISTRO="${NIBB_DISTRO}"
 export DISTRO_VERSION="${NIBB_DISTVER}"
 export DISTRO_DIRNAME="${NIBB_DISTDIR}"
@@ -66,7 +67,7 @@ EOF
 SCONF_VERSION="1"
 DL_DIR="${NIBB_BASE_DIR}/downloads"
 SSTATE_DIR="${NIBB_BASE_DIR}/build/sstate-cache"
-BBFILES="${NIBB_OECORE_DIR}/meta/recipes-*/*/*.bb"
+BBFILES?="${NIBB_OECORE_DIR}/meta/recipes-*/*/*.bb"
 TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}"
 #Set the proxy info here
 #HTTP_PROXY="http://\${PROXYHOST}:\${PROXYPORT}"
