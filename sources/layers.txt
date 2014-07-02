@@ -1,0 +1,5 @@
+bitbake git://git.amer.corp.natinst.com/bitbake.git 1.18 HEAD
+meta-openembedded git://git.amer.corp.natinst.com/meta-openembedded.git nilrt/14.0/dylan HEAD
+meta-nilrt git://git.amer.corp.natinst.com/meta-nilrt.git nilrt/14.0/dylan HEAD
+meta-mingw git://git.amer.corp.natinst.com/meta-mingw.git nilrt/14.0/dylan HEAD
+openembedded-core git://git.amer.corp.natinst.com/openembedded-core.git nilrt/14.0/dylan HEAD
