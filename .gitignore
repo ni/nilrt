@@ -1,7 +1,7 @@
 conf/site.conf
 conf/auto.conf
 conf/sanity_info
-env-nilrt-xilinx-zynq
+env-*
 build
 deploy
 bitbake.lock
