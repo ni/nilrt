@@ -1,10 +1,9 @@
 #!/bin/bash
 
-NIBB_MACHINE=${MACHINE:-"xilinx-zynq"}
+NIBB_MACHINE=${MACHINE}
 NIBB_DISTRO="nilrt"
 NIBB_DISTVER="2.0"
 NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
-NIBB_ENV_FILE=env-${NIBB_DISTRO}-${NIBB_MACHINE}
 NIBB_BASE_DIR=${PWD}
 NIBB_SOURCE_DIR=${NIBB_BASE_DIR}/sources
 NIBB_OECORE_DIR=${NIBB_SOURCE_DIR}/openembedded-core
@@ -14,11 +13,10 @@ function usage() {
     cat <<EOT
     Usage:  $0 config <machine>
             $0 update
-            $0 info
             $0 clean
 
     Once $0 config is run, build images with
-    . ${NIBB_ENV_FILE}
+    . \$ENV_FILE (e.g. env-nilrt-xilinx-zynq)
     You can then build images with "bitbake".
 
     The <machine> argument can be
@@ -45,36 +43,72 @@ function update_source() {
 
 function write_config() {
     echo Configuring for ${NIBB_MACHINE}...
-    cat <<EOF > ${NIBB_ENV_FILE}
+    cat <<EOF > env-${NIBB_DISTRO}-${NIBB_MACHINE}
+export BB_ENV_EXTRAWHITE="all_proxy ALL_PROXY BASHOPTS BB_NO_NETWORK BB_NUMBER_THREADS BB_SRCREV_POLICY DISTRO DL_DIR ftp_proxy FTP_PROXY ftps_proxy FTPS_PROXY GIT_PROXY_COMMAND GIT_REPODIR http_proxy HTTP_PROXY https_proxy HTTPS_PROXY _LINUX_GCC_TOOLCHAIN MACHINE no_proxy NO_PROXY PARALLEL_MAKE SCREENDIR SDKMACHINE SOCKS5_PASSWD SOCKS5_USER SOURCE_MIRROR_URL SSH_AGENT_PID SSH_AUTH_SOCK SSTATE_DIR SSTATE_MIRRORS STAMPS_DIR TCLIBC TCMODE"
+export BB_NUMBER_THREADS="${THREADS:-2}"
 export BBFETCH2=True
-export MACHINE="${NIBB_MACHINE}"
-export DISTRO="${NIBB_DISTRO}"
-export DISTRO_VERSION="${NIBB_DISTVER}"
-export DISTRO_DIRNAME="${NIBB_DISTDIR}"
-export OE_BUILD_DIR="${NIBB_BASE_DIR}"
-export TOPDIR="${NIBB_BASE_DIR}"
-export BUILD_DIR="${NIBB_BASE_DIR}"
-export OE_BUILD_TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}"
-export OE_SOURCE_DIR="${NIBB_SOURCE_DIR}"
-#Do we actually need this one?
-export OE_LAYERS_TXT="${NIBB_SOURCE_DIR}/layers.txt"
-export PATH="${NIBB_OECORE_DIR}/scripts:${NIBB_SOURCE_DIR}/bitbake/bin:${PATH}"
-export BB_ENV_EXTRAWHITE="MACHINE DISTRO TCLIBC TCMODE GIT_PROXY_COMMAND http_proxy ftp_proxy https_proxy all_proxy ALL_PROXY no_proxy SSH_AGENT_PID SSH_AUTH_SOCK BB_SRCREV_POLICY SDKMACHINE BB_NUMBER_THREADS TOPDIR"
 export BBPATH="${NIBB_BASE_DIR}:${NIBB_OECORE_DIR}/meta"
+export BUILD_DIR="${NIBB_BASE_DIR}"
+export DISTRO="${NIBB_DISTRO}"
+export DISTRO_DIRNAME="${NIBB_DISTDIR}"
+export DISTRO_VERSION="${NIBB_DISTVER}"
+export GIT_REPODIR="${NIBB_SOURCE_DIR}"
+export MACHINE="${NIBB_MACHINE}"
+export OE_BUILD_DIR="${NIBB_BASE_DIR}"
+export OE_BUILD_TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}"
+export OE_SOURCE_DIR="${NIBB_SOURCE_DIR}"
+export PARALLEL_MAKE="-j ${THREADS:-2}"
+export PATH="${NIBB_OECORE_DIR}/scripts:${NIBB_SOURCE_DIR}/bitbake/bin:${PATH}"
+export TOPDIR="${NIBB_BASE_DIR}"
+shopt -s checkhash
+export BASHOPTS
 EOF
-    echo Environment file written to ${NIBB_ENV_FILE}
+    echo Environment file written to env-${NIBB_DISTRO}-${NIBB_MACHINE}
     cat <<EOF > ${NIBB_BASE_DIR}/conf/site.conf
 SCONF_VERSION="1"
 DL_DIR="${NIBB_BASE_DIR}/downloads"
 SSTATE_DIR="${NIBB_BASE_DIR}/build/sstate-cache"
 BBFILES?="${NIBB_OECORE_DIR}/meta/recipes-*/*/*.bb"
-TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}"
+TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}"
 #Set the proxy info here
 #HTTP_PROXY="http://\${PROXYHOST}:\${PROXYPORT}"
 EOF
     cat <<EOF > ${NIBB_BASE_DIR}/conf/auto.conf
 export MACHINE="${NIBB_MACHINE}"
 EOF
+}
+
+function get_opts() {
+    if [ -z "${MACHINE}" ]; then
+        echo -e "Available machines:\n"
+        MACHINES=`find */meta* sources/openembedded-core/meta* -path '*/meta*/conf/machine/*' -name "*.conf" 2> /dev/null | sed 's/^.*\///' | sed 's/\.conf//'`
+        echo "$MACHINES"
+        echo -ne "\nPlease select the desired machine: "
+        read NIBB_MACHINE
+        while ! echo "$MACHINES" | grep -qP "(^|[ \t])$NIBB_MACHINE([ \t]|$)"; do
+            echo -n "Please enter a valid machine name: "
+            read NIBB_MACHINE
+            done
+    fi
+    if [ -z "${THREADS}" ]; then
+        def_num_threads=`expr $(grep ^processor /proc/cpuinfo | wc -l ) \* 3 / 2`
+        echo -n "Parallel bitbake threads and make jobs ($def_num_threads): "
+        read THREADS
+        re='^[0-9]+$'
+        if ! [[ $THREADS =~ $re ]]; then
+            echo "Using $def_num_threads"
+            THREADS=$def_num_threads
+        fi
+    fi
+}
+
+function clean() {
+    echo -n "Cleaning build area..."
+    rm -rf "${NIBB_BASE_DIR}/build" "${NIBB_BASE_DIR}/cache"
+    echo "done"
+    echo "Cleaning sources..."
+    update_source
+    echo "done cleaning sources"
 }
 
 if [ $# -gt 0  -a $# -le 2 ]; then
@@ -84,6 +118,7 @@ if [ $# -gt 0  -a $# -le 2 ]; then
             exit
             ;;
         config )
+            get_opts
             write_config
             exit
             ;;
@@ -91,14 +126,17 @@ if [ $# -gt 0  -a $# -le 2 ]; then
             echo I would return info
             ;;
         clean )
-            echo I would clean
+            clean
+            exit
             ;;
          -h|--help|--usage )
             usage
+            exit
             ;;
          *)
             echo "Unknown command \"$1\""
             usage
+            exit
             ;;
     esac
 fi
