@@ -31,7 +31,7 @@ function update_source() {
     pushd ${NIBB_SOURCE_DIR} 1> /dev/null
     while read GIT_REPO GIT_URL GIT_BRANCH GIT_COM ; do
         echo "Updating ${GIT_REPO}..."
-        [ -d "${GIT_REPO}" ] ||  git clone ${GIT_URL}
+        [ -d "${GIT_REPO}" ] ||  git clone ${GIT_URL} ${GIT_REPO}
         pushd ${GIT_REPO} 1> /dev/null
         [ "`git rev-parse --abbrev-ref HEAD`" == "${GIT_BRANCH}" ] || git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
         git reset --hard ${GIT_COM}
