@@ -9,13 +9,15 @@ example, running
 
     MACHINE=xilinx-zynq ./nibb.sh configure xilinx-zynq
 
+If MACHINE is ommitted, the available machines will be printed.
+
 This will result in a file "env-$CURRENT_BRANCH-$MACHINE" that contains
 the requisit environment variables to tell the bitbake/OE system about the
-machine you are building for. It will be symlinked to env-nibb.
+machine you are building for.
 
 At this point, you can build the python packages for your machine with
 
-    . env-nibb
+    . env-$BRANCH-$MACHINE
     bitbake python
 
 The resulting images (ipk files that can be installed through opkg) exist
