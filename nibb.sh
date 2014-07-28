@@ -119,6 +119,7 @@ if [ $# -gt 0  -a $# -le 2 ]; then
             exit
             ;;
         config )
+            update_source
             get_opts
             write_config
             exit
