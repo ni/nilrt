@@ -1,0 +1,57 @@
+NI Linux Kernel Source README
+
+0. Introduction
+
+These instructions will serve as a guide to building a kernel that can boot on
+NI Linux Real-Time targets. Note that any kernel other than what is provided by
+National Instruments may not have the same performance, determinism, features,
+or basic functionality. National Instruments does not support systems with a
+kernel other than one provided by National Instruments.
+
+In order to build a Linux kernel, a Linux machine is required for the actual
+compilation.
+
+1. Getting the source
+
+The kernel source for NI controllers is available for download from different
+locations, depending on whether you want the source for the armv7-a-based
+targets or the x86_64-based targets.
+
+*** ARMV7-A (zynq, cRIO-9068, myRIO, sbRIO/somRIO):
+Download the source and patches from http://download.ni.com/ni-linux-rt/src/.
+
+Extract the source. Once you've done that, apply the patches sequentially
+(0001 coming first, 0002 next, etc.)
+
+*** X86_64 (cRIO-903x, cDAQ-913x, etc.):
+Clone the source from github.com/ni. Checkout the branch that corresponds to
+the release you are using.
+
+2. Getting the tools
+You may use any cross-compilation toolchain that you wish, or you may build
+the tools from within the nilrt component.
+
+Ex. Building the x64 toolchain
+    source env-nilrt-x64
+    bitbake meta-toolchain
+This will result in tools to be used in building the kernel.
+
+Extract the toolchain to a location on you computer, optionally putting the
+tools on your PATH environment variable.
+
+3. Compiling the kernel
+First, set the configuration of the kernel to match what was used my NI with
+*** ARMV7-A:
+  export ARCH=arm
+  export CROSS_COMPILE=/path/to/toolchain/bin/arm-nilrt-linux-eabi-
+  make ni_zynq_defconfig
+*** X86_64:
+  export ARCH=x86_64
+  export CROSS_COMPILE=/path/to/toolchain/x86_64-nilrt-linux-
+  make nati_x86_64_defconfig
+
+Build the kernel by running "make ni-pkg" (the ARCH and CROSS_COMPILE variables
+have already been set in the previous steps)
+
+This will create the kernel image, headers squashfs image, and modules suitable
+for use on NI Linux Real-Time targets.
