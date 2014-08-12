@@ -75,7 +75,7 @@ TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}"
 #HTTP_PROXY="http://\${PROXYHOST}:\${PROXYPORT}"
 EOF
     cat <<EOF > ${NIBB_BASE_DIR}/conf/auto.conf
-export MACHINE="${NIBB_MACHINE}"
+export MACHINE?="${NIBB_MACHINE}"
 EOF
 }
 
