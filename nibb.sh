@@ -11,17 +11,22 @@ NIBB_GIT_REPOS=${NIBB_SOURCE_DIR}/layers.txt
 
 function usage() {
     cat <<EOT
-    Usage:  $0 config <machine>
+    Usage:  $0 config
             $0 update
+            $0 info <bitbake_target>
             $0 clean
 
     Once $0 config is run, build images with
     . \$ENV_FILE (e.g. env-nilrt-xilinx-zynq)
     You can then build images with "bitbake".
 
-    The <machine> argument can be
-        xilinx-zynq:    ARM-based NI controllers
-        x64:            x64-based NI controllers
+    The <bitbake_target> argument is the
+    image or package that bitbake build
+    information will be gathered for build
+    parity comparisons. It must be run from
+    a shell that is configured to build the
+    target (i.e. you've already source'd the
+    environment file from a config command)
 EOT
     return 1
 }
@@ -112,6 +117,46 @@ function clean() {
     echo "done cleaning sources"
 }
 
+function get_info() {
+    if [ "$#" -ne 2 ]; then
+        cat <<EOT > /dev/stderr
+*** ERR ***
+    Call the "info" command providing exactly one bitbake build target.
+
+EOT
+        usage
+        return
+    fi
+    if [ -z "$BBPATH" ]; then
+        cat <<EOT > /dev/stderr
+*** ERR ***
+    Run the info command from a shell that has been configured to build
+
+EOT
+        usage
+        return
+    fi
+
+    IMAGE=$2
+
+    bitbake -e $IMAGE| grep -P "^[A-Za-z_-]+[ \t]*=" | sort | grep -v "`pwd`"  > bitbake_env_filtered_${IMAGE}_${NIBB_MACHINE}.txt
+
+    echo Bitbake environment file available at bitbake_env_filtered_${IMAGE}_${NIBB_MACHINE}.txt
+    if [ ! -d ${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}-* ]; then
+        cat <<EOT
+        ${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}
+*** INFO ***
+In order to get a filesystem manifest for the image, please build the image
+EOT
+    else
+         cat <<EOT
+Image manifest and version information available at
+${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}-eglibc/buildhistory/images/${NIBB_MACHINE//-/_}/eglibc/${IMAGE}
+
+EOT
+    fi
+}
+
 if [ $# -gt 0  -a $# -le 2 ]; then
     case $1 in
         update )
@@ -125,7 +170,8 @@ if [ $# -gt 0  -a $# -le 2 ]; then
             exit
             ;;
         info )
-            echo I would return info
+            get_info "$@"
+            exit
             ;;
         clean )
             clean

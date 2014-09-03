@@ -5,6 +5,7 @@ env-*
 build
 deploy
 bitbake.lock
+bitbake_env_filtered*
 cache
 downloads
 pseudodone
