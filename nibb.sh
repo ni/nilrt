@@ -2,7 +2,7 @@
 
 NIBB_MACHINE=${MACHINE}
 NIBB_DISTRO="nilrt"
-NIBB_DISTVER="2.0"
+NIBB_DISTVER="3.0"
 NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
 NIBB_BASE_DIR=${PWD}
 NIBB_SOURCE_DIR=${NIBB_BASE_DIR}/sources
