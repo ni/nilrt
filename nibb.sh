@@ -1,9 +1,8 @@
 #!/bin/bash
 
 NIBB_MACHINE=${MACHINE}
-NIBB_DISTRO="nilrt"
+NIBB_DISTRO=${DISTRO}
 NIBB_DISTVER="3.0"
-NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
 NIBB_BASE_DIR=${PWD}
 NIBB_SOURCE_DIR=${NIBB_BASE_DIR}/sources
 NIBB_OECORE_DIR=${NIBB_SOURCE_DIR}/openembedded-core
@@ -47,6 +46,7 @@ function update_source() {
 }
 
 function write_config() {
+    NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
     echo Configuring for ${NIBB_MACHINE}...
     cat <<EOF > env-${NIBB_DISTRO}-${NIBB_MACHINE}
 export BB_ENV_EXTRAWHITE="all_proxy ALL_PROXY BASHOPTS BB_NO_NETWORK BB_NUMBER_THREADS BB_SRCREV_POLICY DISTRO DL_DIR ftp_proxy FTP_PROXY ftps_proxy FTPS_PROXY GIT_PROXY_COMMAND GIT_REPODIR http_proxy HTTP_PROXY https_proxy HTTPS_PROXY _LINUX_GCC_TOOLCHAIN MACHINE no_proxy NO_PROXY PARALLEL_MAKE SCREENDIR SDKMACHINE SOCKS5_PASSWD SOCKS5_USER SOURCE_MIRROR_URL SSH_AGENT_PID SSH_AUTH_SOCK SSTATE_DIR SSTATE_MIRRORS STAMPS_DIR TCLIBC TCMODE USER_CLASSES"
@@ -94,7 +94,7 @@ function get_opts() {
         while ! echo "$MACHINES" | grep -qP "(^|[ \t])$NIBB_MACHINE([ \t]|$)"; do
             echo -n "Please enter a valid machine name: "
             read NIBB_MACHINE
-            done
+        done
     fi
     if [ -z "${THREADS}" ]; then
         def_num_threads=`expr $(grep ^processor /proc/cpuinfo | wc -l ) \* 3 / 2`
@@ -105,6 +105,17 @@ function get_opts() {
             echo "Using $def_num_threads"
             THREADS=$def_num_threads
         fi
+    fi
+    if [ -z "${DISTRO}" ]; then
+        echo -e "Available distributions:\n"
+        DISTROS=`find sources/meta-* sources/openembedded-core -path '*/conf/distro/*' -name '*.conf' 2> /dev/null | sed 's/.*\///' | sed 's/\.conf//'`
+        echo "${DISTROS}"
+        echo -ne "\nPlease select the desired distribution: "
+        read NIBB_DISTRO
+        while ! echo "$DISTROS" | grep -qP "(^|[ \t])$NIBB_DISTRO([ \t]|$)"; do
+            echo -n "Please enter a valid machine name: "
+            read NIBB_DISTRO
+        done
     fi
 }
 
