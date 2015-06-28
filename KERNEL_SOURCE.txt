@@ -21,22 +21,15 @@ The kernel source for NI Linux Real-Time targets is available for
 download from the following locations, depending on whether you want
 the source for ARM-based targets or Intel x86-based targets.
 
-*** ARMV7-A (Ex: cRIO-9068, myRIO, sbRIO/somRIO):
-1. Download the source and patches from 
-http://download.ni.com/ni-linux-rt/src/.
-2. Extract the source.
-3. Apply the patches sequentially (0001 coming first, 0002 next, etc.)
-
-*** X86_64 (Ex: cRIO-903x, cDAQ-913x, etc.):
 1. Clone the source from github.com/ni/linux.
 
     git clone https://github.com/ni/linux.git
     cd linux
 
 2. Checkout the branch that corresponds to the release you are using. For
-2014, this branch is nilrt_pub/14.0/3.10
+2015, this branch is nilrt_pub/15.0/3.14
 
-    git checkout nilrt_pub/14.0/3.10
+    git checkout nilrt_pub/15.0/3.14
 
 III. Using the Tools
 You can use any cross-compilation toolchain of your choosing, or you can
@@ -66,7 +59,7 @@ IV. Compiling the kernel
 *** ARMV7-A:
   export ARCH=arm
   export CROSS_COMPILE=/path/to/toolchain/bin/arm-nilrt-linux-eabi-
-  make ni_zynq_defconfig
+  make nati_zynq_defconfig
 *** X86_64:
   export ARCH=x86_64
   export CROSS_COMPILE=/path/to/toolchain/x86_64-nilrt-linux-
