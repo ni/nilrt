@@ -2,7 +2,10 @@ conf/site.conf
 conf/auto.conf
 conf/sanity_info
 env-*
-build*
+build/
+!build/conf/bblayers.conf
+!build/conf/local.conf
+buildhistory
 deploy
 bitbake.lock
 bitbake_env_filtered*
