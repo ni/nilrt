@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e -o pipefail
+
 NIBB_MACHINE=${MACHINE}
 NIBB_DISTRO=${DISTRO}
 NIBB_DISTVER="3.0"
