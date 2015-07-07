@@ -51,37 +51,33 @@ function write_config() {
     NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
     echo Configuring for ${NIBB_MACHINE}...
     cat <<EOF > env-${NIBB_DISTRO}-${NIBB_MACHINE}
-export BB_ENV_EXTRAWHITE="all_proxy ALL_PROXY BASHOPTS BB_NO_NETWORK BB_NUMBER_THREADS BB_SRCREV_POLICY DISTRO DL_DIR ftp_proxy FTP_PROXY ftps_proxy FTPS_PROXY GIT_PROXY_COMMAND GIT_REPODIR http_proxy HTTP_PROXY https_proxy HTTPS_PROXY _LINUX_GCC_TOOLCHAIN MACHINE no_proxy NO_PROXY PARALLEL_MAKE SCREENDIR SDKMACHINE SOCKS5_PASSWD SOCKS5_USER SOURCE_MIRROR_URL SSH_AGENT_PID SSH_AUTH_SOCK SSTATE_DIR SSTATE_MIRRORS STAMPS_DIR TCLIBC TCMODE USER_CLASSES"
+export BB_ENV_EXTRAWHITE="all_proxy ALL_PROXY BASHOPTS BB_NO_NETWORK BB_NUMBER_THREADS BB_SRCREV_POLICY DISTRO DL_DIR ftp_proxy FTP_PROXY ftps_proxy FTPS_PROXY GIT_PROXY_COMMAND GIT_REPODIR http_proxy HTTP_PROXY https_proxy HTTPS_PROXY _LINUX_GCC_TOOLCHAIN MACHINE no_proxy NO_PROXY PARALLEL_MAKE SCREENDIR SDKMACHINE SOCKS5_PASSWD SOCKS5_USER SOURCE_MIRROR_URL SSH_AGENT_PID SSH_AUTH_SOCK SSTATE_DIR SSTATE_MIRRORS STAMPS_DIR TCLIBC TCMODE TOPDIR USER_CLASSES"
 export BB_NUMBER_THREADS="${THREADS:-2}"
 export BBFETCH2=True
 export BBPATH="${NIBB_BASE_DIR}:${NIBB_OECORE_DIR}/meta"
-export BUILD_DIR="${NIBB_BASE_DIR}"
 export DISTRO="${NIBB_DISTRO}"
-export DISTRO_DIRNAME="${NIBB_DISTDIR}"
 export DISTRO_VERSION="${NIBB_DISTVER}"
-export GIT_REPODIR="${NIBB_SOURCE_DIR}"
 export MACHINE="${NIBB_MACHINE}"
-export OE_BUILD_DIR="${NIBB_BASE_DIR}"
-export OE_BUILD_TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}"
-export OE_SOURCE_DIR="${NIBB_SOURCE_DIR}"
 export PARALLEL_MAKE="-j ${THREADS:-2}"
 export PATH="${NIBB_OECORE_DIR}/scripts:${NIBB_SOURCE_DIR}/bitbake/bin:${PATH}"
-export TOPDIR="${NIBB_BASE_DIR}"
+export SOURCE_MIRROR_URL=http://git.natinst.com/snapshots
+export TOPDIR="${NIBB_BASE_DIR}/build"
 export USER_CLASSES=""
 shopt -s checkhash
 export BASHOPTS
+mkdir -p \${TOPDIR} && cd \${TOPDIR}
 EOF
     echo Environment file written to env-${NIBB_DISTRO}-${NIBB_MACHINE}
-    cat <<EOF > ${NIBB_BASE_DIR}/conf/site.conf
+    echo -e "\n"Source the environment file and build with "bitbake \$target"
+    cat <<EOF > ${NIBB_BASE_DIR}/build/conf/site.conf
 SCONF_VERSION="1"
 DL_DIR="${NIBB_BASE_DIR}/downloads"
 SSTATE_DIR="${NIBB_BASE_DIR}/build/sstate-cache"
 BBFILES?="${NIBB_OECORE_DIR}/meta/recipes-*/*/*.bb"
-TMPDIR="${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}"
 #Set the proxy info here
 #HTTP_PROXY="http://\${PROXYHOST}:\${PROXYPORT}"
 EOF
-    cat <<EOF > ${NIBB_BASE_DIR}/conf/auto.conf
+    cat <<EOF > ${NIBB_BASE_DIR}/build/conf/auto.conf
 export MACHINE?="${NIBB_MACHINE}"
 EOF
 }
@@ -123,7 +119,8 @@ function get_opts() {
 
 function clean() {
     echo -n "Cleaning build area..."
-    rm -rf "${NIBB_BASE_DIR}/build" "${NIBB_BASE_DIR}/cache"
+    rm -rf ${NIBB_BASE_DIR}/build/*
+    git checkout ${NIBB_BASE_DIR}/build
     echo "done"
     echo "Cleaning sources..."
     update_source
