@@ -1,5 +1,6 @@
 bitbake git://git.natinst.com/bitbake.git nilrt/comms-2.0/1.24 HEAD
-meta-selinux git://git.natinst.com/meta-selinux.git nilrt/comms-2.0/dizzy HEAD
+meta-cloud-services git://git.natinst.com/meta-cloud-services.git nilrt/15.0/dizzy HEAD
 meta-openembedded git://git.natinst.com/meta-openembedded.git nilrt/comms-2.0/dizzy HEAD
 meta-nilrt git://git.natinst.com/meta-nilrt.git nilrt/comms-2.0/dizzy HEAD
+meta-selinux git://git.natinst.com/meta-selinux.git nilrt/comms-2.0/dizzy HEAD
 openembedded-core git://git.natinst.com/openembedded-core.git nilrt/comms-2.0/dizzy HEAD
