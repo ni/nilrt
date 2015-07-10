@@ -13,5 +13,5 @@ cache
 downloads
 pseudodone
 sources/*
-!sources/layers.txt
+!sources/*layers.txt
 *.swp
