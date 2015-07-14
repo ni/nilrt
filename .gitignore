@@ -1,16 +1,13 @@
-conf/site.conf
-conf/auto.conf
-conf/sanity_info
 env-*
 build/
 !build/conf/bblayers.conf
 !build/conf/local.conf
 buildhistory
-deploy
 bitbake.lock
 bitbake_env_filtered*
 cache
 downloads
+export
 pseudodone
 sources/*
 !sources/*layers.txt
