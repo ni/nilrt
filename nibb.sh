@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -o pipefail
+set -e
 
 NIBB_MACHINE=${MACHINE}
 NIBB_DISTRO=${DISTRO}
@@ -44,7 +44,15 @@ function update_source() {
         echo "Updating ${GIT_REPO}..."
         [ -d "${GIT_REPO}" ] ||  git clone ${GIT_URL} ${GIT_REPO}
         pushd ${GIT_REPO} 1> /dev/null
-        [ "`git rev-parse --abbrev-ref HEAD`" == "${GIT_BRANCH}" ] || git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
+	RESULT=`git remote -v | grep ^origin | grep ${GIT_URL} || true`
+	if [ ! "`git remote -v | grep ^origin | grep ${GIT_URL}`" ]; then
+		echo Resetting repo to ${GIT_URL}...
+		cd .. && rm -rf ${GIT_REPO} && git clone ${GIT_URL} ${GIT_REPO}
+		cd ${GIT_REPO}
+	fi
+	GIT_FUNCTION="checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}"
+	git branch --list | grep -qE "^[* ] ${GIT_BRANCH}$" && GIT_FUNCTION="checkout ${GIT_BRANCH}"
+        [ "`git rev-parse --abbrev-ref HEAD`" == "${GIT_BRANCH}" ] || git ${GIT_FUNCTION}
         git reset --hard ${GIT_COM}
         git pull -r --ff-only
         popd 1> /dev/null
