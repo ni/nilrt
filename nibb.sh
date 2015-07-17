@@ -16,6 +16,7 @@ function usage() {
     cat <<EOT
     Usage:  $0 config
             $0 update
+            $0 check_source
             $0 info <bitbake_target>
             $0 clean
 
@@ -37,6 +38,22 @@ EOT
 function update_source() {
     echo "Updating local git repos..."
     git submodule foreach 'git pull --ff-only'
+}
+
+function check_source() {
+    git submodule foreach 'git fetch origin'
+    RETURN=`git submodule foreach 'git status -sb'`
+    echo Checking source
+    if `echo "$RETURN" | grep -qE "\[.*ahead [0-9]+.*\]$"` ; then
+        echo  **** ERROR ****
+        echo  Local commits detected! Development should not be done on the build machine!
+        echo **** ERROR ****
+        exit -1
+    fi
+    if `echo "$RETURN" | grep -qE "\[behind [0-9]+]$"` ; then
+        return 1
+    fi
+    return 0
 }
 
 function write_config() {
@@ -162,6 +179,12 @@ EOT
 
 if [ $# -gt 0  -a $# -le 2 ]; then
     case $1 in
+        check_source )
+            if check_source ;  then
+              exit
+            fi
+            exit 1
+            ;;
         update )
             update_source
             exit
