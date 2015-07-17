@@ -9,10 +9,7 @@ NIBB_BASE_DIR=${PWD}
 NIBB_SOURCE_DIR=${NIBB_BASE_DIR}/sources
 NIBB_OECORE_DIR=${NIBB_SOURCE_DIR}/openembedded-core
 if [ `expr "${INTERNAL_BUILD}" : '\([Yy][Ee][Ss]\)'` ]; then
-	NIBB_GIT_REPOS=${NIBB_SOURCE_DIR}/internal_layers.txt
 	NIBB_INHERIT=own-mirrors
-else
-	NIBB_GIT_REPOS=${NIBB_GIT_REPOS:-${NIBB_SOURCE_DIR}/layers.txt}
 fi
 
 function usage() {
@@ -39,25 +36,7 @@ EOT
 
 function update_source() {
     echo "Updating local git repos..."
-    pushd ${NIBB_SOURCE_DIR} 1> /dev/null
-    while read GIT_REPO GIT_URL GIT_BRANCH GIT_COM ; do
-        echo "Updating ${GIT_REPO}..."
-        [ -d "${GIT_REPO}" ] ||  git clone ${GIT_URL} ${GIT_REPO}
-        pushd ${GIT_REPO} 1> /dev/null
-	RESULT=`git remote -v | grep ^origin | grep ${GIT_URL} || true`
-	if [ ! "`git remote -v | grep ^origin | grep ${GIT_URL}`" ]; then
-		echo Resetting repo to ${GIT_URL}...
-		cd .. && rm -rf ${GIT_REPO} && git clone ${GIT_URL} ${GIT_REPO}
-		cd ${GIT_REPO}
-	fi
-	GIT_FUNCTION="checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}"
-	git branch --list | grep -qE "^[* ] ${GIT_BRANCH}$" && GIT_FUNCTION="checkout ${GIT_BRANCH}"
-        [ "`git rev-parse --abbrev-ref HEAD`" == "${GIT_BRANCH}" ] || git ${GIT_FUNCTION}
-        git reset --hard ${GIT_COM}
-        git pull -r --ff-only
-        popd 1> /dev/null
-    done < ${NIBB_GIT_REPOS}
-    popd 1> /dev/null
+    git submodule foreach 'git pull --ff-only'
 }
 
 function write_config() {
