@@ -9,6 +9,4 @@ cache
 downloads
 export
 pseudodone
-sources/*
-!sources/*layers.txt
 *.swp
