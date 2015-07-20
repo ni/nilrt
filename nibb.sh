@@ -37,7 +37,8 @@ EOT
 
 function update_source() {
     echo "Updating local git repos..."
-    git submodule foreach 'git pull --ff-only'
+    git submodule init
+    git submodule update --remote --checkout
 }
 
 function check_source() {
