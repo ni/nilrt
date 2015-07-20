@@ -41,20 +41,15 @@ function update_source() {
     git submodule update --remote --checkout
 }
 
+#
+# Return:   0 if there's no need to build
+#           1 if there's a need to build
 function check_source() {
-    git submodule foreach 'git fetch origin'
-    RETURN=`git submodule foreach 'git status -sb'`
-    echo Checking source
-    if `echo "$RETURN" | grep -qE "\[.*ahead [0-9]+.*\]$"` ; then
-        echo  **** ERROR ****
-        echo  Local commits detected! Development should not be done on the build machine!
-        echo **** ERROR ****
-        exit -1
-    fi
-    if `echo "$RETURN" | grep -qE "\[behind [0-9]+]$"` ; then
-        return 1
-    fi
-    return 0
+    git submodule init 1> /dev/null
+    git submodule update --remote --checkout 1> /dev/null
+    changes_to_submodules=`[ -z "$(git submodule summary)" ]`
+    git submodule update 1> /dev/null
+    return $changes_to_submodules
 }
 
 function write_config() {
@@ -181,10 +176,8 @@ EOT
 if [ $# -gt 0  -a $# -le 2 ]; then
     case $1 in
         check_source )
-            if check_source ;  then
-              exit
-            fi
-            exit 1
+            check_source
+            exit
             ;;
         update )
             update_source
