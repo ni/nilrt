@@ -22,3 +22,11 @@
 	path = sources/openembedded-core
 	url = git://git.natinst.com/openembedded-core
 	branch = nilrt/comms-2.0/dizzy
+[submodule "sources/meta-mingw"]
+	path = sources/meta-mingw
+	url = git@git:meta-mingw.git
+	branch = nilrt/comms-2.0/dizzy
+[submodule "sources/meta-mono"]
+	path = sources/meta-mono
+	url = git@git:meta-mono.git
+	branch = nilrt/comms-2.0/dizzy
