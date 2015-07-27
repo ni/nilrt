@@ -14,7 +14,7 @@ Requirements:
 Linux machine to build the kernel
 GNU Make installed
 The mksquashfs utility installed
-The build-essential package installed
+Distribution-dependent packages required to build the kernel source
 The u-boot-tools package installed (for ARM builds only)
 
 II. Downloading the Source
@@ -30,13 +30,12 @@ the source for ARM-based targets or Intel x86-based targets.
     cd linux
 
 2. Checkout the branch that corresponds to the release you are using. For
-2014, this branch is nilrt_pub/14.0/3.10
+2015, this branch is nilrt_pub/15.0/3.14
 
-    git checkout nilrt_pub/14.0/3.10
+    git checkout nilrt_pub/15.0/3.14
 
 *** ARMV7-A (Ex: cRIO-9068, myRIO, sbRIO/somRIO):
-For 15.0 and newer, you can follow the same instructions as for the
-X86_64 source. Otherwise:
+You can follow the same instructions as for the X86_64 source. Otherwise:
 
 1. Download the source and patches from 
 http://download.ni.com/ni-linux-rt/src/.
@@ -104,7 +103,7 @@ Copy this file to /boot/runmode/ on the target.
 *** ALL TARGETS:
 Copy the resulting $KERNEL_ROOT/ni-install/$ARCH/lib/modules/ directory to
 the target such that all of the new kernel modules exist on the target at
-/lib/modules/$VERSION/. Note the newly built modules directory contains 
+/lib/modules/$VERSION/. Note the newly-built modules directory contains 
 symbolic links to the build and source directories, do not copy the linked 
 directories to your target.
 
