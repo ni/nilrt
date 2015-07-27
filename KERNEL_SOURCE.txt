@@ -14,6 +14,8 @@ Requirements:
 Linux machine to build the kernel
 GNU Make installed
 The mksquashfs utility installed
+The build-essential package installed
+The u-boot-tools package installed (for ARM builds only)
 
 II. Downloading the Source
 
@@ -21,15 +23,25 @@ The kernel source for NI Linux Real-Time targets is available for
 download from the following locations, depending on whether you want
 the source for ARM-based targets or Intel x86-based targets.
 
+*** X86_64 (Ex: cRIO-903x, cDAQ-913x, etc.):
 1. Clone the source from github.com/ni/linux.
 
     git clone https://github.com/ni/linux.git
     cd linux
 
 2. Checkout the branch that corresponds to the release you are using. For
-2015, this branch is nilrt_pub/15.0/3.14
+2014, this branch is nilrt_pub/14.0/3.10
 
-    git checkout nilrt_pub/15.0/3.14
+    git checkout nilrt_pub/14.0/3.10
+
+*** ARMV7-A (Ex: cRIO-9068, myRIO, sbRIO/somRIO):
+For 15.0 and newer, you can follow the same instructions as for the
+X86_64 source. Otherwise:
+
+1. Download the source and patches from 
+http://download.ni.com/ni-linux-rt/src/.
+2. Extract the source.
+3. Apply the patches sequentially (0001 coming first, 0002 next, etc.)
 
 III. Using the Tools
 You can use any cross-compilation toolchain of your choosing, or you can
@@ -38,6 +50,9 @@ download the toolchains from ni.com or build them yourself.
 The toolchains are available for download at
 armv7-a: http://www.ni.com/download/labview-real-time-module-2014/4957/en/
 x86_64: http://www.ni.com/download/labview-real-time-module-2014/4959/en/
+
+Please note that the 2014 toolchains are recommend for both 14.x and
+15.x builds.
 
 To build the toolchains yourself:
 
@@ -58,7 +73,7 @@ IV. Compiling the kernel
 1. Set the kernel configuration to match NI’s settings:
 *** ARMV7-A:
   export ARCH=arm
-  export CROSS_COMPILE=/path/to/toolchain/bin/arm-nilrt-linux-eabi-
+  export CROSS_COMPILE=/path/to/toolchain/bin/arm-nilrt-linux-gnueabi-
   make nati_zynq_defconfig
 *** X86_64:
   export ARCH=x86_64
@@ -89,7 +104,9 @@ Copy this file to /boot/runmode/ on the target.
 *** ALL TARGETS:
 Copy the resulting $KERNEL_ROOT/ni-install/$ARCH/lib/modules/ directory to
 the target such that all of the new kernel modules exist on the target at
-/lib/modules/$VERSION/.
+/lib/modules/$VERSION/. Note the newly built modules directory contains 
+symbolic links to the build and source directories, do not copy the linked 
+directories to your target.
 
 Also copy the resulting $KERNEL_ROOT/ni-install/$ARCH/headers/headers.squashfs
 to the target's /usr/local/natinst/tools/module-versioning-image.squashfs file
