@@ -77,7 +77,6 @@ EOF
     echo -e "\n"Source the environment file and build with "bitbake \$target"
     cat <<EOF > ${NIBB_BASE_DIR}/build/conf/site.conf
 SCONF_VERSION="1"
-DL_DIR="${NIBB_BASE_DIR}/downloads"
 SSTATE_DIR="${NIBB_BASE_DIR}/build/sstate-cache"
 BBFILES?="${NIBB_OECORE_DIR}/meta/recipes-*/*/*.bb"
 #Set the proxy info here
