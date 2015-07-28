@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -eE
 
 NIBB_MACHINE=${MACHINE}
 NIBB_DISTRO=${DISTRO}
