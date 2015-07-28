@@ -75,11 +75,6 @@ mkdir -p \${TOPDIR} && cd \${TOPDIR}
 EOF
     echo Environment file written to env-${NIBB_DISTRO}-${NIBB_MACHINE}
     echo -e "\n"Source the environment file and build with "bitbake \$target"
-    cat <<EOF > ${NIBB_BASE_DIR}/build/conf/site.conf
-SCONF_VERSION="1"
-#Set the proxy info here
-#HTTP_PROXY="http://\${PROXYHOST}:\${PROXYPORT}"
-EOF
     cat <<EOF > ${NIBB_BASE_DIR}/build/conf/auto.conf
 export MACHINE?="${NIBB_MACHINE}"
 EOF
