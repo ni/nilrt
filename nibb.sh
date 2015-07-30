@@ -56,9 +56,9 @@ function write_config() {
     NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
     echo Configuring for ${NIBB_MACHINE}...
     cat <<EOF > env-${NIBB_DISTRO}-${NIBB_MACHINE}
-export BB_ENV_EXTRAWHITE="BASHOPTS BB_NUMBER_THREADS DISTRO INHERIT MACHINE PARALLEL_MAKE SOURCE_MIRROR_URL TOPDIR USER_CLASSES"
+export BB_ENV_EXTRAWHITE="BASHOPTS BB_NUMBER_THREADS DISTRO INHERIT MACHINE PARALLEL_MAKE SOURCE_MIRROR_URL USER_CLASSES"
 export BB_NUMBER_THREADS="${THREADS:-2}"
-export BBPATH="${NIBB_BASE_DIR}:${NIBB_OECORE_DIR}/meta"
+export BBPATH="${NIBB_BASE_DIR}/build"
 export DISTRO="${NIBB_DISTRO}"
 export DISTRO_VERSION="${NIBB_DISTVER}"
 export INHERIT="${NIBB_INHERIT}"
@@ -66,7 +66,6 @@ export MACHINE="${NIBB_MACHINE}"
 export PARALLEL_MAKE="-j ${THREADS:-2}"
 export PATH="${NIBB_OECORE_DIR}/scripts:${NIBB_SOURCE_DIR}/bitbake/bin:\${PATH}"
 export SOURCE_MIRROR_URL=http://git.natinst.com/snapshots
-export TOPDIR="${NIBB_BASE_DIR}/build"
 export USER_CLASSES=""
 
 # mitigates some deliberate races between bash command hashing and sysroot
