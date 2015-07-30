@@ -51,21 +51,37 @@ function write_config() {
 # as documented in oe-init-build-env
 set "${NIBB_BASE_DIR}/build" "${NIBB_BASE_DIR}/sources/bitbake"
 . "${NIBB_OECORE_DIR}/oe-init-build-env"
-export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE BASHOPTS DISTRO_VERSION INHERIT SOURCE_MIRROR_URL USER_CLASSES"
 
+export BBPATH="${NIBB_BASE_DIR}:${NIBB_OECORE_DIR}/meta"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE BB_NUMBER_THREADS"
 export BB_NUMBER_THREADS="${THREADS:-2}"
-export BBPATH="${NIBB_BASE_DIR}/build"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE DISTRO"
 export DISTRO="${NIBB_DISTRO}"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE DISTRO_VERSION"
 export DISTRO_VERSION="${NIBB_DISTVER}"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE INHERIT"
 export INHERIT="${NIBB_INHERIT}"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE MACHINE"
 export MACHINE="${NIBB_MACHINE}"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE PARALLEL_MAKE"
 export PARALLEL_MAKE="-j ${THREADS:-2}"
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE SOURCE_MIRROR_URL"
 export SOURCE_MIRROR_URL=http://git.natinst.com/snapshots
+
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE USER_CLASSES"
 export USER_CLASSES=""
 
 # mitigates some deliberate races between bash command hashing and sysroot
 # cleaning, cf gmane/43740
 if [ -n "\$BASH_VERSION" ]; then
+	export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE BASHOPTS"
 	shopt -s checkhash
 	export BASHOPTS
 fi
