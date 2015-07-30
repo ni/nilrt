@@ -47,7 +47,12 @@ function check_source() {
 function write_config() {
     echo Configuring for ${NIBB_MACHINE}...
     cat <<EOF > env-${NIBB_DISTRO}-${NIBB_MACHINE}
-export BB_ENV_EXTRAWHITE="BASHOPTS BB_NUMBER_THREADS DISTRO INHERIT MACHINE PARALLEL_MAKE SOURCE_MIRROR_URL USER_CLASSES"
+# Workaround for some shells not passing command-line arguments into "source",
+# as documented in oe-init-build-env
+set "${NIBB_BASE_DIR}/build" "${NIBB_BASE_DIR}/sources/bitbake"
+. "${NIBB_OECORE_DIR}/oe-init-build-env"
+export BB_ENV_EXTRAWHITE="\$BB_ENV_EXTRAWHITE BASHOPTS DISTRO_VERSION INHERIT SOURCE_MIRROR_URL USER_CLASSES"
+
 export BB_NUMBER_THREADS="${THREADS:-2}"
 export BBPATH="${NIBB_BASE_DIR}/build"
 export DISTRO="${NIBB_DISTRO}"
@@ -55,7 +60,6 @@ export DISTRO_VERSION="${NIBB_DISTVER}"
 export INHERIT="${NIBB_INHERIT}"
 export MACHINE="${NIBB_MACHINE}"
 export PARALLEL_MAKE="-j ${THREADS:-2}"
-export PATH="${NIBB_OECORE_DIR}/scripts:${NIBB_SOURCE_DIR}/bitbake/bin:\${PATH}"
 export SOURCE_MIRROR_URL=http://git.natinst.com/snapshots
 export USER_CLASSES=""
 
