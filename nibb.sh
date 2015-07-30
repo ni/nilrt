@@ -79,9 +79,6 @@ mkdir -p \${TOPDIR} && cd \${TOPDIR}
 EOF
     echo Environment file written to env-${NIBB_DISTRO}-${NIBB_MACHINE}
     echo -e "\n"Source the environment file and build with "bitbake \$target"
-    cat <<EOF > ${NIBB_BASE_DIR}/build/conf/auto.conf
-export MACHINE?="${NIBB_MACHINE}"
-EOF
 }
 
 function get_opts() {
