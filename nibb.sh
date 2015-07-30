@@ -71,8 +71,10 @@ export USER_CLASSES=""
 
 # mitigates some deliberate races between bash command hashing and sysroot
 # cleaning, cf gmane/43740
-shopt -s checkhash
-export BASHOPTS
+if [ -n "\$BASH_VERSION" ]; then
+	shopt -s checkhash
+	export BASHOPTS
+fi
 
 mkdir -p \${TOPDIR} && cd \${TOPDIR}
 EOF
