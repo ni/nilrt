@@ -69,8 +69,12 @@ export PATH="${NIBB_OECORE_DIR}/scripts:${NIBB_SOURCE_DIR}/bitbake/bin:\${PATH}"
 export SOURCE_MIRROR_URL=http://git.natinst.com/snapshots
 export TOPDIR="${NIBB_BASE_DIR}/build"
 export USER_CLASSES=""
+
+# mitigates some deliberate races between bash command hashing and sysroot
+# cleaning, cf gmane/43740
 shopt -s checkhash
 export BASHOPTS
+
 mkdir -p \${TOPDIR} && cd \${TOPDIR}
 EOF
     echo Environment file written to env-${NIBB_DISTRO}-${NIBB_MACHINE}
