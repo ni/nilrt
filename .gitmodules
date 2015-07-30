@@ -1,32 +1,32 @@
 [submodule "sources/bitbake"]
 	path = sources/bitbake
-	url = git://git.natinst.com/bitbake.git
+	url = ../bitbake.git
 	branch = nilrt/comms-2.0/1.26
 [submodule "sources/meta-cloud-services"]
 	path = sources/meta-cloud-services
-	url = git://git.natinst.com/meta-cloud-services.git
+	url = ../meta-cloud-services.git
 	branch = nilrt/comms-2.0/fido
 [submodule "sources/meta-openembedded"]
 	path = sources/meta-openembedded
-	url = git://git.natinst.com/meta-openembedded.git
+	url = ../meta-openembedded.git
 	branch = nilrt/comms-2.0/fido
 [submodule "sources/meta-nilrt"]
 	path = sources/meta-nilrt
-	url = git://git.natinst.com/meta-nilrt.git
+	url = ../meta-nilrt.git
 	branch = nilrt/comms-2.0/fido
 [submodule "sources/meta-selinux"]
 	path = sources/meta-selinux
-	url = git://git.natinst.com/meta-selinux.git
+	url = ../meta-selinux.git
 	branch = nilrt/comms-2.0/fido
 [submodule "sources/openembedded-core"]
 	path = sources/openembedded-core
-	url = git://git.natinst.com/openembedded-core
+	url = ../openembedded-core.git
 	branch = nilrt/comms-2.0/fido
 [submodule "sources/meta-mingw"]
 	path = sources/meta-mingw
-	url = git@git:meta-mingw.git
+	url = ../meta-mingw.git
 	branch = nilrt/comms-2.0/fido
 [submodule "sources/meta-mono"]
 	path = sources/meta-mono
-	url = git@git:meta-mono.git
+	url = ../meta-mono.git
 	branch = nilrt/comms-2.0/fido
