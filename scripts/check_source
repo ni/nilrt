@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+# Return:   0 if there's no need to build
+#           1 if there's a need to build
+git submodule init 1> /dev/null
+git submodule update --remote --checkout 1> /dev/null
+changes_to_submodules=`[ -z "$(git submodule summary)" ]`
+git submodule update 1> /dev/null
+return $changes_to_submodules
