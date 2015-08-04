@@ -30,3 +30,7 @@
 	path = sources/meta-mono
 	url = ../meta-mono.git
 	branch = nilrt/comms-2.0/fido
+[submodule "sources/meta-virtualization"]
+	path = sources/meta-virtualization
+	url = ../meta-virtualization.git
+	branch = nilrt/comms-2.0/fido
