@@ -17,20 +17,12 @@ function usage() {
     Usage:  $0 config
             $0 update
             $0 check_source
-            $0 info <bitbake_target>
             $0 clean
 
     Once $0 config is run, build images with
     . \$ENV_FILE (e.g. env-nilrt-xilinx-zynq)
     You can then build images with "bitbake".
 
-    The <bitbake_target> argument is the
-    image or package that bitbake build
-    information will be gathered for build
-    parity comparisons. It must be run from
-    a shell that is configured to build the
-    target (i.e. you've already source'd the
-    environment file from a config command)
 EOT
     return 1
 }
@@ -53,7 +45,6 @@ function check_source() {
 }
 
 function write_config() {
-    NIBB_DISTDIR=`echo ${NIBB_DISTRO} | sed 's#[- ./\#]#_#g'`_`echo ${NIBB_DISTVER} | sed 's#[- ./\#]#_#g'`
     echo Configuring for ${NIBB_MACHINE}...
     cat <<EOF > env-${NIBB_DISTRO}-${NIBB_MACHINE}
 export BB_ENV_EXTRAWHITE="BASHOPTS BB_NUMBER_THREADS DISTRO INHERIT MACHINE PARALLEL_MAKE SOURCE_MIRROR_URL USER_CLASSES"
@@ -125,46 +116,6 @@ function clean() {
     echo "done cleaning sources"
 }
 
-function get_info() {
-    if [ "$#" -ne 2 ]; then
-        cat <<EOT > /dev/stderr
-*** ERR ***
-    Call the "info" command providing exactly one bitbake build target.
-
-EOT
-        usage
-        return
-    fi
-    if [ -z "$BBPATH" ]; then
-        cat <<EOT > /dev/stderr
-*** ERR ***
-    Run the info command from a shell that has been configured to build
-
-EOT
-        usage
-        return
-    fi
-
-    IMAGE=$2
-
-    bitbake -e $IMAGE| grep -P "^[A-Za-z_-]+[ \t]*=" | sort | grep -v "`pwd`"  > bitbake_env_filtered_${IMAGE}_${NIBB_MACHINE}.txt
-
-    echo Bitbake environment file available at bitbake_env_filtered_${IMAGE}_${NIBB_MACHINE}.txt
-    if [ ! -d ${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}-* ]; then
-        cat <<EOT
-        ${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}
-*** INFO ***
-In order to get a filesystem manifest for the image, please build the image
-EOT
-    else
-         cat <<EOT
-Image manifest and version information available at
-${NIBB_BASE_DIR}/build/tmp_${NIBB_DISTDIR}_${NIBB_MACHINE}-eglibc/buildhistory/images/${NIBB_MACHINE//-/_}/eglibc/${IMAGE}
-
-EOT
-    fi
-}
-
 if [ $# -gt 0  -a $# -le 2 ]; then
     case $1 in
         check_source )
@@ -179,10 +130,6 @@ if [ $# -gt 0  -a $# -le 2 ]; then
             update_source
             get_opts
             write_config
-            exit
-            ;;
-        info )
-            get_info "$@"
             exit
             ;;
         clean )
