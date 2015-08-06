@@ -7,5 +7,7 @@ build/conf/templateconf.cfg
 build/buildhistory
 build/bitbake.lock
 build/pseudodone
+build/sstate-cache
 build/tmp*
 bitbake_env_filtered*
+downloads
