@@ -107,15 +107,15 @@ deleting the /usr/local/natinst/tools/kernel_version file (if it exists).
 Reboot the target and check that the target successfully boots. Log into
 a shell and check that your kernel is running by issuing "uname -a".
 
-At this point, the drivers need to be updated to work with the new kernel.
-To do so, please run the following commands:
+At this point, the NI drivers need to be updated to work with the new kernel.
+To do so, run the following commands:
 
-	source /usr/local/natinst/tools/versioning_utils.sh
-	setup_versioning_env
-	versioning_call /usr/local/natinst/nikal/bin/updateNIDrivers `ker
-		nel_version'
+    source /usr/local/natinst/tools/versioning_utils.sh
+    setup_versioning_env
+    versioning_call /usr/local/natinst/nikal/bin/updateNIDrivers \
+     $(kernel_version)
 
-After running these commands, please reboot the target.
+After successfully running these commands, reboot the target.
 
 *** HELP! MY TARGET DOESN'T BOOT! ***
 If, after building and putting a new kernel on the target, you are unable
