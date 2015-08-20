@@ -1,0 +1,7 @@
+TEMPLATECONF=${TEMPLATECONF:-$PWD/sources/meta-nilrt/conf}
+BITBAKEDIR=${BITBAKEDIR:-$PWD/sources/bitbake}
+BUILDDIR=${BUILDDIR:-$PWD/build}
+
+export PS1="(bb) $PS1"
+export TEMPLATECONF
+source $PWD/sources/openembedded-core/oe-init-build-env
