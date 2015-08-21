@@ -38,3 +38,7 @@
 	path = sources/meta-security
 	url = ../meta-security.git
 	branch = nilrt/comms-2.0/fido
+[submodule "sources/meta-orgconf"]
+	path = sources/meta-orgconf
+	url = ../meta-orgconf.git
+	branch = nilrt/comms-2.0
