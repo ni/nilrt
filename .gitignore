@@ -1,13 +1,3 @@
-env-*
-build/cache
-build/conf/auto.conf
-build/conf/sanity_info
-build/conf/site.conf
-build/conf/templateconf.cfg
-build/buildhistory
-build/bitbake.lock
-build/pseudodone
-build/sstate-cache
-build/tmp*
-bitbake_env_filtered*
+build
+!build/conf/bblayers.conf
 downloads
