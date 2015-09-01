@@ -15,32 +15,31 @@ Build Steps
         git clone https://github.com/ni/nilrt.git
         cd nilrt
         git checkout nilrt/<release>
-        ./nibb.sh update
+        git submodule init
+        git submodule update --remote --checkout
 
-2. Configure the build system for the machine architecture that you are
-interested in. For example, running the command
+2. Source the environment file "ni-oe-init-build-env"
 
-        THREADS=16 DISTRO=nilrt MACHINE=x64 ./nibb.sh config
+        . ni-oe-init-build-env
 
-    results in a file called env-nilrt-x64. This file contains the
-requisite environment variables to tell the bitbake/OE system to build
-for the NILRT distribution for Intel x64-based NI controllers with 16
-worker threads.
-
-    Substituting MACHINE=xilinx-zynq for MACHINE=x64 configures an
-environment for building NILRT for Xilinx Zynq-based NI controllers.
-
-    If you omit the THREADS, DISTRO, or MACHINE variables, you will be
-prompted to pick from a list of available options.
+    This will setup the needed environment variables and build
+configuration files for building through OpenEmbedded build system.
+Note that the configuration files (that exist in the build/conf
+directory) include some basic default configurations, allowing
+modification or overriding of these default configurations
 
 3. Build the package or packages that you want for your target. This
 includes standalone image names (e.g. minimal-nilrt-image) and
 standalone packages. For example, to build Python, Ruby, Apache, and
-the minimal NILRT image, run the following commands:
+the minimal NILRT image for Zynq targets, run the following commands:
 
-        . env-$DISTRO-$MACHINE
+        export MACHINE=xilinx-zynq
         bitbake python ruby apache2
         bitbake minimal-nilrt-image
+
+    **NOTE** The configuration files (build/conf/*.conf) can optionally
+be changed to reflect the desired build settings instead of setting
+environment variables.
 
     **NOTE** Building packages through OpenEmbedded can use significant
 disk space, on the order of tens of gigabytes. If you are preparing a
