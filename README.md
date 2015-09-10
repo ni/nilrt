@@ -28,14 +28,18 @@ Note that the configuration files (that exist in the build/conf
 directory) include some basic default configurations, allowing
 modification or overriding of these default configurations
 
-3. Build the package or packages that you want for your target. This
-includes standalone image names (e.g. minimal-nilrt-image) and
-standalone packages. For example, to build Python, Ruby, Apache, and
-the minimal NILRT image for Zynq targets, run the following commands:
+3. Build the package or packages that you want for your target.
+For example, to build Python, Ruby, and Apache for Zynq targets, run the
+following commands:
 
         export MACHINE=xilinx-zynq
         bitbake python ruby apache2
-        bitbake minimal-nilrt-image
+
+    To build every package in National Instruments' feed, run the
+following commands:
+
+        bitbake packagegroup-ni-coreimagerepo
+        bitbake --continue packagegroup-ni-extra
 
     **NOTE** The configuration files (build/conf/*.conf) can optionally
 be changed to reflect the desired build settings instead of setting
@@ -46,20 +50,13 @@ disk space, on the order of tens of gigabytes. If you are preparing a
 virtual machine to build images, make sure to allocate sufficient disk
 space.
 
-    The resulting ipk files that can be installed through opkg in the
-case of standalone packages (e.g. python, ruby, apache2) exist at the
-following directory:
+    The resulting ipk files that can be installed through opkg exist at
+the following directory:
 
         tmp-glibc/deploy/ipk/...
 
-    If you build a complete image (e.g. minimal-nilrt-image), the
-compressed root filesystem image can be found at the following
-directory:
-
-        tmp-glibc/deploy/images/...
-
-4. (Optional/Advanced) Bitbake can transform deploy/ipk into a package
-feed when you run the following command:
+4. (Optional/Advanced) Bitbake can transform tmp-glibc/deploy/ipk/ into
+a package feed when you run the following command:
 
         bitbake package-index
 
@@ -73,6 +70,45 @@ command:
 to other hosts on your local network. You may need to configure your
 firewall to permit Python to access port 8080. Otherwise, the server
 will only be accessible locally on address localhost:8080.
+
+5. (Optional/Advanced) Build a bootable recovery disk by running the
+following commands:
+
+        bitbake minimal-nilrt-image
+        bitbake restore-mode-image
+        ../scripts/buildRecoveryISO.sh -r restore-mode-image
+
+    **NOTE** You must build everything in packagegroup-ni-coreimagerepo
+(step 3) and build a feed (optional step 4) to build images.
+
+    **NOTE** By default, National Instruments software is pulled from
+a feed hosted on ni.com. You can redirect to a mirror by setting
+IPK_NI_SUBFEED_URI to any URI supported by opkg in your org.conf,
+site.conf, or auto.conf.
+
+    The resulting root file system images for the minimal NILRT run-mode
+and recovery disk are located at the following paths:
+
+        tmp-glibc/deploy/images/$MACHINE/minimal-nilrt-image-$MACHINE.tar.bz2
+        tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.cpio.gz
+
+    The bootable ISO recovery disk, which you can install onto a USB
+memory stick or burn to a CD, is located at the following path:
+
+        tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.iso
+
+    Run the following command to install the bootable ISO recovery image
+onto a USB memory stick at /dev/disk/by-id/XXX, where XXX is the
+appropriate device node for your hardware:
+
+        sudo dd if=tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.iso of=/dev/disk/by-id/XXX bs=1M
+
+    **WARNING** Setting 'of' to the wrong device will permanently
+destroy data and potentially leave your system unbootable. *Use at your
+own risk!!!*
+
+    Boot your NI Linux Real-Time compatible hardware from the recovery
+disk and follow on-screen instructions to perform a factory reset.
 
 ---
 
