@@ -42,3 +42,7 @@
 	path = sources/meta-orgconf
 	url = ../meta-orgconf.git
 	branch = nilrt/comms-2.0
+[submodule "sources/meta-sdr"]
+	path = sources/meta-sdr
+	url = ../meta-sdr.git
+	branch = nilrt/comms-2.0
