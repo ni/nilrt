@@ -46,3 +46,7 @@
 	path = sources/meta-sdr
 	url = ../meta-sdr.git
 	branch = nilrt/comms-2.0
+[submodule "sources/meta-java"]
+	path = sources/meta-java
+	url = ../meta-java.git
+	branch = nilrt/comms-2.0/master
