@@ -25,7 +25,7 @@ packages. For example, if you wanted to build python, you would run
 The resulting ipk files that can be installed through opkg in the case
 of standalone packages exist at
 
-    $NIBB_ROOT/build/tmp_$DISTRO_$MACHINE/deploy/ipkg/...
+    $NIBB_ROOT/build/tmp_$DISTRO_$MACHINE/deploy/ipk/...
 
 If you build a complete image, the compressed root filesystem image can be
 found at
