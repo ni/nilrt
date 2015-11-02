@@ -32,6 +32,24 @@ found at
 
     $NIBB_ROOT/build/tmp_$DISTRO_$MACHINE/deploy/images/...
 
+The resulting image is the same image used as the base for software
+installation from NI's tools. An NI installation also adds several
+more packages of NI's own software. NI's additions include scripts and
+other software affecting login. To enable login without NI software, you
+will need to make a few more changes. Assuming you are in safe mode and
+the run mode filesystem is mounted at /mnt/userfs:
+
+1. Update the getty line in /mnt/userfs/etc/inittab to use ttyS0 instead
+of ttyPS0. (Zynq targets only.)
+
+2. Provide a password for an account to use to log in (for example, if you
+want to log in as root, "passwd -R /mnt/userfs root").
+
+3. If you are using a freshly formatted run mode, you'll need to install a
+kernel. See github.com/ni/linux for kernel source, or save an NI-built
+kernel by installing from NI's tools before applying your image, and put it
+into /boot.
+
 ** NOTE **
 Building packages through OpenEmbedded can use significant disk space,
 on the order of tens of gigabytes. If you are preparing a virtual machine
