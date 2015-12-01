@@ -18,7 +18,9 @@ Build Steps
         git submodule init
         git submodule update --remote --checkout
 
-2. Source the environment file "ni-oe-init-build-env"
+2. Set up your shell environment to run bitbake:
+
+    Source NILRT's environment script by running the following command:
 
         . ni-oe-init-build-env
 
@@ -26,13 +28,26 @@ Build Steps
 configuration files for building through OpenEmbedded build system.
 Note that the configuration files (that exist in the build/conf
 directory) include some basic default configurations, allowing
-modification or overriding of these default configurations
+modification or overriding of these default configurations.
+
+    Set an appropriate MACHINE variable so that bitbake can tune builds
+of NILRT for your hardware.
+
+    Run the following command to configure for ARM targets:
+
+        export MACHINE=xilinx-zynqhf
+
+    or the following command to configure for x64 targets:
+
+        export MACHINE=x64
+
+    **NOTE** It's not recommended to run bitbake for different
+MACHINE's in the same workspace (build directory).
 
 3. Build the package or packages that you want for your target.
 For example, to build Python, Ruby, and Apache for Zynq targets, run the
 following commands:
 
-        export MACHINE=xilinx-zynq
         bitbake python ruby apache2
 
     To build every package in National Instruments' feed, run the
