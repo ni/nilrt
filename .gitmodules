@@ -50,3 +50,7 @@
 	path = sources/meta-java
 	url = ../meta-java.git
 	branch = nilrt/comms-2.0/master
+[submodule "sources/meta-measured"]
+	path = sources/meta-measured
+	url = ../meta-measured.git
+	branch = nilrt/comms-2.0/fido
