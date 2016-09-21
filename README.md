@@ -16,7 +16,7 @@ Build Steps
         cd nilrt
         git checkout nilrt/<release>
         git submodule init
-        git submodule update --remote --checkout
+        git submodule update
 
 2. Set up your shell environment to run bitbake:
 
@@ -33,11 +33,7 @@ modification or overriding of these default configurations.
     Set an appropriate MACHINE variable so that bitbake can tune builds
 of NILRT for your hardware.
 
-    Run the following command to configure for ARM targets:
-
-        export MACHINE=xilinx-zynqhf
-
-    or the following command to configure for x64 targets:
+    Run the following command to configure for x64 targets:
 
         export MACHINE=x64
 
@@ -45,8 +41,8 @@ of NILRT for your hardware.
 MACHINE's in the same workspace (build directory).
 
 3. Build the package or packages that you want for your target.
-For example, to build Python, Ruby, and Apache for Zynq targets, run the
-following commands:
+For example, to build Python, Ruby, and Apache for your current MACHINE, run
+the following commands:
 
         bitbake python ruby apache2
 
