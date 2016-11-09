@@ -31,7 +31,7 @@ child.expect('Do you want to continue?')
 child.sendline('y')
 child.expect('Do you want to continue?')
 child.sendline('y')
-child.expect('Press any key to continue..')
+child.expect('press any key to continue...')
 child.sendline()
 
 child.expect('NI.* login:')
