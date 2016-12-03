@@ -41,7 +41,7 @@ function update_source() {
         pushd ${GIT_REPO} 1> /dev/null
         [ "`git rev-parse --abbrev-ref HEAD`" == "${GIT_BRANCH}" ] || git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
         git reset --hard ${GIT_COM}
-        git pull -r --ff-only
+        git clean -fd
         popd 1> /dev/null
     done < ${NIBB_GIT_REPOS}
     popd 1> /dev/null
