@@ -17,6 +17,10 @@ test_timeout = 3600 #seconds
 
 def waitfornetwork():
     print "Waiting for network interface"
+    #force target to get an ip after boot to avoid a qemu bug where the IP
+    #is not correctly set while booting (reproduced in qemu 2.1 and 2.8)
+    child.sendline('dhclient eth0')
+    child.expect('# ')
     child.sendline("while ! ifconfig | grep -q 'inet addr.*Bcast'; do sleep 5; done")
     child.expect("# ")
 
