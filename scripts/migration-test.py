@@ -35,7 +35,7 @@ child.expect('Do you want to continue?')
 child.sendline('y')
 child.expect('Do you want to continue?')
 child.sendline('y')
-child.expect('press any key to continue...')
+child.expect('Please eject the installation media and restart the system')
 child.sendline()
 
 child.expect('NI.* login:')
