@@ -65,7 +65,7 @@ mkdir "$baseVmDir-hyperv"
 rm -f "$workingDir/ni_provisioning.answers"
 cp "$SCRIPT_RESOURCE_DIR/ni_provisioning.answers" "$workingDir/ni_provisioning.answers"
 chmod 0444 "$workingDir/ni_provisioning.answers"
-mkisofs -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso" "$workingDir/ni_provisioning.answers"
+genisoimage -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso" "$workingDir/ni_provisioning.answers"
 chmod 0444 "$workingDir/ni_provisioning.answers.iso"
 echo "Built answers file at $workingDir/ni_provisioning.answers.iso"
 
