@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 import pexpect
-import sys, os, time
+import sys, os, time, subprocess
 
 if len(sys.argv) < 5:
     print "Usage: %s <feed-server-uri> <recovery_iso> <hdd_image_name> <hdd_image_size>" % sys.argv[0]
@@ -28,8 +28,10 @@ print "Creating virtual hdd image"
 os.system("qemu-img create -f raw %s %s" % (hdd_image_name, hdd_image_size))
 
 print "Provisioning virtual hdd image with newer nilrt OS, this may take a while"
-child = pexpect.spawn ("qemu-system-x86_64 -enable-kvm -nographic -m 1024 -hda %s -cdrom %s"
-                       % (hdd_image_name, recovery_iso), timeout=test_timeout)
+
+enable_kvm = subprocess.check_output(["id | grep -q kvm && echo '-enable-kvm -cpu kvm64' || echo ''"], shell=True)
+child = pexpect.spawn ("qemu-system-x86_64 %s -nographic -m 1024 -hda %s -cdrom %s"
+                       % (enable_kvm, hdd_image_name, recovery_iso), timeout=test_timeout)
 
 child.expect('Do you want to continue?')
 child.sendline('y')

@@ -73,8 +73,9 @@ echo "Built answers file at $workingDir/ni_provisioning.answers.iso"
 #  partition and install OS
 qemu-img create -f qcow2 "$vmDirQemu/$vmName-$MACHINE.qcow2" "$bootDiskSizeMB""M"
 chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
+enableKVM=$(id | grep -q kvm && echo "-enable-kvm -cpu kvm64" || echo "")
 qemu-system-x86_64 \
-    -enable-kvm -cpu kvm64 -m "$memSizeMB" \
+    $enableKVM -m "$memSizeMB" \
     -nographic \
     -drive file="$vmDirQemu/$vmName-$MACHINE.qcow2",index=0,media=disk \
     -drive file="$imagesDir/$initramfsRecipeName-x64.iso",index=1,media=cdrom,readonly \
