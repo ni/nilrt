@@ -56,5 +56,5 @@
 	branch = nilrt/cardassia/krogoth
 [submodule "sources/meta-qt4"]
 	path = sources/meta-qt4
-	url = git@git.natinst.com:/meta-qt4.git
+	url = ../meta-qt4.git
 	branch = nilrt/cardassia/krogoth
