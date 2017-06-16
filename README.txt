@@ -3,6 +3,12 @@ National Instruments OpenEmbedded Image/Package Creation scripts
 The scripts contained within aid in building images and packages for
 National Instruments NI Linux Real-Time targets.
 
+** NOTE **
+If you are updating from a previous branch of nilrt, run the "clean"
+subcommand
+
+  ./nibb.sh clean
+
 1. Configure the build system for the machine architecture that you are
 interested in, for example, running
 
