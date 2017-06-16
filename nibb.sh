@@ -39,6 +39,7 @@ function update_source() {
         echo "Updating ${GIT_REPO}..."
         [ -d "${GIT_REPO}" ] ||  git clone ${GIT_URL} ${GIT_REPO}
         pushd ${GIT_REPO} 1> /dev/null
+        git fetch -q
         [ "`git rev-parse --abbrev-ref HEAD`" == "${GIT_BRANCH}" ] || git checkout -b ${GIT_BRANCH} origin/${GIT_BRANCH}
         git reset --hard ${GIT_COM}
         git clean -fd
@@ -121,11 +122,18 @@ function get_opts() {
     fi
 }
 
+function clean_sources() {
+    for dir in `ls ${NIBB_SOURCE_DIR}`; do
+        [ -d "${NIBB_SOURCE_DIR}/${dir}" ] && ( echo Cleaning $dir; rm -rf "${NIBB_SOURCE_DIR}/${dir}" )
+    done
+}
+
 function clean() {
     echo -n "Cleaning build area..."
     rm -rf "${NIBB_BASE_DIR}/build" "${NIBB_BASE_DIR}/cache"
     echo "done"
     echo "Cleaning sources..."
+    clean_sources
     update_source
     echo "done cleaning sources"
 }
