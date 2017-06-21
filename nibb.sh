@@ -71,6 +71,7 @@ export TOPDIR="${NIBB_BASE_DIR}"
 export USER_CLASSES=""
 shopt -s checkhash
 export BASHOPTS
+export PS1="(bb) \${PS1}"
 EOF
     echo Environment file written to env-${NIBB_DISTRO}-${NIBB_MACHINE}
     cat <<EOF > ${NIBB_BASE_DIR}/conf/site.conf
