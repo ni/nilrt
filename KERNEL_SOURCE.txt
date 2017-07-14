@@ -75,12 +75,20 @@ IV. Compiling the kernel
   export CROSS_COMPILE=/path/to/toolchain/x86_64-nilrt-linux-
   make nati_x86_64_defconfig
 
+*** Using the 2017 toolchain:
+If you are using the 2017 toolchain, you also must export the following variable
+  export TGT_EXTRACFLAGS="--sysroot=/path/to/target/sysroot"
+
 ** NOTE **
 The paths used above will vary based on where your toolchain is actually installed on-disk. If, for example, you have installed the 2014-2016 ARMv7 toolchain tothe /home/user/toolchain folder, the "export" command listed above (for building Zynq-based kernels) would be
 
   export CROSS_COMPILE=/home/user/toolchain/sysroots/x86_64-nilrtsdk-linux/usr/bin/armv7a-vfp-neon-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
 
-Adjust the command to fit your particular case.
+And, if you are using the 2017 toolchain,
+
+  export TGT_EXTRACFLAGS="--sysroot=/home/user/toolchain/sysroots/cortexa9-vfpv3-nilrt-linux-gnueabi/"
+
+Adjust the commands to fit your particular case.
 
 2. Build the kernel by running "make ni-pkg" (the ARCH and CROSS_COMPILE 
 variables have already been set in the previous steps). This creates the
