@@ -45,5 +45,5 @@ echo ''
 # save the ISO
 mkdir -p "$isoDstDir"
 isoDst="$isoDstDir/$initramfsRecipeName-$MACHINE.iso"
-mv "$wicOutputDir/build/NI_RECOVERY_IMG-cd.iso" "$isoDst"
+mv "$wicOutputDir/NI_RECOVERY_IMG-cd.iso" "$isoDst"
 echo "Saved ISO to $isoDst"
