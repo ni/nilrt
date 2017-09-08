@@ -7,9 +7,8 @@ error_and_die() {
 }
 
 print_usage_and_die() {
-    echo >&2 "Usage: $0 -h | -r <recipe name of an initramfs for the ISO to boot>"
-    echo >&2 ' Must be run from a bitbake environment.'
-    echo >&2 ' MACHINE env must be defined.'
+    echo >&2 "Usage: $0 -h | -r <path to restore mode image ISO>"
+    echo >&2 ' It is recommended to run this script from the nilrt/build directory because it generates a directory of working files.'
     exit 1
 }
 
@@ -17,21 +16,16 @@ SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/provisioningTest-files"
 
 while getopts "n:r:d:m:h" opt; do
     case "$opt" in
-    r )  initramfsRecipeName="$OPTARG" ;;
+    r )  restoreModeImageIsoPath="$OPTARG" ;;
     h )  print_usage_and_die ;;
     \?)  print_usage_and_die ;;
     esac
 done
 shift $(($OPTIND - 1))
 
-[ -n "$initramfsRecipeName" ] || error_and_die 'Must specify recipe name with -r. Run with -h for help.'
-
 # check env
-[ -n "$MACHINE" ] || error_and_die 'No MACHINE specified in env'
-bitbake --parse-only >/dev/null || error_and_die 'Bitbake failed. Check your environment. This script must be run from the build directory.'
-
-imagesDir="./tmp-glibc/deploy/images/$MACHINE"
-[ -d "$imagesDir" ] || error_and_die '$imagesDir does not exist. Need to build a bootable image first.'
+[ -n "$restoreModeImageIsoPath" ] || error_and_die 'Must specify restore mode image ISO path with -r. Run with -h for help.'
+[ -e "$restoreModeImageIsoPath" ] || error_and_die '$restoreModeImageIsoPath does not exist. Must provide a valid restore mode image ISO.'
 
 workingDir="./provisioningTest-working-dir"
 
@@ -120,7 +114,7 @@ run_provisioning_tool() {
         -boot d \
         -nographic \
         -drive file="$workingDir/test-image.qcow2",index=0,media=disk \
-        -drive file="$imagesDir/$initramfsRecipeName-x64.iso",index=1,media=cdrom,readonly \
+        -drive file="$restoreModeImageIsoPath",index=1,media=cdrom,readonly \
         -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly
     echo "Completed the provisioning operation"
 }
