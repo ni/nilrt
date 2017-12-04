@@ -12,11 +12,6 @@
 //	defaultValue: x64 xilinx-zynqhf
 //	description: Space delimited distro flavours to build in the pipeline.
 
-// WORKSPACE_DIR
-//	type: string
-//	defaultValue: ${JENKINS_HOME}/workspace/${JOB_NAME}
-//	description: Workspace directory to use for this pipeline build.
-
 // SOURCE_MIRROR_URL
 //	type: string
 //	defaultValue: Empty
@@ -123,14 +118,30 @@
 //	defaultValue: Empty
 //	description: Script used to initialize nibuild environment (credentials, p4 clientspec etc)
 
-node {
-    def archive_dir		= "${params.WORKSPACE_DIR}/archive"
-    def nifeeds_dir		= "${params.WORKSPACE_DIR}/nifeeds"
-    def sstate_cache_dir	= "${params.WORKSPACE_DIR}/sstate-cache"
+// NIBUILD_MNT_BALTIC
+//	type: string
+//	defaultValue: /mnt/baltic/
+//	description: Full path to the local mount location of NI's //baltic/ server
+
+// NIBUILD_MNT_NIRVANA
+//	type: string
+//	defaultValue: /mnt/nirvana/
+//	description: Full path to the local mount location of NI's //nirvana/ server
+
+
+// Absolute path to the job workspace directory (as opposed to distro-specific
+// subdirectories.)
+def workspace_job = null
+
+node ('nilrt-oe-builder') {
+	workspace_job        = pwd()
+	def archive_dir      = "${workspace}/archive"
+	def nifeeds_dir      = "${workspace}/nifeeds"
+	def sstate_cache_dir = "${workspace}/sstate-cache"
 
     if (params.CLEAR_WORKSPACE) {
 	stage("Clearing entire workspace") {
-	    sh "rm -rf ${params.WORKSPACE_DIR} && mkdir -p ${params.WORKSPACE_DIR}"
+	    sh "rm -rf ${workspace} && mkdir -p ${workspace}"
 	}
     }
 
@@ -195,7 +206,7 @@ node {
     def jenkins_gid = sh(script: "id -g", returnStdout: true).trim()
     def jenkins_user = sh(script: 'id -un', returnStdout: true).trim()
     def jenkins_group = sh(script: 'id -gn', returnStdout: true).trim()
-    sh "echo 'UID: $jenkins_uid; GID: $jenkins_gid; USERNAME: $jenkins_uid; GROUP: $jenkins_group' \
+    sh "echo 'UID: $jenkins_uid; GID: $jenkins_gid; USERNAME: $jenkins_user; GROUP: $jenkins_group' \
              > $archive_dir/jenkinsHostOwner.txt"
 }
 
@@ -206,8 +217,9 @@ for (int i = 0; i < build_targets.size(); i++) {
     def distro_flavour = build_targets.get(i)
 
     distro_flavour_builds["$distro_flavour"] = {
-	node {
-	    ws("${WORKSPACE_DIR}/$distro_flavour") {
+	node ('nilrt-oe-builder') {
+
+	    ws("${workspace_job}/$distro_flavour") {
 
 		stage("$distro_flavour fetching git sources") {
 		    checkout scm
@@ -216,12 +228,15 @@ for (int i = 0; i < build_targets.size(); i++) {
 		    sh 'git submodule update --remote --checkout'
 		}
 
-		docker.image(params.DOCKER_IMAGE_TAG).inside("-v ${params.WORKSPACE_DIR}:/mnt/workspace -v /mnt:/mnt") {
+		docker.image(params.DOCKER_IMAGE_TAG).inside(
+		  "-v ${workspace_job}:/mnt/workspace \
+		  -v ${NIBUILD_MNT_NIRVANA}:/mnt/nirvana \
+		  -v ${NIBUILD_MNT_BALTIC}:/mnt/baltic") {
 
-		    def node_sstate_cache_dir	= "/mnt/workspace/sstate-cache"
-		    def node_archive_dir	= "/mnt/workspace/archive"
-		    def archive_img_path	= "$node_archive_dir/images/NILinuxRT-$distro_flavour"
-		    def feed_dir		= "$node_archive_dir/feeds/NILinuxRT-$distro_flavour"
+		    def node_sstate_cache_dir = "/mnt/workspace/sstate-cache"
+		    def node_archive_dir      = "/mnt/workspace/archive"
+		    def archive_img_path      = "$node_archive_dir/images/NILinuxRT-$distro_flavour"
+		    def feed_dir              = "$node_archive_dir/feeds/NILinuxRT-$distro_flavour"
 
 		    sh "mkdir -p $feed_dir"
 		    sh "mkdir -p $archive_img_path"
@@ -230,7 +245,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 		    def docker_gid = sh(script: "id -g", returnStdout: true).trim()
 		    def docker_user = sh(script: 'id -un', returnStdout: true).trim()
 		    def docker_group = sh(script: 'id -gn', returnStdout: true).trim()
-		    sh "echo 'UID: $docker_uid; GID: $docker_gid; USERNAME: $docker_uid; GROUP: $docker_group' \
+		    sh "echo 'UID: $docker_uid; GID: $docker_gid; USERNAME: $docker_user; GROUP: $docker_group' \
                              > $node_archive_dir/dockerContainerOwner-${distro_flavour}.txt"
 
 		    // verify uid/usernames match between host and container to maintain filasystem integrity
@@ -259,7 +274,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 
 			if (params.ENABLE_BUILD_TAG_PUSH) {
 			    if (params.NI_INTERNAL_BUILD) {
-				def bs_export = sh(script: "cat ${params.WORKSPACE_DIR}/archive/bsExportVersionNumb.txt", returnStdout: true).trim()
+				def bs_export = sh(script: "cat ${workspace_job}/archive/bsExportVersionNumb.txt", returnStdout: true).trim()
 				def build_id = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
 			    } else {
 				def build_id = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
@@ -465,7 +480,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 
 parallel distro_flavour_builds
 
-// The archive under ${params.WORKSPACE_DIR}/archive has the following structure
+// The archive under ${workspace}/archive has the following structure
 // TODO: In the future we want to remove the $distro_flavour separation boundry from the feeds
 // archive/
 // ├── buildEnv-$distro_flavour.txt
@@ -490,17 +505,17 @@ parallel distro_flavour_builds
 // ├── dockerImageHash.txt
 // └── jenkinsHostOwner.txt
 
-node {
+node ('nilrt-oe-builder') {
     if (params.ENABLE_SSTATE_CACHE_SNAPSHOT || params.NI_RELEASE_BUILD) {
 	stage("Packing sstate cache") {
-	    sh "tar cf ${params.WORKSPACE_DIR}/archive/sstate-cache.tar.gz \
-                       ${params.WORKSPACE_DIR}/sstate-cache -I pigz"
+	    sh "tar cf ${workspace}/archive/sstate-cache.tar.gz \
+                       ${workspace}/sstate-cache -I pigz"
 	}
     }
 
     if (params.NI_INTERNAL_BUILD) {
 	stage("Exporting build") {
-	    def archive_dir = "${params.WORKSPACE_DIR}/archive"
+	    def archive_dir = "${workspace}/archive"
 
 	    // sanity check that parallel nodes built the same sources then clobber identical files (containing machine names)
 	    sh "md5sum $archive_dir/nilrt-gitCommitId*.txt | awk 'NR>1&&\$1!=last{exit 1}{last=\$1}' && \
