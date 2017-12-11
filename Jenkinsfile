@@ -103,6 +103,11 @@
 //	defaultValue: false
 //	description: This build uses internal NI network resources
 
+// NIBUILD_UPDATE_FEEDS_JOB
+//	type: string
+//	defaultValue: Empty
+//	description: Job to trigger for updating the package feed symlink farm after a build has been exported
+
 // NIBUILD_P4_SERVER
 //	type: string
 //	defaultValue: Empty
@@ -557,11 +562,13 @@ node ('nilrt-oe-builder') {
                   source ./setupEnv.sh
                   submitExport --yes --revert >/dev/null 2>&1 || echo 'No existing export to revert'
                   ARCHIVE_DIR="$archive_dir" buildExport --yes --nodistribution
-                  exportDir=`cat objects/export/cookie.exportMoved`
-                  p4 where "\$exportDir" | cut -f1 -d' ' > \$exportDir/bsExportP4Path.txt
                   submitExport --yes --submit
                   rm -f buildExport*log* submitExport*log*
                """
+
+	    if (params.NIBUILD_UPDATE_FEEDS_JOB) {
+		build(job: params.NIBUILD_UPDATE_FEEDS_JOB, propagate: true)
+	    }
 	}
     }
 }
