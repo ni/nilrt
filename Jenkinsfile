@@ -139,6 +139,9 @@ node ('nilrt-oe-builder') {
 	def nifeeds_dir      = "${workspace}/nifeeds"
 	def sstate_cache_dir = "${workspace}/sstate-cache"
 
+    // print env vars for easy reference in the build log
+    echo sh(returnStdout: true, script: 'env')
+
     if (params.CLEAR_WORKSPACE) {
 	stage("Clearing entire workspace") {
 	    sh "rm -rf ${workspace} && mkdir -p ${workspace}"
