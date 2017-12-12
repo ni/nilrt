@@ -463,9 +463,21 @@ for (int i = 0; i < build_targets.size(); i++) {
                           """
 		    }
 
-		    // if OE created a package morgue in the feed, something bad happened because metadata got invalidated
-		    // without invalidating the binaries in the sstate cache, so fail the build if any morgue is present
-		    sh "[ \$(find $feed_dir -type d -name morgue | wc -l) == 0 ]"
+		    // a feed package morgue is created because metadata is invalidated without invalidating sstate
+		    // (it's reused in a new package revision) but because PR server state is updated only at the end
+		    // of a build, packages in this situation will continue to clobber older revisions until the PR
+		    // state is updated. Since in 99% of occuring cases this is intentional (updating recipes) and
+		    // clobbered packages are identical except for minor metadata changes, note and remove the morgues.
+		    sh """#!/bin/bash
+                          MORGUES=\$(find $feed_dir -type d -name morgue)
+                          if [ \$(echo "\$MORGUES" | wc -w) -ne 0 ]; then
+                              echo "\$MORGUES" | while read morgue; do
+                                  echo "WARNING: Package morgue detected:"
+                                  find \$morgue
+                                  rm -rf \$morgue
+                              done
+                          fi
+                       """
 
 		    sh "scripts/jenkins/create-xunit-error-xml.sh build/bitbake.stdout.txt build/xunit-results.xml"
 		    step([$class: "JUnitResultArchiver", testResults: "build/xunit-results.xml"])
