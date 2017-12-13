@@ -56,6 +56,12 @@
 //	defaultValue: oe
 //	description: If ENABLE_BUILD_TAG_PUSH is true, this prefix is used to construct the & push the tag identifier
 
+// BUILD_NODE_SLAVE
+//	type: string
+//	defaultValue: Empty
+//	description: Restrict pipeline nodes to run on a specific build slave by name. If this is empty the nodes run
+//                   on the default master.
+
 // SSTATE_CACHE_ARCHIVE
 //	type: string
 //	defaultValue: Empty
@@ -138,7 +144,7 @@
 // subdirectories.)
 def workspace_job = null
 
-node ('nilrt-oe-builder') {
+node (params.BUILD_NODE_SLAVE) {
 	workspace_job        = pwd()
 	def archive_dir      = "${workspace}/archive"
 	def nifeeds_dir      = "${workspace}/nifeeds"
@@ -225,7 +231,7 @@ for (int i = 0; i < build_targets.size(); i++) {
     def distro_flavour = build_targets.get(i)
 
     distro_flavour_builds["$distro_flavour"] = {
-	node ('nilrt-oe-builder') {
+	node (params.BUILD_NODE_SLAVE) {
 
 	    ws("${workspace_job}/$distro_flavour") {
 
@@ -525,7 +531,7 @@ parallel distro_flavour_builds
 // ├── dockerImageHash.txt
 // └── jenkinsHostOwner.txt
 
-node ('nilrt-oe-builder') {
+node (params.BUILD_NODE_SLAVE) {
     if (params.ENABLE_SSTATE_CACHE_SNAPSHOT || params.NI_RELEASE_BUILD) {
 	stage("Packing sstate cache") {
 	    sh "tar cf ${workspace}/archive/sstate-cache.tar.gz \
