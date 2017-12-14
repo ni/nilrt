@@ -288,7 +288,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 
 			if (params.ENABLE_BUILD_TAG_PUSH) {
 			    if (params.NI_INTERNAL_BUILD) {
-				def bs_export = sh(script: "cat ${workspace_job}/archive/bsExportVersionNumb.txt", returnStdout: true).trim()
+				def bs_export = sh(script: "cat $node_archive_dir/bsExportVersionNumb.txt", returnStdout: true).trim()
 				def build_id = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
 			    } else {
 				def build_id = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
