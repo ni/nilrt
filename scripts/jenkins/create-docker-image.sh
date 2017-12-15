@@ -14,7 +14,7 @@ sed -e "s/#JENKINS_UID#/$jenkins_uid/g" \
     -e "s/#JENKINS_GROUP#/$jenkins_group/g" \
     scripts/jenkins/Dockerfile.template > scripts/jenkins/Dockerfile
 
-docker build -f scripts/jenkins/Dockerfile -t "$image_tag" scripts/jenkins
+docker build --no-cache=true --squash -f scripts/jenkins/Dockerfile -t "$image_tag" scripts/jenkins
 
 rm -f scripts/jenkins/Dockerfile
 
