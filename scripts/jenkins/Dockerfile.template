@@ -4,6 +4,8 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN sed -i 's/jessie main/jessie main contrib/' /etc/apt/sources.list
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update
 
 # Install OE dependencies
@@ -11,7 +13,7 @@ RUN apt-get install -y gawk wget git-core diffstat unzip texinfo cpio \
 gcc-multilib build-essential chrpath socat libsdl1.2-dev python bc zip \
 genisoimage qemu-kvm qemu-system-x86 qemu-utils virtualbox uuid-runtime \
 python-pexpect pigz xmlstarlet python3 locales vim sudo ccache cvs info \
-help2man subversion texi2html desktop-file-utils
+help2man subversion texi2html desktop-file-utils rsync
 
 RUN dpkg-reconfigure -f noninteractive locales
 RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen en_US.UTF-8
@@ -20,6 +22,16 @@ RUN update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 RUN groupadd #JENKINS_GROUP# -g #JENKINS_GID#
 
 RUN useradd #JENKINS_USER# -g #JENKINS_GROUP# -u #JENKINS_UID# --shell /bin/bash --create-home
+
+# Cleanup image of unneeded packages to reduce size
+RUN apt-get purge -y manpages* fonts-dejavu-core qtcore4-l10n libavahi-client3
+
+RUN apt-get autoremove -y
+RUN apt-get clean -y
+RUN apt-get autoclean -y
+RUN rm -rf /var/lib/apt/lists/*
+RUN rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin
+RUN rm -rf /tmp/* /var/tmp/*
 
 USER #JENKINS_USER#
 
