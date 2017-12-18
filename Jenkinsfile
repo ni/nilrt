@@ -243,7 +243,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 		}
 
 		docker.image(params.DOCKER_IMAGE_TAG).inside(
-		  "-v ${env.JENKINS_HOME}/.ssh:/home/jenkins/.ssh \
+		  "-v ${env.HOME}/.ssh:/home/jenkins/.ssh \
                   -v ${workspace_job}:/mnt/workspace \
 		  -v ${NIBUILD_MNT_NIRVANA}:/mnt/nirvana \
 		  -v ${NIBUILD_MNT_BALTIC}:/mnt/baltic") {
