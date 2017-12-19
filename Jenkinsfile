@@ -288,15 +288,18 @@ for (int i = 0; i < build_targets.size(); i++) {
 			sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> build/conf/auto.conf"
 
 			if (params.ENABLE_BUILD_TAG_PUSH) {
-			    def oe_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
+			    def distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
+			    def n310_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-n310-${env.BUILD_NUMBER}"
 
 			    if (params.NI_INTERNAL_BUILD) {
 				def bs_export = sh(script: "cat $node_archive_dir/bsExportVersionNumb.txt", returnStdout: true).trim()
-				oe_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
+				distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
+				n310_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-n310-${env.BUILD_NUMBER}"
 			    }
 
 			    sh "echo 'ENABLE_BUILD_TAG_PUSH = \"Yes\"' >> build/conf/auto.conf"
-			    sh "echo 'BUILD_IDENTIFIER = \"${oe_build_tag}\"' >> build/conf/auto.conf"
+			    sh "echo 'BUILD_IDENTIFIER_${distro_flavour} = \"${distro_flav_build_tag}\"' >> build/conf/auto.conf"
+			    sh "echo 'BUILD_IDENTIFIER_n310 = \"${n310_build_tag}\"' >> build/conf/auto.conf"
 			}
 		    }
 
