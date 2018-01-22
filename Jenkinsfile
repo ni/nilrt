@@ -289,17 +289,14 @@ for (int i = 0; i < build_targets.size(); i++) {
 
 			if (params.ENABLE_BUILD_TAG_PUSH) {
 			    def distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
-			    def n310_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-n310-${env.BUILD_NUMBER}"
 
 			    if (params.NI_INTERNAL_BUILD) {
 				def bs_export = sh(script: "cat $node_archive_dir/bsExportVersionNumb.txt", returnStdout: true).trim()
 				distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
-				n310_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-n310-${env.BUILD_NUMBER}"
 			    }
 
 			    sh "echo 'ENABLE_BUILD_TAG_PUSH = \"Yes\"' >> build/conf/auto.conf"
-			    sh "echo 'BUILD_IDENTIFIER_${distro_flavour} = \"${distro_flav_build_tag}\"' >> build/conf/auto.conf"
-			    sh "echo 'BUILD_IDENTIFIER_n310 = \"${n310_build_tag}\"' >> build/conf/auto.conf"
+			    sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> build/conf/auto.conf"
 			}
 		    }
 
@@ -327,12 +324,6 @@ for (int i = 0; i < build_targets.size(); i++) {
 
                               bitbake packagegroup-ni-coreimagerepo 2>&1 | tee bitbake.stdout.txt
                               bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-
-                              # xilinx-zynqhf is a family of machines so build its submachines (only n310 for now)
-                              if [ $distro_flavour == 'xilinx-zynqhf' ]; then
-                                  MACHINE=n310 bitbake packagegroup-ni-coreimagerepo 2>&1 | tee -a bitbake.stdout.txt
-                                  MACHINE=n310 bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-                              fi
                            """
 
 			sh "cp -Lr build/tmp-glibc/deploy/ipk -T $feed_dir/main"
@@ -347,11 +338,6 @@ for (int i = 0; i < build_targets.size(); i++) {
                               bitbake restore-mode-image \
                                       minimal-nilrt-ptest-image \
                                       lvcomms-restore-mode-image 2>&1 | tee -a bitbake.stdout.txt
-
-                              # xilinx-zynqhf is a family of machines so build its submachines (only n310 for now)
-                              if [ $distro_flavour == 'xilinx-zynqhf' ]; then
-                                  MACHINE=n310 bitbake lvcomms-nilrt-image 2>&1 | tee -a bitbake.stdout.txt
-                              fi
 
                               # Only for x64 because we don't have ARM virtualization yet
                               if [ $distro_flavour == 'x64' ]; then
@@ -382,14 +368,6 @@ for (int i = 0; i < build_targets.size(); i++) {
 			    // cpio.gz.u-boot is a ramdisk present only for xilinx-zynqhf
 			    sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.cpio.gz.u-boot \
                                       $archive_img_path/restore-mode-image-${distro_flavour}.cpio.gz.u-boot"
-
-			    // also archive all xilinx-zynqhf submachines (currently only n310), each can have different artifacts...
-			    sh "cp -L build/tmp-glibc/deploy/images/n310/lvcomms-nilrt-image-n310.wic \
-                                      $archive_img_path/lvcomms-nilrt-image-n310.wic"
-			    sh "cp -L build/tmp-glibc/deploy/images/n310/lvcomms-nilrt-image-n310.tar.bz2 \
-                                      $archive_img_path/lvcomms-nilrt-image-n310.tar.bz2"
-			    sh "cp -L build/tmp-glibc/deploy/images/n310/lvcomms-nilrt-image-n310.ext2 \
-                                      $archive_img_path/lvcomms-nilrt-image-n310.ext2"
 			}
 
 			sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.tar.bz2 \
@@ -454,10 +432,6 @@ for (int i = 0; i < build_targets.size(); i++) {
 
                               bitbake --continue packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt
 
-                              if [ $distro_flavour == 'xilinx-zynqhf' ]; then
-                                  MACHINE=n310 bitbake -k packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt
-                              fi
-
                               # make sure no main/core feed ipk exists in the extras feed
                               ipk_paths=`find $feed_dir/main -name *.ipk | rev | cut -d"/" -f1-2 | rev`
                               for ipk_file in \$ipk_paths; do
@@ -465,9 +439,6 @@ for (int i = 0; i < build_targets.size(); i++) {
                               done;
 
                               bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-                              if [ $distro_flavour == 'xilinx-zynqhf' ]; then
-                                  MACHINE=n310 bitbake package-index | tee -a bitbake.stdout.txt
-                              fi
 
                               cp -Lr tmp-glibc/deploy/ipk -T $feed_dir/extra
                           """
@@ -559,7 +530,7 @@ node (params.BUILD_NODE_SLAVE) {
                       pushd \$dir
 
                       [ -d 'all' ]
-                      [ -d 'cortexa9hf-vfpv3' -a -d 'xilinx-zynqhf' -a -d 'n310' ] || [ -d 'core2-64' -a -d 'x64' ]
+                      [ -d 'cortexa9hf-vfpv3' -a -d 'xilinx-zynqhf' ] || [ -d 'core2-64' -a -d 'x64' ]
 
                       for subFeedDir in `find . -type d`; do
                           [ -f "\$subFeedDir/Packages" ]
