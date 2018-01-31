@@ -22,6 +22,11 @@
 //	defaultValue: Empty
 //	description: If non-empty call this job at the end build to save the PR server state
 
+// SSTATE_CACHE_DIR
+//	type: string
+//	defaultValue: Empty
+//	description: Path to sstate-cache directory, possibly on a network share.
+
 // CLEAR_WORKSPACE
 //	type: bool
 //	defaultValue: false
@@ -150,6 +155,10 @@ node (params.BUILD_NODE_SLAVE) {
 	def nifeeds_dir      = "${workspace}/nifeeds"
 	def sstate_cache_dir = "${workspace}/sstate-cache"
 
+    if (params.SSTATE_CACHE_DIR) {
+	sstate_cache_dir =   = "${params.SSTATE_CACHE_DIR}"
+    }
+
     // print env vars for easy reference in the build log
     echo sh(returnStdout: true, script: 'env')
 
@@ -245,10 +254,11 @@ for (int i = 0; i < build_targets.size(); i++) {
 		docker.image(params.DOCKER_IMAGE_TAG).inside(
 		  "-v ${env.HOME}/.ssh:/home/jenkins/.ssh \
                   -v ${workspace_job}:/mnt/workspace \
+		  -v ${sstate_cache_dir}:/mnt/sstate-cache \
 		  -v ${NIBUILD_MNT_NIRVANA}:/mnt/nirvana \
 		  -v ${NIBUILD_MNT_BALTIC}:/mnt/baltic") {
 
-		    def node_sstate_cache_dir = "/mnt/workspace/sstate-cache"
+		    def node_sstate_cache_dir = "/mnt/sstate-cache"
 		    def node_archive_dir      = "/mnt/workspace/archive"
 		    def archive_img_path      = "$node_archive_dir/images/NILinuxRT-$distro_flavour"
 		    def feed_dir              = "$node_archive_dir/feeds/NILinuxRT-$distro_flavour"
