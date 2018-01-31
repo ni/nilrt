@@ -312,6 +312,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 
 		    stage("$distro_flavour archiving bitbake environment") {
 			sh "git rev-parse HEAD > $node_archive_dir/nilrt-gitCommitId-${distro_flavour}.txt"
+			sh "git submodule status --recursive > $node_archive_dir/nilrt-git-submodule-status-${distro_flavour}.txt"
 
 			sh "set > $node_archive_dir/env-${distro_flavour}.txt"
 
@@ -510,6 +511,7 @@ parallel distro_flavour_builds
 // │   └── ...
 // ├── nifeeds-bsExportP4Path.txt
 // ├── nilrt-gitCommitId.txt
+// ├── nilrt-git-submodule-status.txt
 // ├── sstate-cache.tar.gz
 // ├── dockerContainerOwner-$distro_flavour.txt
 // ├── dockerImageURL.txt
@@ -532,6 +534,10 @@ node (params.BUILD_NODE_SLAVE) {
 	    sh "md5sum $archive_dir/nilrt-gitCommitId*.txt | awk 'NR>1&&\$1!=last{exit 1}{last=\$1}' && \
                 for file in $archive_dir/nilrt-gitCommitId*.txt; do \
                     mv \$file $archive_dir/nilrt-gitCommitId.txt; \
+                done"
+	    sh "md5sum $archive_dir/nilrt-git-submodule-status*.txt | awk 'NR>1&&\$1!=last{exit 1}{last=\$1}' && \
+                for file in $archive_dir/nilrt-git-submodule-status*.txt; do \
+                    mv \$file $archive_dir/nilrt-git-submodule-status.txt; \
                 done"
 
 	    // sanity check feeds (all important files are present and there are no duplicate ipks)
