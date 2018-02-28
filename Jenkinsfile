@@ -149,14 +149,17 @@
 // subdirectories.)
 def workspace_job = null
 
+def sstate_cache_dir = null
+
 node (params.BUILD_NODE_SLAVE) {
-	workspace_job        = pwd()
-	def archive_dir      = "${workspace}/archive"
-	def nifeeds_dir      = "${workspace}/nifeeds"
-	def sstate_cache_dir = "${workspace}/sstate-cache"
+    workspace_job        = pwd()
+    def archive_dir      = "${workspace}/archive"
+    def nifeeds_dir      = "${workspace}/nifeeds"
 
     if (params.SSTATE_CACHE_DIR) {
-	sstate_cache_dir =   = "${params.SSTATE_CACHE_DIR}"
+	sstate_cache_dir = "${params.SSTATE_CACHE_DIR}"
+    } else {
+	sstate_cache_dir = "${workspace}/sstate-cache"
     }
 
     // print env vars for easy reference in the build log
