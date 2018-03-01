@@ -296,9 +296,11 @@ for (int i = 0; i < build_targets.size(); i++) {
 			sh "rm -rf build/sstate-cache"
 			sh "ln -sf $node_sstate_cache_dir build/sstate-cache"
 
-			// configure OE to pull ipks from NIFeeds
-			def nisubfeed_path="/mnt/workspace/nifeeds/feeds/NILinuxRT-${distro_flavour}"
-			sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> build/conf/auto.conf"
+		        if (params.USE_CUSTOM_NI_FEED_JOB) {
+			    // configure OE to pull ipks from NIFeeds
+			    def nisubfeed_path="/mnt/workspace/nifeeds/feeds/NILinuxRT-${distro_flavour}"
+			    sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> build/conf/auto.conf"
+			}
 
 			if (params.ENABLE_BUILD_TAG_PUSH) {
 			    def distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
