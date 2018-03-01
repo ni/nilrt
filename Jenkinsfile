@@ -292,7 +292,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 			}
 
 			// mkdir to avoid broken symlink if no sstate cache was given (first build from scratch)
-			sh "mkdir -p $node_sstate_cache_dir"
+			sh "mkdir -p build $node_sstate_cache_dir"
 			sh "rm -rf build/sstate-cache"
 			sh "ln -sf $node_sstate_cache_dir build/sstate-cache"
 
