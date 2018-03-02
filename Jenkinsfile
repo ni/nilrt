@@ -144,22 +144,13 @@
 //    defaultValue: /mnt/nirvana/
 //    description: Full path to the local mount location of NI's //nirvana/ server
 
-
-// Absolute path to the job workspace directory (as opposed to distro-specific
-// subdirectories.)
-def workspace_job = null
-
-def sstate_cache_dir = null
-
 node (params.BUILD_NODE_SLAVE) {
-    workspace_job   = pwd()
     def archive_dir = "${workspace}/archive"
     def nifeeds_dir = "${workspace}/nifeeds"
+    def sstate_cache_dir = "${workspace}/sstate-cache"
 
     if (params.SSTATE_CACHE_DIR) {
         sstate_cache_dir = "${params.SSTATE_CACHE_DIR}"
-    } else {
-        sstate_cache_dir = "${workspace}/sstate-cache"
     }
 
     // print env vars for easy reference in the build log
@@ -234,34 +225,32 @@ node (params.BUILD_NODE_SLAVE) {
     def jenkins_group = sh(script: 'id -gn', returnStdout: true).trim()
     sh "echo 'UID: $jenkins_uid; GID: $jenkins_gid; USERNAME: $jenkins_user; GROUP: $jenkins_group' \
               > $archive_dir/jenkinsHostOwner.txt"
-}
 
-def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
+    stage("Fetching git sources") {
+        checkout scm
+        sh 'git submodule init'
+        // The --remote flag will be removed once we'll have a functioning autoci branch
+        sh 'git submodule update --remote --checkout'
+    }
 
-def distro_flavour_builds = [:]
-for (int i = 0; i < build_targets.size(); i++) {
-    def distro_flavour = build_targets.get(i)
-
-    distro_flavour_builds["$distro_flavour"] = {
-        node (params.BUILD_NODE_SLAVE) {
-
-            ws("${workspace_job}/$distro_flavour") {
-
-                stage("$distro_flavour fetching git sources") {
-                    checkout scm
-                    sh 'git submodule init'
-                    // The --remote flag will be removed once we'll have a functioning autoci branch
-                    sh 'git submodule update --remote --checkout'
-                }
-
-                docker.image(params.DOCKER_IMAGE_TAG).inside("\
+    docker.image(params.DOCKER_IMAGE_TAG).inside("\
                     -v ${env.HOME}/.ssh:/home/jenkins/.ssh \
-                    -v ${workspace_job}:/mnt/workspace \
+                    -v ${workspace}:/mnt/workspace \
                     -v ${sstate_cache_dir}:/mnt/sstate-cache \
                     -v ${NIBUILD_MNT_NIRVANA}:/mnt/nirvana \
                     -v ${NIBUILD_MNT_BALTIC}:/mnt/baltic") {
 
+            def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
+
+            def distro_flavour_builds = [:]
+            for (int i = 0; i < build_targets.size(); i++) {
+                def distro_flavour = build_targets.get(i)
+
+                distro_flavour_builds["$distro_flavour"] = {
+                    withEnv(["MACHINE=$distro_flavour"]) {
+
                         def node_sstate_cache_dir = "/mnt/sstate-cache"
+                        def build_dir             = "/mnt/workspace/build_${env.MACHINE}"
                         def node_archive_dir      = "/mnt/workspace/archive"
                         def archive_img_path      = "$node_archive_dir/images/NILinuxRT-$distro_flavour"
                         def feed_dir              = "$node_archive_dir/feeds/NILinuxRT-$distro_flavour"
@@ -281,25 +270,25 @@ for (int i = 0; i < build_targets.size(); i++) {
 
                         stage("$distro_flavour initializing bitbake environment") {
                             // always clear to be sure previous builds don't pollute the current one
-                            sh "rm -rf build/conf/auto.conf \
-                                build/bitbake.stdout.txt \
-                                build/xunit-results.xml \
+                            sh "rm -rf $build_dir/conf/auto.conf \
+                                $build_dir/bitbake.stdout.txt \
+                                $build_dir/xunit-results.xml \
                                 buildVM-working-dir \
                                 wic-temp-output-dir"
 
                             if (params.CLEAR_TMPGLIBC) {
-                                sh "rm -rf build/tmp-glibc"
+                                sh "rm -rf $build_dir/tmp-glibc"
                             }
 
                             // mkdir to avoid broken symlink if no sstate cache was given (first build from scratch)
-                            sh "mkdir -p build $node_sstate_cache_dir"
-                            sh "rm -rf build/sstate-cache"
-                            sh "ln -sf $node_sstate_cache_dir build/sstate-cache"
+                            sh "mkdir -p $build_dir $node_sstate_cache_dir"
+                            sh "rm -rf $build_dir/sstate-cache"
+                            sh "ln -sf $node_sstate_cache_dir $build_dir/sstate-cache"
 
                             if (params.USE_CUSTOM_NI_FEED_JOB) {
                                 // configure OE to pull ipks from NIFeeds
                                 def nisubfeed_path="/mnt/workspace/nifeeds/feeds/NILinuxRT-${distro_flavour}"
-                                sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> build/conf/auto.conf"
+                                sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> $build_dir/conf/auto.conf"
                             }
 
                             if (params.ENABLE_BUILD_TAG_PUSH) {
@@ -310,8 +299,8 @@ for (int i = 0; i < build_targets.size(); i++) {
                                     distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
                                 }
 
-                                sh "echo 'ENABLE_BUILD_TAG_PUSH = \"Yes\"' >> build/conf/auto.conf"
-                                sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> build/conf/auto.conf"
+                                sh "echo 'ENABLE_BUILD_TAG_PUSH = \"Yes\"' >> $build_dir/conf/auto.conf"
+                                sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
                             }
                         }
 
@@ -323,7 +312,7 @@ for (int i = 0; i < build_targets.size(); i++) {
 
                             sh """#!/bin/bash
                                   set -e -o pipefail
-                                  . ./ni-oe-init-build-env && export MACHINE=$distro_flavour
+                                  . ./ni-oe-init-build-env $build_dir
                                   bitbake -e > $node_archive_dir/buildEnv-${distro_flavour}.txt
                                """
                         }
@@ -332,7 +321,7 @@ for (int i = 0; i < build_targets.size(); i++) {
                             sh """#!/bin/bash
                                   set -e -o pipefail
 
-                                  . ./ni-oe-init-build-env && export MACHINE=$distro_flavour
+                                  . ./ni-oe-init-build-env $build_dir
 
                                   rm -rf tmp-glibc/deploy/ipk
                                   mkdir -p tmp-glibc/deploy/ipk-core
@@ -342,14 +331,14 @@ for (int i = 0; i < build_targets.size(); i++) {
                                   bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
                                """
 
-                            sh "cp -Lr build/tmp-glibc/deploy/ipk -T $feed_dir/main"
+                            sh "cp -Lr $build_dir/tmp-glibc/deploy/ipk -T $feed_dir/main"
                         }
 
                         stage("$distro_flavour images") {
                             sh """#!/bin/bash
                                   set -e -o pipefail
 
-                                  . ./ni-oe-init-build-env && export MACHINE=$distro_flavour
+                                  . ./ni-oe-init-build-env $build_dir
 
                                   bitbake restore-mode-image \
                                           minimal-nilrt-ptest-image \
@@ -366,38 +355,38 @@ for (int i = 0; i < build_targets.size(); i++) {
 
                             // we don't have provisioning images for NXG ARM like we have ISOs for x64, nor VMs
                             if (distro_flavour == 'x64') {
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.iso $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.iso $archive_img_path"
 
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
 
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
                             }
 
                             if (distro_flavour == 'xilinx-zynqhf') {
                                 // cpio.gz.u-boot is a ramdisk present only for xilinx-zynqhf
-                                sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.cpio.gz.u-boot \
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.cpio.gz.u-boot \
                                           $archive_img_path/restore-mode-image-${distro_flavour}.cpio.gz.u-boot"
                             }
 
-                            sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.tar.bz2 \
+                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.tar.bz2 \
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2"
-                            sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2 \
+                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2 \
                                   $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2"
-                            sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-image-${distro_flavour}.tar.bz2 \
+                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-image-${distro_flavour}.tar.bz2 \
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2"
 
-                            sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.ext2 \
+                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.ext2 \
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2"
-                            sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.ext2 \
+                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.ext2 \
                                   $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.ext2"
-                            sh "cp -L build/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-image-${distro_flavour}.ext2 \
+                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-image-${distro_flavour}.ext2 \
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2"
                         }
 
@@ -406,7 +395,7 @@ for (int i = 0; i < build_targets.size(); i++) {
                                 sh """#!/bin/bash
                                       set -e -o pipefail
 
-                                      . ./ni-oe-init-build-env && export MACHINE=$distro_flavour
+                                      . ./ni-oe-init-build-env $build_dir
 
                                       # these need to build on top of the core feed + images build so leave the
                                       # tmp-glibc/deploy/ipk -> tmp-glibc/deploy/ipk-core symlink in place
@@ -440,7 +429,7 @@ for (int i = 0; i < build_targets.size(); i++) {
                                   # we don't set pipefail because we expect at least some tasks in extras to fail
                                   # and we shouldn't stop the build because bitbake returns non-zero for extras
 
-                                  . ./ni-oe-init-build-env && export MACHINE=$distro_flavour
+                                  . ./ni-oe-init-build-env $build_dir
 
                                   rm -rf tmp-glibc/deploy/ipk
                                   mkdir -p tmp-glibc/deploy/ipk-extra
@@ -476,10 +465,10 @@ for (int i = 0; i < build_targets.size(); i++) {
                               fi
                            """
 
-                        sh "scripts/jenkins/create-xunit-error-xml.sh build/bitbake.stdout.txt build/xunit-results.xml"
-                        step([$class: "JUnitResultArchiver", testResults: "build/xunit-results.xml"])
+                        sh "scripts/jenkins/create-xunit-error-xml.sh $build_dir/bitbake.stdout.txt $build_dir/xunit-results.xml"
+                        step([$class: "JUnitResultArchiver", testResults: "$build_dir/xunit-results.xml"])
 
-                        sh "tar cf $node_archive_dir/buildhistory-${distro_flavour}.tar.gz build/buildhistory/ -I pigz"
+                        sh "tar cf $node_archive_dir/buildhistory-${distro_flavour}.tar.gz $build_dir/buildhistory/ -I pigz"
 
                         // check at the end of build to ensure we verify all OE downloaded packages
                         if (params.SOURCE_MIRROR_URL) {
@@ -489,13 +478,12 @@ for (int i = 0; i < build_targets.size(); i++) {
                         if (params.EXPORT_PR_SERVER_JOB) {
                             build(job: params.EXPORT_PR_SERVER_JOB, propagate: true)
                         }
-                    } // container.inside
-            } // ws
-        } // node
-    } // distro_flavour_builds
-} // for
+                    } // withEnv
+                } // distro_flavour_builds
+            } // for
 
-parallel distro_flavour_builds
+            parallel distro_flavour_builds
+        } // container.inside
 
 // The archive under ${workspace}/archive has the following structure
 // TODO: In the future we want to remove the $distro_flavour separation boundry from the feeds
@@ -523,7 +511,6 @@ parallel distro_flavour_builds
 // ├── dockerImageHash.txt
 // └── jenkinsHostOwner.txt
 
-node (params.BUILD_NODE_SLAVE) {
     if (params.ENABLE_SSTATE_CACHE_SNAPSHOT || params.NI_RELEASE_BUILD) {
         stage("Packing sstate cache") {
             sh "tar cf ${workspace}/archive/sstate-cache.tar.gz ${workspace}/sstate-cache -I pigz"
@@ -532,7 +519,6 @@ node (params.BUILD_NODE_SLAVE) {
 
     if (params.NI_INTERNAL_BUILD) {
         stage("Exporting build") {
-            def archive_dir = "${workspace}/archive"
 
             // sanity check that parallel nodes built the same sources then clobber identical files (containing machine names)
             sh "md5sum $archive_dir/nilrt-gitCommitId*.txt | awk 'NR>1&&\$1!=last{exit 1}{last=\$1}' && \
