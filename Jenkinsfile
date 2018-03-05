@@ -219,13 +219,6 @@ node (params.BUILD_NODE_SLAVE) {
         }
     }
 
-    def jenkins_uid = sh(script: 'id -u', returnStdout: true).trim()
-    def jenkins_gid = sh(script: "id -g", returnStdout: true).trim()
-    def jenkins_user = sh(script: 'id -un', returnStdout: true).trim()
-    def jenkins_group = sh(script: 'id -gn', returnStdout: true).trim()
-    sh "echo 'UID: $jenkins_uid; GID: $jenkins_gid; USERNAME: $jenkins_user; GROUP: $jenkins_group' \
-              > $archive_dir/jenkinsHostOwner.txt"
-
     stage("Fetching git sources") {
         checkout scm
         sh 'git submodule init'
@@ -257,16 +250,6 @@ node (params.BUILD_NODE_SLAVE) {
 
                         sh "mkdir -p $feed_dir"
                         sh "mkdir -p $archive_img_path"
-
-                        def docker_uid = sh(script: 'id -u', returnStdout: true).trim()
-                        def docker_gid = sh(script: "id -g", returnStdout: true).trim()
-                        def docker_user = sh(script: 'id -un', returnStdout: true).trim()
-                        def docker_group = sh(script: 'id -gn', returnStdout: true).trim()
-                        sh "echo 'UID: $docker_uid; GID: $docker_gid; USERNAME: $docker_user; GROUP: $docker_group' \
-                                  > $node_archive_dir/dockerContainerOwner-${distro_flavour}.txt"
-
-                        // verify uid/usernames match between host and container to maintain filasystem integrity
-                        sh "cmp $node_archive_dir/jenkinsHostOwner.txt $node_archive_dir/dockerContainerOwner-${distro_flavour}.txt"
 
                         stage("$distro_flavour initializing bitbake environment") {
                             // always clear to be sure previous builds don't pollute the current one
@@ -506,10 +489,8 @@ node (params.BUILD_NODE_SLAVE) {
 // ├── nilrt-gitCommitId.txt
 // ├── nilrt-git-submodule-status.txt
 // ├── sstate-cache.tar.gz
-// ├── dockerContainerOwner-$distro_flavour.txt
 // ├── dockerImageURL.txt
-// ├── dockerImageHash.txt
-// └── jenkinsHostOwner.txt
+// └── dockerImageHash.txt
 
     if (params.ENABLE_SSTATE_CACHE_SNAPSHOT || params.NI_RELEASE_BUILD) {
         stage("Packing sstate cache") {
