@@ -281,7 +281,7 @@ node (params.BUILD_NODE_SLAVE) {
                             }
 
                             // mkdir to avoid broken symlink if no sstate cache was given (first build from scratch)
-                            sh "mkdir -p $build_dir $node_sstate_cache_dir"
+                            sh "mkdir -p $build_dir/conf $node_sstate_cache_dir"
                             sh "rm -rf $build_dir/sstate-cache"
                             sh "ln -sf $node_sstate_cache_dir $build_dir/sstate-cache"
 
