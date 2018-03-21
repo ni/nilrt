@@ -226,14 +226,14 @@ node (params.BUILD_NODE_SLAVE) {
         sh 'git submodule update --remote --checkout'
     }
 
+    def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
+
     docker.image(params.DOCKER_IMAGE_TAG).inside("\
                     -v ${env.HOME}/.ssh:/home/jenkins/.ssh \
                     -v ${workspace}:/mnt/workspace \
                     -v ${sstate_cache_dir}:/mnt/sstate-cache \
                     -v ${NIBUILD_MNT_NIRVANA}:/mnt/nirvana \
                     -v ${NIBUILD_MNT_BALTIC}:/mnt/baltic") {
-
-            def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
 
             def distro_flavour_builds = [:]
             for (int i = 0; i < build_targets.size(); i++) {
@@ -449,7 +449,6 @@ node (params.BUILD_NODE_SLAVE) {
                            """
 
                         sh "scripts/jenkins/create-xunit-error-xml.sh $build_dir/bitbake.stdout.txt $build_dir/xunit-results.xml"
-                        step([$class: "JUnitResultArchiver", testResults: "$build_dir/xunit-results.xml"])
 
                         sh "tar cf $node_archive_dir/buildhistory-${distro_flavour}.tar.gz $build_dir/buildhistory/ -I pigz"
 
@@ -457,16 +456,22 @@ node (params.BUILD_NODE_SLAVE) {
                         if (params.SOURCE_MIRROR_URL) {
                             sh "MIRROR_URL=$params.SOURCE_MIRROR_URL scripts/jenkins/test-source-mirror.py"
                         }
-
-                        if (params.EXPORT_PR_SERVER_JOB) {
-                            build(job: params.EXPORT_PR_SERVER_JOB, propagate: true)
-                        }
                     } // withEnv
                 } // distro_flavour_builds
             } // for
 
             parallel distro_flavour_builds
+
         } // container.inside
+
+    if (params.EXPORT_PR_SERVER_JOB) {
+        build(job: params.EXPORT_PR_SERVER_JOB, propagate: true)
+    }
+
+    for (int i = 0; i < build_targets.size(); i++) {
+        def distro_flavour = build_targets.get(i)
+        step([$class: "JUnitResultArchiver", testResults: "build_$distro_flavour/xunit-results.xml"])
+    }
 
 // The archive under ${workspace}/archive has the following structure
 // TODO: In the future we want to remove the $distro_flavour separation boundry from the feeds
