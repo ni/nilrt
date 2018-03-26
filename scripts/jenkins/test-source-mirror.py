@@ -14,7 +14,7 @@ if os.environ['MIRROR_URL'] == '':
 sys.stdout.flush()
 
 # config
-download_dir = 'build/downloads/'
+download_dir = os.environ['DOWNLOAD_DIR']
 url = os.environ['MIRROR_URL']
 
 pattern_re = re.compile( '<a href="(.*?)">.*?</a>' )

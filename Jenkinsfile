@@ -454,7 +454,7 @@ node (params.BUILD_NODE_SLAVE) {
 
                         // check at the end of build to ensure we verify all OE downloaded packages
                         if (params.SOURCE_MIRROR_URL) {
-                            sh "MIRROR_URL=$params.SOURCE_MIRROR_URL scripts/jenkins/test-source-mirror.py"
+                            sh "MIRROR_URL=$params.SOURCE_MIRROR_URL DOWNLOAD_DIR=$build_dir/downloads scripts/jenkins/test-source-mirror.py"
                         }
                     } // withEnv
                 } // distro_flavour_builds
