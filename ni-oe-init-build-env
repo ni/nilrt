@@ -4,19 +4,19 @@ BUILDDIR=${BUILDDIR:-$PWD/build}
 BB_ENV_EXTRAWHITE=${BB_ENV_EXTRAWHITE:-BUILD_IDENTIFIER ENABLE_BUILD_TAG_PUSH}
 
 if [ ! -f $BUILDDIR/conf/bblayers.conf ]; then
-    sed -i.bak "s?##PWD##?$PWD?g" $TEMPLATECONF/bblayers.conf.sample
+    sed -i "s?##PWD##?$PWD?g" $TEMPLATECONF/bblayers.conf.sample
 fi
 
 function cleanup() {
-    if [ -f $TEMPLATECONF/bblayers.conf.sample.bak ]; then
-	mv $TEMPLATECONF/bblayers.conf.sample.bak $TEMPLATECONF/bblayers.conf.sample
-    fi
+    pushd $TEMPLATECONF
+    git checkout bblayers.conf.sample
+    popd
 }
 
-trap "cleanup" EXIT
+trap "cleanup >/dev/null 2>&1" EXIT
 
 export PS1="(bb) $PS1"
 export TEMPLATECONF
 source $PWD/sources/openembedded-core/oe-init-build-env
 
-cleanup
+cleanup >/dev/null 2>&1
