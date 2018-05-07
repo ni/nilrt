@@ -1,49 +1,40 @@
 #!/usr/bin/env python2
 
-import pexpect
-import sys, os, time, subprocess
+import sys, os, time, subprocess, glob, pexpect
 
-if len(sys.argv) < 5:
-    print "Usage: %s <feed-server-uri> <recovery_iso> <hdd_image_name> <hdd_image_size>" % sys.argv[0]
-    print "Example: %s http://nickdanger.amer.corp.natinst.com/feeds NI_RECOVERY_IMG-cd.iso testimg.img 3G" % sys.argv[0]
+if len(sys.argv) < 3:
+    print "Usage: %s <feed-server-uri> <nilrt-export-path>" % sys.argv[0]
+    print "Example: %s http://nickdanger.amer.corp.natinst.com/feeds/Migration/all/all $BALTIC_MNT/penguinExports/nilinux/nilrt-oe/cobra/export/18.11" % sys.argv[0]
     exit(1)
 
-feedserver     = sys.argv[1]
-recovery_iso   = sys.argv[2]
-hdd_image_name = sys.argv[3]
-hdd_image_size = sys.argv[4]
+feedserver  = sys.argv[1]
+export_path = sys.argv[2]
 
 test_timeout = 3600 #seconds
 
-def waitfornetwork():
-    print "Waiting for network interface"
-    #force target to get an ip after boot to avoid a qemu bug where the IP
-    #is not correctly set while booting (reproduced in qemu 2.1 and 2.8)
-    child.sendline('dhclient eth0')
-    child.expect('# ')
-    child.sendline("while ! ifconfig | grep -q 'inet addr.*Bcast'; do sleep 5; done")
-    child.expect("# ")
+latest_export = max(glob.glob(os.path.join(export_path, '*')), key=os.path.getctime)
+image_path = "%s/images/NILinuxRT-x64/nilrt-vm-x64-qemu.zip" % latest_export
 
-print "Creating virtual hdd image"
-os.system("qemu-img create -f raw %s %s" % (hdd_image_name, hdd_image_size))
+print "Fetching VM image from: %s" % image_path
+os.system("rm -rf nilrt-vm-x64-qemu")
+os.system("unzip %s" % image_path)
+os.chdir("nilrt-vm-x64-qemu")
 
-print "Provisioning virtual hdd image with newer nilrt OS, this may take a while"
-
+print "Booting os image"
 enable_kvm = subprocess.check_output(["id | grep -q kvm && echo '-enable-kvm -cpu kvm64' || echo ''"], shell=True)
-child = pexpect.spawn ("qemu-system-x86_64 %s -nographic -m 1024 -hda %s -cdrom %s"
-                       % (enable_kvm, hdd_image_name, recovery_iso), timeout=test_timeout)
-
-child.expect('Do you want to continue?')
-child.sendline('y')
-child.expect('Do you want to continue?')
-child.sendline('y')
-child.expect('Please eject the installation media and restart the system')
-child.sendline()
+child = pexpect.spawn ("qemu-system-x86_64 %s -nographic -m 1024 -hda %s -netdev user,id=u1 -device e1000,netdev=u1"
+                       % (enable_kvm, "nilrt-vm-x64.qcow2"), timeout=test_timeout)
 
 child.expect('NI.* login:')
 child.sendline('root')
+child.expect('# ')
 
-waitfornetwork()
+# HACK: Kernel modules are not loaded on first boot (maybe depmod is not run in the OE rootfs?)
+# This reboot should be removed once CAR 685370 gets fixed
+child.sendline('reboot')
+child.expect('NI.* login:')
+child.sendline('root')
+child.expect('# ')
 
 print "Installing backwards migration package"
 child.sendline('opkg update')
@@ -60,7 +51,7 @@ child.sendline('ni_migrate_target')
 child.expect('To continue type YES:')
 child.sendline('YES')
 
-# force the provisioned safemode to enable console out b/c we don't have hw button
+# force the provisioned safemode to enable console out
 child.expect('# ')
 child.sendline('sed -i -e "s/consoleoutenable=False/consoleoutenable=True/" /boot/.oldNILinuxRT/safemode_files/grub.cfg')
 child.expect('# ')
@@ -71,13 +62,10 @@ child.expect('NI.* login:')
 child.sendline('admin')
 child.expect('Password: ')
 child.sendline()
-
-waitfornetwork()
+child.expect('# ')
 
 print "Installing forwards migration package"
-# install migration feed manually on older nilrt versions; this needs to be removed once exports
-# are generated containing images with the feed added by default
-child.sendline("echo 'src/gz images-all-x64 %s/Migration/all/all' >> /etc/opkg/opkg.conf" % feedserver)
+child.sendline("echo 'src/gz migration-x64 %s' > /etc/opkg/migration.conf" % feedserver)
 child.expect('# ')
 child.sendline('opkg update')
 child.expect('# ')
@@ -91,10 +79,11 @@ child.sendline('YES')
 
 child.expect('NI.* login:')
 child.sendline('root')
+child.expect('# ')
 
 print "Migration completed succesfully, shutting down and cleaning up"
-child.expect('# ')
 child.sendline('poweroff')
 child.expect('Power down')
 child.close()
-os.remove(hdd_image_name)
+os.chdir('..')
+os.system("rm -rf nilrt-vm-x64-qemu")
