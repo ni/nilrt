@@ -179,10 +179,11 @@ node (params.BUILD_NODE_SLAVE) {
 
     sh "docker images | grep -E \"^${params.DOCKER_IMAGE_TAG}.*latest\" | awk -e '{print \$3}' > $archive_dir/dockerImageHash.txt"
 
-    if (params.CLEAR_SSTATE_CACHE) {
-        stage("Clearing sstate cache") {
-            sh "rm -rf $sstate_cache_dir && mkdir -p $sstate_cache_dir"
+    stage("Initializing sstate cache") {
+        if (params.CLEAR_SSTATE_CACHE) {
+            sh "rm -rf $sstate_cache_dir"
         }
+        sh "mkdir -p $sstate_cache_dir"
     }
 
     if (params.SSTATE_CACHE_ARCHIVE) {
