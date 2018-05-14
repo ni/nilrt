@@ -214,8 +214,9 @@ node (params.BUILD_NODE_SLAVE) {
                   mkdir -p ${params.NIBUILD_COMPONENT_PATH}
                   cd ${params.NIBUILD_COMPONENT_PATH}
                   p4 sync ...
-                  grep -oP '(?<=version = )[0-9dabf.]+(?=;)' package > $archive_dir/bsExportVersionNumb.txt
                """
+            sh "grep -oP '(?<=version = )[0-9dabf.]+(?=;)' ${params.NIBUILD_COMPONENT_PATH}/package \
+                    | tee $archive_dir/bsExportVersionNumb.txt"
         }
     }
 
