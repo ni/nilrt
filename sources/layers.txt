@@ -6,7 +6,7 @@ meta-mingw https://github.com/ni/meta-mingw nilrt_pub/18.0/pyro HEAD
 meta-mono https://github.com/ni/meta-mono nilrt_pub/18.0/pyro HEAD
 meta-nilrt https://github.com/ni/meta-nilrt nilrt_pub/18.0/pyro HEAD
 meta-openembedded https://github.com/ni/meta-oe nilrt_pub/18.0/pyro HEAD
-meta-orgconf https://github.com/ni/meta-orgconf master HEAD
+meta-orgconf https://github.com/ni/meta-orgconf nilrt/18.0 HEAD
 meta-qt4 https://github.com/ni/meta-qt4 nilrt_pub/18.0/pyro HEAD
 meta-sdr https://github.com/ni/meta-sdr nilrt_pub/18.0/pyro HEAD
 meta-security https://github.com/ni/meta-security nilrt_pub/18.0/pyro HEAD
