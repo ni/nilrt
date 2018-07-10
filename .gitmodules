@@ -54,10 +54,6 @@
 	path = sources/meta-measured
 	url = ../meta-measured.git
 	branch = nilrt/master/pyro
-[submodule "sources/meta-qt4"]
-	path = sources/meta-qt4
-	url = ../meta-qt4.git
-	branch = nilrt/master/pyro
 [submodule "sources/meta-qt5"]
 	path = sources/meta-qt5
 	url = ../meta-qt5.git
