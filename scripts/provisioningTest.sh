@@ -140,7 +140,7 @@ validate_provisioning() {
     vfs-label /dev/sda4 | tee "$workingDir/after/sda4_filesystem_label.txt"
     part-get-gpt-guid /dev/sda 4 | tee "$workingDir/after/sda4_partition_uuid.txt"
     vfs-uuid /dev/sda4 | tee "$workingDir/after/sda4_filesystem_uuid.txt"
-    copy-out /boot/grubenv "$workingDir/after"
+    copy-out /boot/grub/grubenv "$workingDir/after"
     umount /dev/sda4
     unmount-all
     shutdown
