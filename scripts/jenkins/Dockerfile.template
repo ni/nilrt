@@ -1,19 +1,26 @@
-FROM debian:8
+FROM debian:9
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-RUN sed -i 's/jessie main/jessie main contrib/' /etc/apt/sources.list
+RUN sed -i 's/stretch main/stretch main contrib/' /etc/apt/sources.list
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update
-
 # Install OE dependencies
-RUN apt-get install -y gawk wget git-core diffstat unzip texinfo cpio \
+RUN apt-get update
+RUN apt-get install -y gawk wget gnupg2 git-core diffstat unzip texinfo cpio \
 gcc-multilib build-essential chrpath socat libsdl1.2-dev python bc zip \
-genisoimage qemu-kvm qemu-system-x86 qemu-utils virtualbox uuid-runtime \
+genisoimage qemu-kvm qemu-system-x86 qemu-utils uuid-runtime \
 python-pexpect pigz xmlstarlet python3 locales vim sudo ccache cvs info \
 help2man subversion texi2html desktop-file-utils rsync
+
+# Install virtualbox from upstream because it's not available in debian 9
+RUN echo 'deb http://download.virtualbox.org/virtualbox/debian stretch contrib' > /etc/apt/sources.list.d/virtualbox.list
+RUN wget https://www.virtualbox.org/download/oracle_vbox_2016.asc
+RUN apt-key add oracle_vbox_2016.asc
+RUN rm oracle_vbox_2016.asc
+RUN apt-get update
+RUN apt-get install -y virtualbox-5.1
 
 RUN dpkg-reconfigure -f noninteractive locales
 RUN echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen && locale-gen en_US.UTF-8
