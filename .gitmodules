@@ -58,3 +58,7 @@
 	path = sources/meta-qt5
 	url = ../meta-qt5.git
 	branch = nilrt/master/sumo
+[submodule "sources/meta-qt5-extra"]
+	path = sources/meta-qt5-extra
+	url = ../meta-qt5-extra.git
+	branch = nilrt/master/sumo
