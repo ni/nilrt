@@ -232,6 +232,7 @@ node (params.BUILD_NODE_SLAVE) {
     def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
 
     docker.image(params.DOCKER_IMAGE_TAG).inside("\
+                    -u jenkins \
                     -v ${env.HOME}/.ssh:/home/jenkins/.ssh \
                     -v ${workspace}:/mnt/workspace \
                     -v ${sstate_cache_dir}:/mnt/sstate-cache \
