@@ -335,8 +335,8 @@ node (params.BUILD_NODE_SLAVE) {
                                   if [ $distro_flavour == 'x64' ]; then
                                       ../scripts/buildRecoveryISO.sh -r restore-mode-image
                                       ../scripts/buildRecoveryISO.sh -r lvcomms-restore-mode-image
-                                      ../scripts/buildVM.sh -d 10240 -m 512 -n nilrt-vm -r restore-mode-image
-                                      ../scripts/buildVM.sh -d 10240 -m 512 -n lvcomms-nilrt-vm -r lvcomms-restore-mode-image
+                                      ../scripts/buildVM.sh -d 10240 -m 768 -n nilrt-vm -r restore-mode-image
+                                      ../scripts/buildVM.sh -d 10240 -m 768 -n lvcomms-nilrt-vm -r lvcomms-restore-mode-image
                                   fi
                                """
 
