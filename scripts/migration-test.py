@@ -4,8 +4,25 @@ import sys, os, time, subprocess, glob, pexpect
 
 if len(sys.argv) < 3:
     print "Usage: %s <feed-server-uri> <nilrt-export-path>" % sys.argv[0]
-    print "Example: %s http://nickdanger.amer.corp.natinst.com/feeds/Migration/all/all $BALTIC_MNT/penguinExports/nilinux/nilrt-oe/cobra/export/18.11" % sys.argv[0]
+    print "Example: %s http://nickdanger.amer.corp.natinst.com/feeds/Migration/all/all $BALTIC_MNT/penguinExports/nilinux/nilrt-oe/lynx/export/19.4" % sys.argv[0]
     exit(1)
+
+def enable_console_out(child):
+    child.sendline('cd /boot/.oldNILinuxRT && mkdir payload')
+
+    child.sendline('mv initrd initrd.cpio.gz')
+    child.sendline('gzip -d initrd.cpio.gz')
+    child.sendline('cd payload')
+    child.sendline('export EXTRACT_UNSAFE_SYMLINKS=1 && cpio -idm < ../initrd.cpio')
+
+    child.expect('# ')
+
+    child.sendline('sed -i -e "s/consoleoutenable=False/consoleoutenable=True/" boot/.oldNILinuxRT/safemode_files/grub.cfg')
+    child.sendline('find . | cpio -oH newc > ../initrd.cpio && cd ..')
+    child.sendline('gzip initrd.cpio && mv initrd.cpio.gz initrd && rm -rf payload')
+    child.sendline('chmod 755 initrd')
+
+    child.expect('# ')
 
 feedserver  = sys.argv[1]
 export_path = sys.argv[2]
@@ -29,13 +46,6 @@ child.expect('NI.* login:')
 child.sendline('root')
 child.expect('# ')
 
-# HACK: Kernel modules are not loaded on first boot (maybe depmod is not run in the OE rootfs?)
-# This reboot should be removed once CAR 685370 gets fixed
-child.sendline('reboot')
-child.expect('NI.* login:')
-child.sendline('root')
-child.expect('# ')
-
 print "Installing backwards migration package"
 child.sendline('opkg update')
 child.expect('# ')
@@ -50,14 +60,14 @@ child.expect('# ')
 child.sendline('ni_migrate_target')
 child.expect('To continue type YES:')
 child.sendline('YES')
+child.expect('# ')
 
 # force the provisioned safemode to enable console out
-child.expect('# ')
-child.sendline('sed -i -e "s/consoleoutenable=False/consoleoutenable=True/" /boot/.oldNILinuxRT/safemode_files/grub.cfg')
-child.expect('# ')
+print "Enable console out and reboot"
+enable_console_out(child)
 child.sendline('reboot')
 
-child.expect('NI Linux Real-Time \(safe mode on')
+child.expect(r'NI Linux Real-Time \(safe mode on')
 child.expect('NI.* login:')
 child.sendline('admin')
 child.expect('Password: ')
