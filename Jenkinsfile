@@ -333,8 +333,6 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   # Only for x64 because we don't have ARM virtualization yet
                                   if [ $distro_flavour == 'x64' ]; then
-                                      ../scripts/buildRecoveryISO.sh -r restore-mode-image
-                                      ../scripts/buildRecoveryISO.sh -r lvcomms-restore-mode-image
                                       ../scripts/buildVM.sh -d 10240 -m 768 -n nilrt-vm -r restore-mode-image
                                       ../scripts/buildVM.sh -d 10240 -m 768 -n lvcomms-nilrt-vm -r lvcomms-restore-mode-image
                                   fi
@@ -342,8 +340,10 @@ node (params.BUILD_NODE_SLAVE) {
 
                             // we don't have provisioning images for NXG ARM like we have ISOs for x64, nor VMs
                             if (distro_flavour == 'x64') {
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.iso $archive_img_path"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.wic \
+                                    $archive_img_path/restore-mode-image-${distro_flavour}.iso"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.wic \
+                                    $archive_img_path/restore-mode-image-${distro_flavour}.iso"
 
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
