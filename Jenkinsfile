@@ -343,7 +343,7 @@ node (params.BUILD_NODE_SLAVE) {
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.wic \
                                     $archive_img_path/restore-mode-image-${distro_flavour}.iso"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.wic \
-                                    $archive_img_path/restore-mode-image-${distro_flavour}.iso"
+                                    $archive_img_path/lvcomms-restore-mode-image-${distro_flavour}.iso"
 
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
