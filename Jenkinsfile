@@ -288,6 +288,7 @@ node (params.BUILD_NODE_SLAVE) {
 
                                 sh "echo 'ENABLE_BUILD_TAG_PUSH = \"Yes\"' >> $build_dir/conf/auto.conf"
                                 sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
+                                sh "echo 'BUILDNAME = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
                             }
                         }
 
