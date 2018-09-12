@@ -331,6 +331,15 @@ node (params.BUILD_NODE_SLAVE) {
                                           minimal-nilrt-ptest-image \
                                           lvcomms-restore-mode-image 2>&1 | tee -a bitbake.stdout.txt
 
+                                  # Only for x64 because we don't have ARM ISO images
+                                  if [ $distro_flavour == 'x64' ]; then
+                                      # wic files are actually ISO images, so rename them
+                                      pushd $build_dir/tmp-glibc/deploy/images/x64
+                                      mv restore-mode-image-x64.wic restore-mode-image-x64.iso
+                                      mv lvcomms-restore-mode-image-x64.wic lvcomms-restore-mode-image-x64.iso
+                                      popd
+                                  fi
+
                                   # Only for x64 because we don't have ARM virtualization yet
                                   if [ $distro_flavour == 'x64' ]; then
                                       ../scripts/buildVM.sh -d 10240 -m 768 -n nilrt-vm -r restore-mode-image
@@ -340,9 +349,9 @@ node (params.BUILD_NODE_SLAVE) {
 
                             // we don't have provisioning images for NXG ARM like we have ISOs for x64, nor VMs
                             if (distro_flavour == 'x64') {
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.wic \
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso \
                                     $archive_img_path/restore-mode-image-${distro_flavour}.iso"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.wic \
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.iso \
                                     $archive_img_path/lvcomms-restore-mode-image-${distro_flavour}.iso"
 
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
