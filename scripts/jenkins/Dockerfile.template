@@ -12,7 +12,7 @@ RUN apt-get install -y gawk wget gnupg2 git-core diffstat unzip texinfo cpio \
 gcc-multilib build-essential chrpath socat libsdl1.2-dev python bc zip \
 genisoimage qemu-kvm qemu-system-x86 qemu-utils uuid-runtime \
 python-pexpect pigz xmlstarlet python3 locales vim sudo ccache cvs info \
-help2man subversion texi2html desktop-file-utils rsync
+help2man subversion texi2html desktop-file-utils rsync libpulse-dev pkg-config
 
 # Install virtualbox from upstream because it's not available in debian 9
 RUN echo 'deb http://download.virtualbox.org/virtualbox/debian stretch contrib' > /etc/apt/sources.list.d/virtualbox.list
