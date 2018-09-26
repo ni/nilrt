@@ -17,7 +17,7 @@ def enable_console_out(child):
 
     child.expect('# ')
 
-    child.sendline('sed -i -e "s/consoleoutenable=False/consoleoutenable=True/" boot/.oldNILinuxRT/safemode_files/grub.cfg')
+    child.sendline('sed -i -e "s/consoleoutenable=False/consoleoutenable=True/" payload/grub.cfg')
     child.sendline('find . | cpio -oH newc > ../initrd.cpio && cd ..')
     child.sendline('gzip initrd.cpio && mv initrd.cpio.gz initrd && rm -rf payload')
     child.sendline('chmod 755 initrd')
