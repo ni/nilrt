@@ -89,9 +89,7 @@ will only be accessible locally on address localhost:8080.
 5. (Optional/Advanced) Build a bootable recovery disk by running the
 following commands:
 
-        bitbake minimal-nilrt-image
         bitbake restore-mode-image
-        ../scripts/buildRecoveryISO.sh -r restore-mode-image
 
     **NOTE** You must build everything in packagegroup-ni-coreimagerepo
 (step 3) and build a feed (optional step 4) to build images.
@@ -110,13 +108,14 @@ and recovery disk are located at the following paths:
     The bootable ISO recovery disk, which you can install onto a USB
 memory stick or burn to a CD, is located at the following path:
 
-        tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.iso
+        tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.wic
+        (You can rename it to ".iso" if desired)
 
     Run the following command to install the bootable ISO recovery image
 onto a USB memory stick at /dev/disk/by-id/XXX, where XXX is the
 appropriate device node for your hardware:
 
-        sudo dd if=tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.iso of=/dev/disk/by-id/XXX bs=1M
+        sudo dd if=tmp-glibc/deploy/images/$MACHINE/restore-mode-image-$MACHINE.wic of=/dev/disk/by-id/XXX bs=1M
 
     **WARNING** Setting 'of' to the wrong device will permanently
 destroy data and potentially leave your system unbootable. *Use at your
