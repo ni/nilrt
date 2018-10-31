@@ -7,8 +7,8 @@ RUN sed -i 's/stretch main/stretch main contrib/' /etc/apt/sources.list
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install OE dependencies
-RUN apt-get update
-RUN apt-get install -y gawk wget gnupg2 git-core diffstat unzip texinfo cpio \
+RUN apt-get update && apt-get install -y \
+gawk wget gnupg2 git-core diffstat unzip texinfo cpio iputils-ping \
 gcc-multilib build-essential chrpath socat libsdl1.2-dev python bc zip \
 genisoimage qemu-kvm qemu-system-x86 qemu-utils uuid-runtime \
 python-pexpect pigz xmlstarlet python3 locales vim sudo ccache cvs info \
