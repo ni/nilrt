@@ -93,7 +93,6 @@ child.expect('# ')
 
 print "Migration completed succesfully, shutting down and cleaning up"
 child.sendline('poweroff')
-child.expect('Power down')
 child.close()
 os.chdir('..')
 os.system("rm -rf nilrt-vm-x64-qemu")
