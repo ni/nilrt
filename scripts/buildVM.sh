@@ -74,11 +74,15 @@ echo "Built answers file at $workingDir/ni_provisioning.answers.iso"
 qemu-img create -f qcow2 "$vmDirQemu/$vmName-$MACHINE.qcow2" "$bootDiskSizeMB""M"
 chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
 enableKVM=$(id | grep -q kvm && echo "-enable-kvm -cpu kvm64" || echo "")
+
+isoImage="$imagesDir/$initramfsRecipeName-x64.iso"
+[ ! -f $isoImage ] && isoImage="$imagesDir/$initramfsRecipeName-x64.wic"
+
 qemu-system-x86_64 \
     $enableKVM -m "$memSizeMB" \
     -nographic \
     -drive file="$vmDirQemu/$vmName-$MACHINE.qcow2",index=0,media=disk \
-    -drive file="$imagesDir/$initramfsRecipeName-x64.iso",index=1,media=cdrom,readonly \
+    -drive file="$isoImage",index=1,media=cdrom,readonly \
     -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly \
     </dev/null
 echo "Built qcow2 disk at $vmDirQemu/$vmName-$MACHINE.qcow2"
