@@ -144,6 +144,18 @@
 //    defaultValue: /mnt/nirvana/
 //    description: Full path to the local mount location of NI's //nirvana/ server
 
+// NIBUILD_PACKAGE_INDEX_SIGNING_URL
+//    type: string
+//    defaultValue: Empty
+//    description: SSH connection string (E.g. user@host.domain) to nibuild compatible
+//                 signing service. If defined, signs package index files.
+
+// NIBUILD_PACKAGE_INDEX_SIGNING_KEY
+//    type: string
+//    defaultValue: Empty
+//    description: Name/ID of key residing on aforementioned nibuild compatible
+//                 signing service.
+
 node (params.BUILD_NODE_SLAVE) {
     def archive_dir = "${workspace}/archive"
     def nifeeds_dir = "${workspace}/nifeeds"
@@ -252,6 +264,12 @@ node (params.BUILD_NODE_SLAVE) {
                         def archive_img_path      = "$node_archive_dir/images/NILinuxRT-$distro_flavour"
                         def feed_dir              = "$node_archive_dir/feeds/NILinuxRT-$distro_flavour"
 
+                        def distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
+                        if (params.NI_INTERNAL_BUILD) {
+                            def bs_export = sh(script: "cat $node_archive_dir/bsExportVersionNumb.txt", returnStdout: true).trim()
+                            distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
+                        }
+
                         sh "mkdir -p $feed_dir"
                         sh "mkdir -p $archive_img_path"
 
@@ -278,17 +296,11 @@ node (params.BUILD_NODE_SLAVE) {
                                 sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> $build_dir/conf/auto.conf"
                             }
 
+                            sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
+                            sh "echo 'BUILDNAME = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
+
                             if (params.ENABLE_BUILD_TAG_PUSH) {
-                                def distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
-
-                                if (params.NI_INTERNAL_BUILD) {
-                                    def bs_export = sh(script: "cat $node_archive_dir/bsExportVersionNumb.txt", returnStdout: true).trim()
-                                    distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
-                                }
-
                                 sh "echo 'ENABLE_BUILD_TAG_PUSH = \"Yes\"' >> $build_dir/conf/auto.conf"
-                                sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
-                                sh "echo 'BUILDNAME = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
                             }
                         }
 
@@ -317,6 +329,13 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   bitbake packagegroup-ni-coreimagerepo 2>&1 | tee bitbake.stdout.txt
                                   bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
+
+                                  if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
+                                      ../scripts/jenkins/sign-feed-index.sh \
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}"
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}"
+                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} core"
+                                  fi
                                """
 
                             sh "cp -Lr $build_dir/tmp-glibc/deploy/ipk -T $feed_dir/main"
@@ -412,6 +431,13 @@ node (params.BUILD_NODE_SLAVE) {
 
                                       bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
 
+                                      if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
+                                          ../scripts/jenkins/sign-feed-index.sh \
+                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}"
+                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}"
+                                              "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} images"
+                                      fi
+
                                       cp -Lr tmp-glibc/deploy/ipk -T $feed_dir/images
 
                                       # restore the core feed to its pristine state (without nioldos & co)
@@ -441,6 +467,13 @@ node (params.BUILD_NODE_SLAVE) {
                                   done;
 
                                   bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
+
+                                  if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
+                                      ../scripts/jenkins/sign-feed-index.sh \
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}"
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}"
+                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} extras"
+                                  fi
 
                                   cp -Lr tmp-glibc/deploy/ipk -T $feed_dir/extra
                               """
