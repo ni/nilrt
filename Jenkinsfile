@@ -184,7 +184,7 @@ node (params.BUILD_NODE_SLAVE) {
             sh "rm -rf $sstate_cache_dir"
         }
         sh "mkdir -p $sstate_cache_dir"
-	sh "chown jenkins:jenkins $sstate_cache_dir"
+        sh "chown jenkins:jenkins $sstate_cache_dir"
     }
 
     if (params.SSTATE_CACHE_ARCHIVE) {
