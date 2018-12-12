@@ -6,16 +6,23 @@ if [ -z "$vmimage" ]; then
 	exit 1
 fi
 
-guestfish --pipe-error -a "$vmimage" <<EOF
+config_present=$(echo "
 run
 mount /dev/sda3 /
-download /ni-rt.ini /tmp/ni-rt.ini
-! sed -i 's/ConsoleOut\.enabled="False"/ConsoleOut\.enabled="True"/' /tmp/ni-rt.ini
-upload /tmp/ni-rt.ini /ni-rt.ini
-umount /
+exists /ni-rt.ini" | guestfish -a "$vmimage")
+
+if [ "$config_present" = "true" ]; then
+	echo "
+	run
+	mount /dev/sda3 /
+	download /ni-rt.ini /tmp/ni-rt.ini
+	! sed -i 's/ConsoleOut\.enabled="False"/ConsoleOut\.enabled="True"/' /tmp/ni-rt.ini
+	upload /tmp/ni-rt.ini /ni-rt.ini" | guestfish -a "$vmimage"
+fi
+
+echo "
+run
 mount /dev/sda2 /
 download /grub/grubenv /tmp/grubenv
 ! grub-editenv /tmp/grubenv set consoleoutenable=True
-upload /tmp/grubenv /grub/grubenv
-umount /
-EOF
+upload /tmp/grubenv /grub/grubenv" | guestfish --pipe-error -a "$vmimage"
