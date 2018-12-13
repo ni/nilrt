@@ -13,6 +13,30 @@ print_usage_and_die () {
     exit 1
 }
 
+enable_console_out () {
+    vmimage="$1"
+    config_present=$(echo "
+    run
+    mount /dev/sda3 /
+    exists /ni-rt.ini" | guestfish -a "$vmimage")
+
+    if [ "$config_present" = "true" ]; then
+	echo "
+	run
+	mount /dev/sda3 /
+	download /ni-rt.ini /tmp/ni-rt.ini
+	! sed -i 's/ConsoleOut\.enabled="False"/ConsoleOut\.enabled="True"/' /tmp/ni-rt.ini
+	upload /tmp/ni-rt.ini /ni-rt.ini" | guestfish -a "$vmimage"
+    fi
+
+    echo "
+    run
+    mount /dev/sda2 /
+    download /grub/grubenv /tmp/grubenv
+    ! grub-editenv /tmp/grubenv set consoleoutenable=True
+    upload /tmp/grubenv /grub/grubenv" | guestfish --pipe-error -a "$vmimage"
+}
+
 SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
 
 # get args
@@ -85,6 +109,9 @@ qemu-system-x86_64 \
     -drive file="$isoImage",index=1,media=cdrom,readonly \
     -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly \
     </dev/null
+
+enable_console_out "$vmDirQemu/$vmName-$MACHINE.qcow2"
+
 echo "Built qcow2 disk at $vmDirQemu/$vmName-$MACHINE.qcow2"
 
 # build alt disk formats for virtualbox, vmware, and hyperv
