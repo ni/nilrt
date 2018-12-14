@@ -41,7 +41,7 @@
 [submodule "sources/meta-orgconf"]
 	path = sources/meta-orgconf
 	url = ../meta-orgconf.git
-	branch = nilrt_pub/comms-2.1/krogoth
+	branch = master
 [submodule "sources/meta-sdr"]
 	path = sources/meta-sdr
 	url = ../meta-sdr.git
