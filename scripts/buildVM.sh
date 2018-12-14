@@ -29,12 +29,19 @@ enable_console_out () {
 	upload /tmp/ni-rt.ini /ni-rt.ini" | guestfish -a "$vmimage"
     fi
 
-    echo "
+    grubenv_present=$(echo"
     run
     mount /dev/sda2 /
-    download /grub/grubenv /tmp/grubenv
-    ! grub-editenv /tmp/grubenv set consoleoutenable=True
-    upload /tmp/grubenv /grub/grubenv" | guestfish --pipe-error -a "$vmimage"
+    exists /grub/grubenv" | guestfish -a "$vmimage")
+
+    if [ "$grubenv_present" = "true" ]; then
+        echo "
+        run
+        mount /dev/sda2 /
+        download /grub/grubenv /tmp/grubenv
+        ! grub-editenv /tmp/grubenv set consoleoutenable=True
+        upload /tmp/grubenv /grub/grubenv" | guestfish --pipe-error -a "$vmimage"
+    fi
 }
 
 SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
