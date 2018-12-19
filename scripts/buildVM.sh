@@ -29,7 +29,7 @@ enable_console_out () {
 	upload /tmp/ni-rt.ini /ni-rt.ini" | guestfish -a "$vmimage"
     fi
 
-    grubenv_present=$(echo"
+    grubenv_present=$(echo "
     run
     mount /dev/sda2 /
     exists /grub/grubenv" | guestfish -a "$vmimage")
