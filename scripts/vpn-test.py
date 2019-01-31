@@ -34,6 +34,7 @@ def get_ip_addr(vm):
     """
     Returns the first ip address as ordered by ip addr
     """
+    time.sleep(15)
     vm.sendline("ip addr")
     vm.expect("# ")
     return str(re.findall(b'inet [0-9]+(?:\.[0-9]+){3}', vm.before)[1][5:], 'utf-8')
