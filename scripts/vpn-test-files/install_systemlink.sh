@@ -4,8 +4,7 @@ set -eEu
 target="$1"
 tarball="$2"
 
-export SSHPASS=$'\n'
-sshcmd="sshpass -e ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+sshcmd="sshpass -p 1234 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 echo "=== Checking target boot mode and architecture."
 boot_arch=$($sshcmd admin@$target "uname -m")

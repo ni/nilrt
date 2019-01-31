@@ -87,6 +87,16 @@ def enable_ssh(vm):
     vm.sendline("/etc/init.d/sshd start")
     vm.expect("# ")
 
+def vm_set_passwd(vm, passw):
+    vm.sendline("passwd")
+    vm.expect("password:")
+    vm.sendline()
+    vm.expect("password:")
+    vm.sendline(passw)
+    vm.expect("password:")
+    vm.sendline(passw)
+    vm.expect("# ")
+
 def cleanup():
     print("Cleaning up")
     os.system("cd ../; rm -rf %s-qemu" % img_name)
@@ -116,6 +126,10 @@ client_ip = get_ip_addr(client)
 print("Client bridge IP: %s" % client_ip)
 
 login(server, "admin", "")
+
+vm_set_passwd(server, "1234")
+vm_set_passwd(client, "1234")
+
 server_ip = get_ip_addr(server)
 print("Server bridge IP: %s" % server_ip)
 
@@ -149,7 +163,7 @@ print("Installing latest SystemLink image via VPN from")
 sl_image_path = glob.glob("%s/distribution-systemlink/release/RT Images/SystemLink/*/systemlink-linux-x64.tar" % latest_export)[0]
 print(sl_image_path)
 
-scp_cmd="export SSHPASS=$'\n'; sshpass -e scp -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+scp_cmd="sshpass -p 1234 scp -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 os.system("%s '%s' admin@%s:" % (scp_cmd, sl_image_path, server_ip))
 os.system("%s ../vpn-test-files/install_systemlink.sh admin@%s:" % (scp_cmd, server_ip))
 
@@ -160,7 +174,7 @@ server.expect("=== Done.")
 
 print("Finished installing latest SystemLink, waiting for client to reboot")
 client.sendline("reboot")
-login(client, "admin", "")
+login(client, "admin", "1234")
 
 print("Sanity checking VPN runmode installation")
 if vm_test_command(client, "echo RESULT $(ls /boot/runmode/ | wc -l)", b"RESULT 0"):

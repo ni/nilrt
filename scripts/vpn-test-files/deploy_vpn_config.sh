@@ -12,8 +12,7 @@ rm -r cfgdir
 
 openvpn_path="/etc/natinst/share/openvpn"
 
-export SSHPASS=$'\n'
-sshcmd="sshpass -e ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+sshcmd="sshpass -p 1234 ssh -q -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
 $sshcmd admin@$target "rm -rf $openvpn_path; mkdir -p $openvpn_path"
 cat payload.tar.gz | $sshcmd admin@$target "tar xz -C $openvpn_path"
