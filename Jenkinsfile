@@ -332,8 +332,8 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
                                       ../scripts/jenkins/sign-feed-index.sh \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}"
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}"
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
                                           "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} core"
                                   fi
                                """
@@ -433,8 +433,8 @@ node (params.BUILD_NODE_SLAVE) {
 
                                       if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
                                           ../scripts/jenkins/sign-feed-index.sh \
-                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}"
-                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}"
+                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
+                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
                                               "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} images"
                                       fi
 
@@ -470,8 +470,8 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
                                       ../scripts/jenkins/sign-feed-index.sh \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}"
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}"
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
                                           "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} extras"
                                   fi
 
