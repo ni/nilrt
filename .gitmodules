@@ -48,8 +48,8 @@
 	branch = nilrt_pub/comms-3.0/pyro
 [submodule "sources/meta-java"]
 	path = sources/meta-java
-	url = https://git.yoctoproject.org/git/meta-java
-	branch = master
+	url = ../meta-java.git
+	branch = nilrt_pub/comms-3.0/pyro
 [submodule "sources/meta-measured"]
 	path = sources/meta-measured
 	url = ../meta-measured.git
