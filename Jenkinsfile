@@ -170,13 +170,20 @@ node (params.BUILD_NODE_SLAVE) {
 
     if (params.CLEAR_WORKSPACE) {
         stage("Clearing entire workspace") {
-            sh "rm -rf ${workspace} && mkdir -p ${workspace}"
+            sh "rm -rvf ${workspace}; mkdir -p ${workspace}"
         }
+    }
+
+    stage("Fetching git sources") {
+        checkout scm
+        sh 'git submodule init'
+        // The --remote flag will be removed once we'll have a functioning autoci branch
+        sh 'git submodule update --remote --checkout'
     }
 
     // unconditionally clear the archive (each build recreates it from scratch)
     stage("Clearing archive dir") {
-        sh "rm -rf $archive_dir && mkdir -p $archive_dir"
+        sh "rm -rvf ${archive_dir}; mkdir -vp ${archive_dir}"
     }
 
     if (params.DOCKER_IMAGE_URL) {
@@ -193,10 +200,9 @@ node (params.BUILD_NODE_SLAVE) {
 
     stage("Initializing sstate cache") {
         if (params.CLEAR_SSTATE_CACHE) {
-            sh "rm -rf $sstate_cache_dir"
+            sh "rm -rf ${sstate_cache_dir}"
         }
-        sh "mkdir -p $sstate_cache_dir"
-        sh "chown jenkins:jenkins $sstate_cache_dir"
+        sh "install -v --owner=jenkins --group=jenkins -d ${sstate_cache_dir}"
     }
 
     if (params.SSTATE_CACHE_ARCHIVE) {
@@ -232,13 +238,6 @@ node (params.BUILD_NODE_SLAVE) {
             sh "grep -oP '(?<=version = )[0-9dabf.]+(?=;)' ${params.NIBUILD_COMPONENT_PATH}/package \
                     | tee $archive_dir/bsExportVersionNumb.txt"
         }
-    }
-
-    stage("Fetching git sources") {
-        checkout scm
-        sh 'git submodule init'
-        // The --remote flag will be removed once we'll have a functioning autoci branch
-        sh 'git submodule update --remote --checkout'
     }
 
     def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
