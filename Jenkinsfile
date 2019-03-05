@@ -346,6 +346,17 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   . ./ni-oe-init-build-env $build_dir
 
+                                  # Bitbake doesn't do a good job at detecting changes that require a image
+                                  # rebuild, when BUILD_FROM_FEEDS is used. Clean to always rebuild.
+                                  # NOTE: If the sstate cache is shared, this stage will need a lock to
+                                  #       avoid a race condition between cleanning/building.
+                                  bitbake -ccleanall restore-mode-image \
+                                                     minimal-nilrt-image \
+                                                     minimal-nilrt-ptest-image \
+                                                     lvcomms-restore-mode-image \
+                                                     lvcomms-nilrt-image \
+                                                     init-restore-mode 2>&1 | tee -a bitbake.stdout.txt
+
                                   bitbake restore-mode-image \
                                           minimal-nilrt-ptest-image \
                                           lvcomms-restore-mode-image 2>&1 | tee -a bitbake.stdout.txt
