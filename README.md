@@ -164,6 +164,22 @@ the Linux shar, but the build system's sysroot is named
 i686-nilrtsdk-mingw32 instead of x86_64-nilrtsdk-linux. It will have the
 same NILRT sysroot.
 
+Creating a Docker Build Container
+-----
+
+This repository includes a Dockerfile which may be used to construct an
+ephemeral build container. The container is a debian base, plus the toolchain
+and environment necessary to run bitbake.
+
+Example docker build command:
+
+```
+docker build --no-cache=yes \
+	--file=./scripts/docker/Dockerfile  \
+	--tag=<docker image tag> \
+	./scripts/docker
+```
+
 ---
 
     Enjoy, and happy hacking!
