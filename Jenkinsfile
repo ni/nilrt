@@ -156,6 +156,12 @@
 //    description: Name/ID of key residing on aforementioned nibuild compatible
 //                 signing service.
 
+// ENABLE_TESTING
+//    type: boolean
+//    defaultValue: True
+//    description: If True, run the image test stages and store their results
+//                 in the archive; else, skip these stages.
+
 node (params.BUILD_NODE_SLAVE) {
     def archive_dir = "${workspace}/archive"
     def nifeeds_dir = "${workspace}/nifeeds"
@@ -242,9 +248,15 @@ node (params.BUILD_NODE_SLAVE) {
 
     def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
 
+    // We must mount /etc/passwd and /etc/groups here to allow git to resolve
+    // the uid to a valid user.
+    // We must create a tmpfs in ~/.config for VBoxManager to store temporary
+    // files.
     docker.image(params.DOCKER_IMAGE_TAG).inside("\
-                    -u jenkins \
-                    -v ${env.HOME}/.ssh:/home/jenkins/.ssh \
+                    -v ${env.HOME}/.ssh:${env.HOME}/.ssh \
+                    --mount type=tmpfs,destination=${env.HOME}/.config,tmpfs-mode=0777 \
+                    -v /etc/passwd:/etc/passwd:ro \
+                    -v /etc/group:/etc/group:ro \
                     -v ${workspace}:/mnt/workspace \
                     -v ${sstate_cache_dir}:/mnt/sstate-cache \
                     -v ${NIBUILD_MNT_NIRVANA}:/mnt/nirvana \
@@ -553,6 +565,30 @@ node (params.BUILD_NODE_SLAVE) {
 // ├── sstate-cache.tar.gz
 // ├── dockerImageURL.txt
 // └── dockerImageHash.txt
+
+    // PHASE: TESTING
+    if (params.ENABLE_TESTING) {
+        stage('Testing') {
+            if (!build_targets.contains('x64')) {
+                echo("Skipping testing phase because x64 images were not built.")
+                return // quits the wrapping stage
+            }
+
+            def test_dir = "${archive_dir}/tests"
+            dir(test_dir) {
+                // Provisioning Test
+                sh(script: """#!/bin/bash
+                              set -exo pipefail
+                              source /etc/profile
+                              export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
+                              ${workspace}/scripts/provisioningTest.sh -r ${archive_dir}/images/NILinuxRT-x64/restore-mode-image-x64.iso 2>&1 | \
+                              tee ./provisioning.log
+                           """,
+                   returnStdout: true,
+                   label: "Test - Provisioning")
+            }
+        }
+    }
 
     if (params.ENABLE_SSTATE_CACHE_SNAPSHOT || params.NI_RELEASE_BUILD) {
         stage("Packing sstate cache") {
