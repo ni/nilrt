@@ -48,8 +48,8 @@
 	branch = nilrt_pub/comms-2.1/krogoth
 [submodule "sources/meta-java"]
 	path = sources/meta-java
-	url = https://git.yoctoproject.org/git/meta-java
-	branch = master
+	url = ../meta-java
+	branch = nilrt_pub/comms-2.1/krogoth
 [submodule "sources/meta-measured"]
 	path = sources/meta-measured
 	url = ../meta-measured.git
