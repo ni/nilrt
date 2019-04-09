@@ -63,7 +63,7 @@ def test_cmd(child_image, command, extra_expectations=None):
             child_image.expect(expectation)
     child_image.expect("# ")
     child_image.sendline("echo $?")
-    child_image.expect("0")
+    child_image.expect("0\r")
 
 def login(child_image, flavor):
     """
