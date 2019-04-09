@@ -151,10 +151,10 @@ for i in range(0, 4):
 
     print("Verifying version {} (flavor: {}) ... ".format(new_version, FLAVOR))
 
-    print("Verifying with opkg")
-    test_cmd(CHILD, "opkg update")
-    test_cmd(CHILD, "opkg install ntpdate")
-    test_cmd(CHILD, "ntpdate time.nist.gov")
+    print("Verifying ssl certificates with opkg")
+    test_cmd(CHILD, "opkg update > /dev/null 2>&1")
+    test_cmd(CHILD, "opkg install ntpdate > /dev/null 2>&1")
+    test_cmd(CHILD, "ntpdate time.nist.gov > /dev/null 2>&1")
     print("Verifying with wget")
     test_cmd(CHILD, "wget https://download.ni.com/ni-linux-rt/feeds/")
     print("Verifying with curl")
