@@ -47,6 +47,12 @@ if not check_version(ARGS.image_flavour, ARGS.image_version):
     PARSER.print_help()
     exit(1)
 
+def has_gpg_support(version, flavor):
+    if flavor == 'ng':
+        return version != 'cobra'
+    else:
+        return version >= 8.0
+
 def get_latest(export, version=""):
     """
     Get latest export for a given export path and version (Optional)
@@ -93,6 +99,25 @@ def verify_all_ssl_certificates(child_image, index):
     child_image.expect("# ")
     test_cmd(child_image, "openssl x509 -checkend {} -noout -in $(ls certificate*.perm \
 | tail -1)".format(31557600 * (4 - index)))
+
+def verify_opkg_gpg(child_image, index):
+    """
+        Verify that the expected key is present on the key ring.
+        Verify that the expected key has at least one subkey that doesn't expire in the next 4 years
+        Verify that opkg is using signature verification
+    """
+    test_cmd(child_image, "gpg --homedir /etc/opkg/gpg --list-keys D1DD926720DF53BD5C442FABA83F33D0666E7520 > /dev/null 2>&1")
+    test_cmd(child_image, "grep FOUND <<< $(gpg --homedir /etc/opkg/gpg --list-keys --with-colons D1DD926720DF53BD5C442FABA83F33D0666E7520 | grep sub | \
+while read -r line ; \
+do \
+   EXPIRATIONDATE=$(cut -d':' -f7 <<<  $line); \
+   NOW=$(date +%s); \
+   DELTA=$(expr \"$EXPIRATIONDATE\" - \"$NOW\"); \
+   if  [[ $DELTA -gt $(expr 60*60*24*365*4) ]]; then \
+       echo 'FOUND';\
+   fi; \
+done;)")
+    test_cmd(child_image, "opkg -V3 --noaction install zip | grep 'pkg_src_verify: Signature verification passed' > /dev/null 2>&1")
 
 def get_old_version(flavor, version, index):
     """
@@ -152,6 +177,9 @@ for i in range(0, 4):
     test_cmd(CHILD, "opkg update > /dev/null 2>&1")
     test_cmd(CHILD, "opkg install ntpdate > /dev/null 2>&1")
     test_cmd(CHILD, "ntpdate time.nist.gov > /dev/null 2>&1")
+    if has_gpg_support(new_version, FLAVOR):
+        print("Verifying opkg gpg keys consistency")
+        verify_opkg_gpg(CHILD, i)
     print("Verifying with wget")
     test_cmd(CHILD, "wget https://download.ni.com/ni-linux-rt/feeds/")
     print("Verifying with curl")
