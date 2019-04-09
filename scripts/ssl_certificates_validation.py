@@ -79,7 +79,7 @@ def login(child_image, flavor):
         child_image.sendline("root")
     child_image.expect("# ")
 
-def verify_all_certificates(child_image, index):
+def verify_all_ssl_certificates(child_image, index):
     """
         Verifing expiration date for root certificate.
         This should not expire in the next (4 - index) years.
@@ -162,7 +162,7 @@ for i in range(0, 4):
     print("Verifying with openssl")
     test_cmd(CHILD, "openssl s_client -connect download.ni.com:443", ["closed"])
     print("Verifying expiration date of root certificate")
-    verify_all_certificates(CHILD, i)
+    verify_all_ssl_certificates(CHILD, i)
 
     print("Version {} (flavor: {}): OK".format(new_version, FLAVOR))
     CHILD.sendline("poweroff")
