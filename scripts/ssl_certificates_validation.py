@@ -91,11 +91,8 @@ def verify_all_ssl_certificates(child_image, index):
     child_image.sendline("awk 'BEGIN{c=0} {print $0 > \"certificate\"c\".perm\"; if \
 ($0 == \"-----END CERTIFICATE-----\") c++}' allcerts")
     child_image.expect("# ")
-    child_image.sendline("openssl x509 -checkend {} -noout -in $(ls certificate*.perm \
+    test_cmd(child_image, "openssl x509 -checkend {} -noout -in $(ls certificate*.perm \
 | tail -1)".format(31557600 * (4 - index)))
-    child_image.expect("# ")
-    child_image.sendline("echo $?")
-    child_image.expect("0")
 
 def get_old_version(flavor, version, index):
     """
