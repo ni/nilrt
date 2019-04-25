@@ -253,8 +253,10 @@ node (params.BUILD_NODE_SLAVE) {
     // We must create a tmpfs in ~/.config for VBoxManager to store temporary
     // files.
     docker.image(params.DOCKER_IMAGE_TAG).inside("\
+                    --mount type=tmpfs,destination=${env.HOME},tmpfs-mode=0777 \
                     -v ${env.HOME}/.ssh:${env.HOME}/.ssh \
                     --mount type=tmpfs,destination=${env.HOME}/.config,tmpfs-mode=0777 \
+                    --mount type=tmpfs,destination=${env.HOME}/.ccache,tmpfs-mode=0777 \
                     -v /etc/passwd:/etc/passwd:ro \
                     -v /etc/group:/etc/group:ro \
                     -v ${workspace}:/mnt/workspace \
@@ -471,16 +473,19 @@ node (params.BUILD_NODE_SLAVE) {
 
                         stage("$distro_flavour extras feed") {
                             sh """#!/bin/bash
-                                  # we don't set pipefail because we expect at least some tasks in extras to fail
-                                  # and we shouldn't stop the build because bitbake returns non-zero for extras
+                                  set -e -o pipefail
 
                                   . ./ni-oe-init-build-env $build_dir
 
+                                  # Both the desirable and extra packagegroups should be deposited into the
+                                  # "extra" feed.
                                   rm -rf tmp-glibc/deploy/ipk
                                   mkdir -p tmp-glibc/deploy/ipk-extra
                                   ln -s \$PWD/tmp-glibc/deploy/ipk-extra tmp-glibc/deploy/ipk
 
-                                  bitbake --continue packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt
+                                  bitbake packagegroup-ni-desirable 2>&1 | tee -a bitbake.stdout.txt
+
+                                  bitbake --continue packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt || true
 
                                   # make sure no main/core feed ipk exists in the extras feed
                                   ipk_paths=`find $feed_dir/main -name *.ipk | rev | cut -d"/" -f1-2 | rev`
