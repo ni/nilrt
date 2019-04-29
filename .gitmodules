@@ -66,3 +66,7 @@
 	path = sources/meta-ivi
 	url = ../meta-ivi.git
 	branch = nilrt/master/sumo
+[submodule "sources/meta-rauc"]
+	path = sources/meta-rauc
+	url = ../meta-rauc.git
+	branch = nilrt/master/sumo
