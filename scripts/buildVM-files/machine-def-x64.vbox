@@ -26,6 +26,7 @@
         <HardwareVirtExLargePages enabled="true"/>
       </CPU>
       <Memory RAMSize="${VM_MEM_SIZE_MB}"/>
+      <Firmware type="EFI"/>
       <HID Pointing="USBTablet"/>
       <Boot>
         <Order position="1" device="HardDisk"/>
