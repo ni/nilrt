@@ -100,6 +100,9 @@ genisoimage -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso"
 chmod 0444 "$workingDir/ni_provisioning.answers.iso"
 echo "Built answers file at $workingDir/ni_provisioning.answers.iso"
 
+# Copy OVMF UEFI files for qemu
+cp -r "$SCRIPT_RESOURCE_DIR/OVMF" "$vmDirQemu/"
+
 # build qcow2 disk (for qemu) by booting NILRT restore disk to
 #  partition and install OS
 qemu-img create -f qcow2 "$vmDirQemu/$vmName-$MACHINE.qcow2" "$bootDiskSizeMB""M"
@@ -115,6 +118,8 @@ qemu-system-x86_64 \
     -drive file="$vmDirQemu/$vmName-$MACHINE.qcow2",index=0,media=disk \
     -drive file="$isoImage",index=1,media=cdrom,readonly \
     -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly \
+    -drive if=pflash,format=raw,readonly,file="$vmDirQemu/OVMF/OVMF_CODE.fd" \
+    -drive if=pflash,format=raw,file="$vmDirQemu/OVMF/OVMF_VARS.fd" \
     </dev/null
 
 enable_console_out "$vmDirQemu/$vmName-$MACHINE.qcow2"
