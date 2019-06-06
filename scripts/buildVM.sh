@@ -136,6 +136,7 @@ function build_alt_vmdisk()
         # virtualbox unfortunately requires unique UUIDs
         VBoxManage internalcommands sethduuid "$otherVmDir/$vmName-$MACHINE.$fmt"
     fi
+    cp "$SCRIPT_RESOURCE_DIR/deprecated.txt" "$otherVmDir"
 }
 chmod 0444 "$vmDirQemu/$vmName-$MACHINE.qcow2"
 build_alt_vmdisk  "vdi"   "$baseVmDir-virtualbox"

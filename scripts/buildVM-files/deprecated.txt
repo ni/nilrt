@@ -1,0 +1,1 @@
+This virtual machine image is no longer supported or maintained and may be removed in future builds.
