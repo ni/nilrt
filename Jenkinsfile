@@ -176,7 +176,7 @@ node (params.BUILD_NODE_SLAVE) {
 
     if (params.CLEAR_WORKSPACE) {
         stage("Clearing entire workspace") {
-            sh "rm -rvf ${workspace}; mkdir -p ${workspace}"
+            sh "rm -rf ${workspace}; mkdir -p ${workspace}"
         }
     }
 
@@ -189,7 +189,7 @@ node (params.BUILD_NODE_SLAVE) {
 
     // unconditionally clear the archive (each build recreates it from scratch)
     stage("Clearing archive dir") {
-        sh "rm -rvf ${archive_dir}; mkdir -vp ${archive_dir}"
+        sh "rm -rf ${archive_dir}; mkdir -vp ${archive_dir}"
     }
 
     if (params.DOCKER_IMAGE_URL) {
