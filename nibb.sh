@@ -32,6 +32,22 @@ EOT
     return 1
 }
 
+# Fetches bitbake configuration files from the meta-nilrt layer and places them
+# in ./conf/
+function fetch_bb_configs() {
+    META_NILRT="${NIBB_SOURCE_DIR}/meta-nilrt"
+    if [ ! -d "./conf" ]; then
+        mkdir "./conf"
+    fi
+
+    if [ ! -e "./conf/bblayers.conf" ]; then
+    	cp -v "${META_NILRT}/conf/nilrt.bblayers.conf" "./conf/bblayers.conf"
+	fi
+    if [ ! -e "./conf/local.conf" ]; then
+        cp -v "${META_NILRT}/conf/local.conf.sample" "./conf/local.conf"
+    fi
+}
+
 function update_source() {
     echo "Updating local git repos..."
     pushd ${NIBB_SOURCE_DIR} 1> /dev/null
@@ -183,11 +199,13 @@ if [ $# -gt 0  -a $# -le 2 ]; then
     case $1 in
         update )
             update_source
+            fetch_bb_configs
             exit
             ;;
         config )
             update_source
             get_opts
+            fetch_bb_configs
             write_config
             exit
             ;;
