@@ -113,13 +113,14 @@ isoImage="$imagesDir/$initramfsRecipeName-x64.iso"
 [ ! -f $isoImage ] && isoImage="$imagesDir/$initramfsRecipeName-x64.wic"
 
 qemu-system-x86_64 \
-    $enableKVM -m "$memSizeMB" \
+    $enableKVM -smp cpus=1 \
+    -m "$memSizeMB" \
     -nographic \
+    -drive if=pflash,format=raw,readonly,file="$vmDirQemu/OVMF/OVMF_CODE.fd" \
+    -drive if=pflash,format=raw,file="$vmDirQemu/OVMF/OVMF_VARS.fd" \
     -drive file="$vmDirQemu/$vmName-$MACHINE.qcow2",index=0,media=disk \
     -drive file="$isoImage",index=1,media=cdrom,readonly \
     -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly \
-    -drive if=pflash,format=raw,readonly,file="$vmDirQemu/OVMF/OVMF_CODE.fd" \
-    -drive if=pflash,format=raw,file="$vmDirQemu/OVMF/OVMF_VARS.fd" \
     </dev/null
 
 enable_console_out "$vmDirQemu/$vmName-$MACHINE.qcow2"
