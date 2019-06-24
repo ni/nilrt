@@ -384,8 +384,8 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   # Only for x64 because we don't have ARM virtualization yet
                                   if [ $distro_flavour == 'x64' ]; then
-                                      ../scripts/buildVM.sh -d 10240 -m 768 -n nilrt-vm -r restore-mode-image
-                                      ../scripts/buildVM.sh -d 10240 -m 768 -n lvcomms-nilrt-vm -r lvcomms-restore-mode-image
+                                      ../scripts/buildVM.sh -d 10240 -m 1024 -n nilrt-vm -r restore-mode-image
+                                      ../scripts/buildVM.sh -d 10240 -m 1024 -n lvcomms-nilrt-vm -r lvcomms-restore-mode-image
                                   fi
                                """
 
