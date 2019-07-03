@@ -364,16 +364,26 @@ node (params.BUILD_NODE_SLAVE) {
                                   # rebuild, when BUILD_FROM_FEEDS is used. Clean to always rebuild.
                                   # NOTE: If the sstate cache is shared, this stage will need a lock to
                                   #       avoid a race condition between cleanning/building.
-                                  bitbake -ccleanall restore-mode-image \
-                                                     minimal-nilrt-image \
-                                                     minimal-nilrt-ptest-image \
-                                                     lvcomms-restore-mode-image \
-                                                     lvcomms-nilrt-image \
-                                                     init-restore-mode 2>&1 | tee -a bitbake.stdout.txt
+                                  bitbake -ccleanall \
+                                        minimal-nilrt-image \
+                                        minimal-nilrt-bundle-image \
+                                        minimal-nilrt-bundle \
+                                        minimal-nilrt-ptest-image \
+                                        lvcomms-nilrt-image \
+                                        lvcomms-nilrt-bundle-image \
+                                        lvcomms-nilrt-bundle \
+                                        lvcomms-nilrt-ptest-image \
+                                        nilrt-initramfs \
+                                        init-restore-mode \
+                                        restore-mode-image \
+                                        lvcomms-restore-mode-image \
+                                    2>&1 | tee -a bitbake.stdout.txt
 
-                                  bitbake restore-mode-image \
-                                          minimal-nilrt-ptest-image \
-                                          lvcomms-restore-mode-image 2>&1 | tee -a bitbake.stdout.txt
+                                  bitbake \
+                                        minimal-nilrt-ptest-image \
+                                        restore-mode-image \
+                                        lvcomms-restore-mode-image \
+                                    2>&1 | tee -a bitbake.stdout.txt
 
                                   # Only for x64 because we don't have ARM ISO images
                                   if [ $distro_flavour == 'x64' ]; then
