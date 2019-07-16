@@ -14,4 +14,21 @@ done
 
 enable_kvm=$(id | grep -q kvm && echo '-enable-kvm -cpu kvm64' || echo '')
 
-qemu-system-x86_64 -snapshot -nographic $enable_kvm -smp 2 -m 1024 -net nic,macaddr=$macaddr -net bridge,br="$bridge_name" "$vm_name"
+efi_drives=""
+if [ -e "./OVMF/OVMF_CODE.fd" ]; then
+	efi_drives="${efi_drives} -drive if=pflash,format=raw,readonly,file=./OVMF/OVMF_CODE.fd"
+fi
+if [ -e "./OVMF/OVMF_VARS.fd" ]; then
+	efi_drives="${efi_drives} -drive if=pflash,format=raw,file=./OVMF/OVMF_VARS.fd"
+fi
+
+qemu-system-x86_64 \
+	-snapshot \
+	-nographic \
+	$enable_kvm \
+	-smp cpus=2 \
+	-m 1024 \
+	-net nic,macaddr=$macaddr \
+	-net bridge,br="$bridge_name" \
+	$efi_drives \
+	-drive file="$vm_name",index=0,media=disk

@@ -37,7 +37,7 @@ def get_ip_addr(vm):
     time.sleep(15)
     vm.sendline("ip addr")
     vm.expect("# ")
-    return str(re.findall(b'inet [0-9]+(?:\.[0-9]+){3}', vm.before)[1][5:], 'utf-8')
+    return re.findall('inet [0-9]+(?:\.[0-9]+){3}', vm.before)[1].split()[1]
 
 def start_vpn_client(vm):
     """
@@ -62,7 +62,7 @@ def vm_test_vpn_ping(vm, vpn_ip):
     Ping VPN IP from vm test
     """
     print("Testing VPN ping")
-    if not vm_test_command(vm, "ping -c 1 %s" % vpn_ip, b", 0% packet loss"):
+    if not vm_test_command(vm, "ping -c 1 %s" % vpn_ip, ", 0% packet loss"):
         print("ERROR: Couldn't ping client from server")
         cleanup()
         exit(1)
@@ -73,7 +73,7 @@ def check_dhcp_ip_range(vm):
     """
     print("Testing bridge DHCP issued IPs are different from VPN IP")
     cmd = "[ $(ip addr | grep 'inet 10.8.0.' | wc -l) -eq 1 ] && echo DIFFERENT"
-    if not vm_test_command(vm, cmd, b"DIFFERENT"):
+    if not vm_test_command(vm, cmd, "DIFFERENT"):
         print("ERROR: Multiple IPs in the 10.8.0.1/24 range have been issued")
         print("       Use another VPN IP range or check with your administrator")
         cleanup()
@@ -114,13 +114,20 @@ os.system("rm -rf %s-qemu" % img_name)
 os.system("unzip -q %s" % image_path)
 os.chdir("%s-qemu" % img_name)
 
+
 print("Booting VPN client VM")
-client = pexpect.spawn ("../vpn-test-files/start_qemu_bridge.sh %s %s.qcow2" %
-                        (net_bridge, img_name), timeout=test_timeout)
+client = pexpect.spawnu("../vpn-test-files/start_qemu_bridge.sh %s %s.qcow2" %
+                        (net_bridge, img_name), timeout=test_timeout, encoding='utf-8')
 
 print("Booting VPN server VM")
-server = pexpect.spawn ("../vpn-test-files/start_qemu_bridge.sh %s %s.qcow2" %
-                        (net_bridge, img_name), timeout=test_timeout)
+server = pexpect.spawnu("../vpn-test-files/start_qemu_bridge.sh %s %s.qcow2" %
+                        (net_bridge, img_name), timeout=test_timeout, encoding='utf-8')
+
+# create log files
+fp_log_client = open('client.log', 'w')
+client.logfile = fp_log_client
+fp_log_server = open('server.log', 'w')
+server.logfile = fp_log_server
 
 login(client, "admin", "")
 client_ip = get_ip_addr(client)
@@ -178,13 +185,13 @@ client.sendline("reboot")
 login(client, "admin", "1234")
 
 print("Sanity checking VPN runmode installation")
-if vm_test_command(client, "echo RESULT $(ls /boot/runmode/ | wc -l)", b"RESULT 0"):
+if vm_test_command(client, "echo RESULT $(ls /boot/runmode/ | wc -l)", "RESULT 0"):
     print("ERROR: No runmode files present under /boot/runmode")
     cleanup()
     exit(1)
 
 print("Verifying VPN config file persistence after installation")
-if vm_test_command(client, "echo RESULT $(ls /etc/natinst/share/openvpn | wc -l)", b"RESULT 0"):
+if vm_test_command(client, "echo RESULT $(ls /etc/natinst/share/openvpn | wc -l)", "RESULT 0"):
     print("ERROR: No VPN config files present under /etc/natinst/share/openvpn")
     cleanup()
     exit(1)
@@ -193,5 +200,8 @@ start_vpn_client(client)
 
 client.sendline("poweroff")
 server.sendline("poweroff")
+
+fp_log_client.close()
+fp_log_server.close()
 
 cleanup()
