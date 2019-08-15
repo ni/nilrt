@@ -440,47 +440,6 @@ node (params.BUILD_NODE_SLAVE) {
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2"
                         }
 
-                        stage("$distro_flavour images feed") {
-                            if (params.NI_INTERNAL_BUILD) {
-                                sh """#!/bin/bash
-                                      set -e -o pipefail
-
-                                      . ./ni-oe-init-build-env $build_dir
-
-                                      # these need to build on top of the core feed + images build so leave the
-                                      # tmp-glibc/deploy/ipk -> tmp-glibc/deploy/ipk-core symlink in place
-                                      bitbake ninextos nioldos 2>&1 | tee -a bitbake.stdout.txt
-
-                                      if [ $distro_flavour == 'xilinx-zynqhf' ]; then
-                                          bitbake zynq-safemode-cfgs 2>&1 | tee -a bitbake.stdout.txt
-                                      fi
-
-                                      for ipk_file in `find tmp-glibc/deploy/ipk/ -name *.ipk`; do
-                                          if [[ ! \$ipk_file =~ /ninextos.*\$ ]] &&
-                                             [[ ! \$ipk_file =~ /nioldos.*\$ ]] &&
-                                             [[ ! \$ipk_file =~ /zynq-safemode-cfgs.*\$ ]] ; then
-                                                 rm \$ipk_file
-                                          fi
-                                      done;
-
-                                      bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-
-                                      if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
-                                          ../scripts/jenkins/sign-feed-index.sh \
-                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
-                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                              "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} images"
-                                      fi
-
-                                      cp -Lr tmp-glibc/deploy/ipk -T $feed_dir/images
-
-                                      # restore the core feed to its pristine state (without nioldos & co)
-                                      rm -rf tmp-glibc/deploy/ipk-core
-                                      cp -r $feed_dir/main -T tmp-glibc/deploy/ipk-core
-                                   """
-                            }
-                        }
-
                         stage("$distro_flavour extras feed") {
                             sh """#!/bin/bash
                                   set -e -o pipefail
