@@ -13,12 +13,20 @@
 
 import sys, os, time, subprocess, glob, re, pexpect
 
+FOO_PASS = '1234'
+
+RE_PASSWD_NIAUTH_OLD = re.compile(b'Enter current NIAuth password: ')
+RE_PASSWD_NIAUTH_NEW = re.compile(b'(Re-enter|Enter) new NIAuth password: ')
+RE_PASSWD_NEW = re.compile(b'(Retype new|New) password: ')
+RE_PSTTY = re.compile(b'(\(safemode\) )?\S+@\S+:.*# ')
+
 if len(sys.argv) < 2:
     print("Usage: %s <network-bridge> <nilrt-export-path>" % sys.argv[0])
     print("Example: %s br0 $BALTIC_MNT/penguinExports/nilinux/os-common/export/7.0" % sys.argv[0])
     exit(1)
 
 test_timeout = 900 #seconds = 15 min
+
 
 def login(vm, user, password):
     """
@@ -47,6 +55,10 @@ def start_vpn_client(vm):
     vm.sendline('/etc/init.d/vpn start')
     vm.expect("# ")
     time.sleep(15)
+
+def vm_chroot(vm, chroot_path):
+    vm.sendline('chroot %s' % chroot_path)
+    vm.expect('# ')
 
 def vm_test_command(vm, cmd, output_test_str):
     """
@@ -88,15 +100,23 @@ def enable_ssh(vm):
     vm.sendline("/etc/init.d/sshd start")
     vm.expect("# ")
 
-def vm_set_passwd(vm, passw):
-    vm.sendline("passwd")
-    vm.expect("password:")
-    vm.sendline()
-    vm.expect("password:")
-    vm.sendline(passw)
-    vm.expect("password:")
-    vm.sendline(passw)
-    vm.expect("# ")
+def vm_set_passwd(vm, new, user='', old=''):
+    cases = [
+        RE_PASSWD_NIAUTH_OLD,
+        RE_PASSWD_NIAUTH_NEW,
+        RE_PASSWD_NEW,
+        RE_PSTTY,
+        ]
+    vm.sendline('passwd %s' % user)
+
+    for prompt_iter in range(0, 5):
+        case = vm.expect(cases)
+        if case == 0:
+            vm.sendline(old)
+        elif case in (1,2):
+            vm.sendline(new)
+        elif case == 3:
+            break
 
 def cleanup():
     print("Cleaning up")
@@ -135,8 +155,8 @@ print("Client bridge IP: %s" % client_ip)
 
 login(server, "admin", "")
 
-vm_set_passwd(server, "1234")
-vm_set_passwd(client, "1234")
+vm_set_passwd(server, FOO_PASS, user='admin', old='')
+vm_set_passwd(client, FOO_PASS, user='admin', old='')
 
 server_ip = get_ip_addr(server)
 print("Server bridge IP: %s" % server_ip)
@@ -179,10 +199,16 @@ server.sendline("opkg update; opkg install sshpass")
 server.expect("# ")
 server.sendline("./install_systemlink.sh %s ./systemlink-linux-x64.tar" % client_vpn_ip)
 server.expect("=== Done.")
+# The systemlink Base Image doesn't have the NIAuth pam module. We won't be
+# able to use it to log into runmod. So give the 'root' user in the userfs
+# shadow file a dumb password and use it to log in instead.
+vm_chroot(client, '/mnt/userfs')
+vm_set_passwd(client, FOO_PASS, user='root', old='')
+client.sendline('exit')  # can't chain any other commands after 'exit'
 
 print("Finished installing latest SystemLink, waiting for client to reboot")
-client.sendline("reboot")
-login(client, "admin", "1234")
+client.sendline('reboot')
+login(client, 'root', FOO_PASS)
 
 print("Sanity checking VPN runmode installation")
 if vm_test_command(client, "echo RESULT $(ls /boot/runmode/ | wc -l)", b"RESULT 0"):
