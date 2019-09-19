@@ -6,3 +6,5 @@ PROVISION_REPARTITION_TARGET="y"
 PROVISION_RESTORE_MINIMAL_IMAGE="y"
 PROVISION_REBOOT_METHOD="poweroff"
 
+# Install auto discoverable ESPs to support all hypervisors
+PROVISION_BOOT_SCHEME="efi-auto"
