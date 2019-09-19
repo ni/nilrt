@@ -420,6 +420,49 @@ node (params.BUILD_NODE_SLAVE) {
                                   $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.ext2"
                         }
 
+                        // The dist feed stage must be run immediately after the images stage.
+                        // The dist recipes require packages from the core feed and the deploy/images.
+                        stage("$distro_flavour dist feed") {
+                            sh """#!/bin/bash
+                                  set -e -o pipefail
+
+                                  . ./ni-oe-init-build-env $build_dir
+
+                                  dist_recipes="dist-nilrt-grub-gateway dist-nilrt-efi-ab-gateway dist-nilrt-efi-ab"
+
+                                  bitbake \$dist_recipes
+
+                                  # move created recipe ipks to their own dist feed
+                                  mkdir -p ./tmp-glibc/deploy/ipk-dist
+                                  for dist_recipe in \$dist_recipes; do
+                                      dep_ipk_path=`find ./tmp-glibc/work -type d -path "./tmp-glibc/work/*/\$dist_recipe/*/deploy-ipks"`
+                                      echo DEBUG: "\$dist_recipe => \$dep_ipk_path"
+                                      dep_ipks=`find "\$dep_ipk_path" -name "*.ipk" -printf "%P "`
+                                      for dep_ipk in \$dep_ipks; do
+                                          echo "DEP_IPK \$dep_ipk"
+                                          install -vD "./tmp-glibc/deploy/ipk/\$dep_ipk" "./tmp-glibc/deploy/ipk-dist/\$dep_ipk"
+                                      done
+                                  done
+
+
+                                  # make a package index for the new dist feed
+                                  rm -rf tmp-glibc/deploy/ipk
+                                  ln -s \$PWD/tmp-glibc/deploy/ipk-dist tmp-glibc/deploy/ipk
+                                  bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
+
+                                  # sign the dist feed
+                                  if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
+                                      ../scripts/jenkins/sign-feed-index.sh \
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
+                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
+                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} dist"
+                                  fi
+                               """
+
+                            sh "cp -Lr $build_dir/tmp-glibc/deploy/ipk -T $feed_dir/dist"
+                        }
+
+
                         stage("$distro_flavour extras feed") {
                             sh """#!/bin/bash
                                   set -e -o pipefail
@@ -568,9 +611,16 @@ node (params.BUILD_NODE_SLAVE) {
                   for dir in $archive_dir/feeds/NILinuxRT-*/* ; do
                       pushd \$dir
 
-                      [ -d 'all' ]
-                      [ -d 'cortexa9hf-vfpv3' -a -d 'xilinx-zynqhf' ] || [ -d 'core2-64' -a -d 'x64' ]
+                      # assert feeds have expected subfeeds
+                      if [ `basename "\$dir"` = "dist" ]; then
+                          [ -d "core2-64" ]
+                      else
+                          [ -d "all" ]
+                          [ -d 'cortexa9hf-vfpv3' -a -d 'xilinx-zynqhf' ] || \
+                          [ -d 'core2-64' -a -d 'x64' ]
+                      fi
 
+                      # assert all subfeeds have package indexes
                       for subFeedDir in `find . -type d`; do
                           [ -f "\$subFeedDir/Packages" ]
                           if [ '.' != "\$subFeedDir" ]; then
