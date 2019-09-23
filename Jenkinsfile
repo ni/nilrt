@@ -56,7 +56,7 @@
 //    defaultValue: false
 //    description: If true, OE's git kernel build pushes a tag to help identify this build in the kernel git log
 
-// BUILD_IDENTIFIER_PREFIX
+// RELEASE_CODENAME
 //    type: string
 //    defaultValue: oe
 //    description: If ENABLE_BUILD_TAG_PUSH is true, this prefix is used to construct the & push the tag identifier
@@ -277,10 +277,10 @@ node (params.BUILD_NODE_SLAVE) {
                         def archive_img_path      = "$node_archive_dir/images/NILinuxRT-$distro_flavour"
                         def feed_dir              = "$node_archive_dir/feeds/NILinuxRT-$distro_flavour"
 
-                        def distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${distro_flavour}-${env.BUILD_NUMBER}"
+                        def distro_flav_build_tag = "${params.RELEASE_CODENAME}-${distro_flavour}-${env.BUILD_NUMBER}"
                         if (params.NI_INTERNAL_BUILD) {
                             def bs_export = sh(script: "cat $node_archive_dir/bsExportVersionNumb.txt", returnStdout: true).trim()
-                            distro_flav_build_tag = "${params.BUILD_IDENTIFIER_PREFIX}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
+                            distro_flav_build_tag = "${params.RELEASE_CODENAME}-${bs_export}-${distro_flavour}-${env.BUILD_NUMBER}"
                         }
 
                         sh "mkdir -p $feed_dir"
@@ -309,7 +309,6 @@ node (params.BUILD_NODE_SLAVE) {
                                 sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> $build_dir/conf/auto.conf"
                             }
 
-                            sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
                             sh "echo 'BUILDNAME = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
 
                             if (params.ENABLE_BUILD_TAG_PUSH) {
