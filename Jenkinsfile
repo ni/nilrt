@@ -369,20 +369,14 @@ node (params.BUILD_NODE_SLAVE) {
                                         minimal-nilrt-bundle-image \
                                         minimal-nilrt-bundle \
                                         minimal-nilrt-ptest-image \
-                                        lvcomms-nilrt-image \
-                                        lvcomms-nilrt-bundle-image \
-                                        lvcomms-nilrt-bundle \
-                                        lvcomms-nilrt-ptest-image \
                                         nilrt-initramfs \
                                         init-restore-mode \
                                         restore-mode-image \
-                                        lvcomms-restore-mode-image \
                                     2>&1 | tee -a bitbake.stdout.txt
 
                                   bitbake \
                                         minimal-nilrt-ptest-image \
                                         restore-mode-image \
-                                        lvcomms-restore-mode-image \
                                     2>&1 | tee -a bitbake.stdout.txt
 
                                   # Only for x64 because we don't have ARM ISO images
@@ -390,14 +384,12 @@ node (params.BUILD_NODE_SLAVE) {
                                       # wic files are actually ISO images, so rename them
                                       pushd $build_dir/tmp-glibc/deploy/images/x64
                                       mv restore-mode-image-x64.wic restore-mode-image-x64.iso
-                                      mv lvcomms-restore-mode-image-x64.wic lvcomms-restore-mode-image-x64.iso
                                       popd
                                   fi
 
                                   # Only for x64 because we don't have ARM virtualization yet
                                   if [ $distro_flavour == 'x64' ]; then
                                       ../scripts/buildVM.sh -d 10240 -m 1024 -n nilrt-vm -r restore-mode-image
-                                      ../scripts/buildVM.sh -d 10240 -m 1024 -n lvcomms-nilrt-vm -r lvcomms-restore-mode-image
                                   fi
                                """
 
@@ -405,18 +397,11 @@ node (params.BUILD_NODE_SLAVE) {
                             if (distro_flavour == 'x64') {
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso \
                                     $archive_img_path/restore-mode-image-${distro_flavour}.iso"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-restore-mode-image-${distro_flavour}.iso \
-                                    $archive_img_path/lvcomms-restore-mode-image-${distro_flavour}.iso"
 
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
-
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
                             }
 
                             if (distro_flavour == 'xilinx-zynqhf') {
@@ -429,15 +414,11 @@ node (params.BUILD_NODE_SLAVE) {
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2"
                             sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2 \
                                   $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2"
-                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-image-${distro_flavour}.tar.bz2 \
-                                  $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2"
 
                             sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.ext2 \
                                   $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2"
                             sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.ext2 \
                                   $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.ext2"
-                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/lvcomms-nilrt-image-${distro_flavour}.ext2 \
-                                  $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2"
                         }
 
                         stage("$distro_flavour extras feed") {
