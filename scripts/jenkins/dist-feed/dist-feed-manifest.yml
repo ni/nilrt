@@ -1,0 +1,38 @@
+# vi: set expandtab ts=2:
+# This file defines which system images should be included in the /dist feed
+# and where to find them on the corporate NAS.
+#
+# Available ENV variables:
+#   MNT_BALTIC_PENGUINEXPORTS: the local //baltic/penguinExports mount location
+#   MNT_NIRVANA_PERFORCEEXPORTS: the local //nirvana/perforceExports location
+#
+# Available jinja2 filters:
+#   latest_export(fs_path, final_only=False): descends into the newest export
+#     within the fs_path and returns the descended path. If final_only is
+#     asserted, only 'final' exports are considered valid.
+#   unzip(zip_file, password=None): unzip the ZIP-compressed file at zip_file
+#     into a temporary directory. Return the path to the temp directory. If
+#     password is specified, it will be used when extracting files.
+#
+# Structure:
+# packages:
+#   $entry_name:
+#     export: $local_path_to_export
+#     ipk_path: $wildcard_path_to_dist_ipk_within_export
+---
+packages:
+  dist-nilrt-efi-ab_100.1:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
+    ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-efi-ab_*.ipk"
+  dist-nilrt-efi-ab-gateway_100.1:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
+    ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-efi-ab-gateway_*.ipk"
+  dist-nilrt-grub-gateway_20.0:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
+    ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-grub-gateway_*.ipk"
+  dist-nilrt-systemlink-grub_19.6_arm:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/current_gen/skyline_rt_client_runtime/export/19.6') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/dist_nilrt_systemlink_grub_ipk/dist-nilrt-systemlink-grub_*.ipk'
+  dist-nilrt-systemlink-grub_19.6_x64-crio:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/current_gen/skyline_rt_client_runtime/export/19.6') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/dist_nilrt_systemlink_grub_ipk/dist-nilrt-systemlink-grub_*.ipk'
