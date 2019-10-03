@@ -86,6 +86,24 @@
 //                   WARNING: Make sure the image you import was generated with "docker export" and contains the
 //                   tag referenced by parameter ${DOCKER_IMAGE_TAG}
 
+// USE_CUSTOM_NI_FEED_JOB
+//    type: bool
+//    defaultValue: false
+//    description: By default the build is configured to fetch NI software feeds from http://download.ni.com
+//                   but this can be overriden if, for the sake of build reproducibility, a custom NIFeed job is
+//                   supplied (outside NI builds can clone from download.ni.com) containing the NIFeed artifacts
+
+// NI_FEED_JOB_NAME
+//    type: string
+//    defaultValue: Empty
+//    description: The name of the NIFeed job from which to fetch the artifacts
+
+// NI_FEED_ARTIFACT_FILTER
+//    type: string
+//    defaultValue: objects/export/*
+//    description: A filter to use when fetching artifacts from $NI_FEED_JOB_NAME. Default is objects/export/*
+//                   because that's a standard path location in NI software builds (you can safely change it).
+
 // NI_RELEASE_BUILD
 //    type: boolean
 //    defaultValue: false
@@ -146,6 +164,7 @@
 
 node (params.BUILD_NODE_SLAVE) {
     def archive_dir = "${workspace}/archive"
+    def nifeeds_dir = "${workspace}/nifeeds"
     def sstate_cache_dir = "${workspace}/sstate-cache"
 
     if (params.SSTATE_CACHE_DIR) {
@@ -196,6 +215,21 @@ node (params.BUILD_NODE_SLAVE) {
         stage("Unpacking sstate-cache archive") {
             sh "mkdir -p $sstate_cache_dir"
             sh "tar --overwrite -xf ${params.SSTATE_CACHE_ARCHIVE} -C $sstate_cache_dir -I pigz"
+        }
+    }
+
+    if (params.USE_CUSTOM_NI_FEED_JOB) {
+        stage("Unpacking NIFeeds") {
+            sh "rm -rf $nifeeds_dir && mkdir -p $nifeeds_dir"
+
+            step ([$class: 'CopyArtifact',
+                   projectName: params.NI_FEED_JOB_NAME,
+                   filter: params.NI_FEED_ARTIFACT_FILTER,
+                   target: "$nifeeds_dir"])
+
+            sh "cp $nifeeds_dir/objects/export/bsExportP4Path.txt $archive_dir/bsExportP4PathNIFeed.txt"
+
+            sh "tar -xf $nifeeds_dir/objects/export/feeds.tar.gz -C $nifeeds_dir"
         }
     }
 
@@ -268,6 +302,12 @@ node (params.BUILD_NODE_SLAVE) {
                             sh "mkdir -p $build_dir/conf $node_sstate_cache_dir"
                             sh "rm -rf $build_dir/sstate-cache"
                             sh "ln -sf $node_sstate_cache_dir $build_dir/sstate-cache"
+
+                            if (params.USE_CUSTOM_NI_FEED_JOB) {
+                                // configure OE to pull ipks from NIFeeds
+                                def nisubfeed_path="/mnt/workspace/nifeeds/feeds/NILinuxRT-${distro_flavour}"
+                                sh "echo 'IPK_NI_SUBFEED_URI = \"file://$nisubfeed_path\"' >> $build_dir/conf/auto.conf"
+                            }
 
                             sh "echo 'BUILD_IDENTIFIER = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
                             sh "echo 'BUILDNAME = \"${distro_flav_build_tag}\"' >> $build_dir/conf/auto.conf"
@@ -474,6 +514,7 @@ node (params.BUILD_NODE_SLAVE) {
 // ├── images
 // │   ├── NILinuxRT-$distro_flavour
 // │   └── ...
+// ├── nifeeds-bsExportP4Path.txt
 // ├── nilrt-gitCommitId.txt
 // ├── nilrt-git-submodule-status.txt
 // ├── sstate-cache.tar.gz
