@@ -13,59 +13,6 @@ print_usage_and_die () {
     exit 1
 }
 
-enable_console_out () {
-    local tempDir="$1"
-    local vmimage="$2"
-
-    local niconfig_device_name=$(echo "
-        run
-        findfs-label niconfig
-    " | guestfish -a "$vmimage" 2>/dev/null) || true
-
-    if [ -z "$niconfig_device_name" ]; then
-        return
-    fi
-
-    mkdir "$tempDir"
-
-    local config_present=$(echo "
-        run
-        mount-ro /dev/sda3 /
-        exists /ni-rt.ini
-    " | guestfish -a "$vmimage")
-
-    if [ "$config_present" = "true" ]; then
-        echo "
-            run
-            mount /dev/sda3 /
-            download /ni-rt.ini '$tempDir/ni-rt.ini'
-            ! sed -i 's/ConsoleOut\.enabled="False"/ConsoleOut\.enabled="True"/' '$tempDir/ni-rt.ini'
-            upload '$tempDir/ni-rt.ini' /ni-rt.ini
-        " | guestfish -a "$vmimage"
-
-        echo "Enabled console out in ni-rt.ini"
-    fi
-
-    local grubenv_present=$(echo "
-        run
-        mount-ro /dev/sda2 /
-        exists /grub/grubenv
-    " | guestfish -a "$vmimage")
-
-    if [ "$grubenv_present" = "true" ]; then
-        echo "
-            run
-            mount /dev/sda2 /
-            download /grub/grubenv '$tempDir/grubenv'
-            ! grub-editenv '$tempDir/grubenv' set consoleoutenable=True
-            ! grub-editenv '$tempDir/grubenv' set bootdelay=1
-            upload '$tempDir/grubenv' /grub/grubenv
-        " | guestfish --pipe-error -a "$vmimage"
-
-        echo "Set consoleoutenable and bootdelay in grubenv"
-    fi
-}
-
 SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
 
 # get args
@@ -144,10 +91,6 @@ qemu-system-x86_64 \
     -drive file="$isoImage",index=1,media=cdrom,readonly \
     -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly \
     </dev/null
-
-echo ""
-
-enable_console_out "$workingDir/consoleTemp" "$vmDirQemu/$vmName-$MACHINE.qcow2"
 
 echo "Built qcow2 disk at $vmDirQemu/$vmName-$MACHINE.qcow2"
 
