@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e -o pipefail
+set -eu -o pipefail
 
 error_and_die () {
     echo >&2 "ERROR: $1"
@@ -9,12 +9,9 @@ error_and_die () {
 NIBUILD_PACKAGE_INDEX_SIGNING_URL="$1"
 NIBUILD_PACKAGE_INDEX_SIGNING_KEY="$2"
 COMMENT_PREFIX="$3"
+FEED_PATH="$4"
 
-# check env
-[ -n "$MACHINE" ] || error_and_die 'No MACHINE specified in env'
-bitbake --parse-only >/dev/null || error_and_die 'Bitbake failed. Check your environment. This script must be run from the build directory.'
-
-for filepath in `find ./tmp-glibc/deploy/ipk/ -name Packages -o -name Packages.gz`; do
+for filepath in `find "$FEED_PATH" -name Packages -o -name Packages.gz`; do
     echo "Signing $filepath"
 
     rm -f "$filepath.asc"

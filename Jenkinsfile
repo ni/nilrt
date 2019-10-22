@@ -346,7 +346,8 @@ node (params.BUILD_NODE_SLAVE) {
                                       ../scripts/jenkins/sign-feed-index.sh \
                                           "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
                                           "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} core"
+                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} core" \
+                                          "./tmp-glibc/deploy/ipk"
                                   fi
                                """
 
@@ -455,7 +456,8 @@ node (params.BUILD_NODE_SLAVE) {
                                       ../scripts/jenkins/sign-feed-index.sh \
                                           "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
                                           "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} dist"
+                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} dist" \
+                                          "./tmp-glibc/deploy/ipk"
                                   fi
                                """
 
@@ -491,7 +493,8 @@ node (params.BUILD_NODE_SLAVE) {
                                       ../scripts/jenkins/sign-feed-index.sh \
                                           "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
                                           "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} extras"
+                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} extras" \
+                                          "./tmp-glibc/deploy/ipk"
                                   fi
 
                                   cp -Lr tmp-glibc/deploy/ipk -T $feed_dir/extra
