@@ -379,14 +379,6 @@ node (params.BUILD_NODE_SLAVE) {
                                         restore-mode-image \
                                     2>&1 | tee -a bitbake.stdout.txt
 
-                                  # Only for x64 because we don't have ARM ISO images
-                                  if [ $distro_flavour == 'x64' ]; then
-                                      # wic files are actually ISO images, so rename them
-                                      pushd $build_dir/tmp-glibc/deploy/images/x64
-                                      mv restore-mode-image-x64.wic restore-mode-image-x64.iso
-                                      popd
-                                  fi
-
                                   # Only for x64 because we don't have ARM virtualization yet
                                   if [ $distro_flavour == 'x64' ]; then
                                       ../scripts/buildVM.sh -d 10240 -m 1024 -n nilrt-vm -r restore-mode-image
