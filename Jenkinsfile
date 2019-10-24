@@ -340,18 +340,9 @@ node (params.BUILD_NODE_SLAVE) {
                                   ln -s \$PWD/tmp-glibc/deploy/ipk-core tmp-glibc/deploy/ipk
 
                                   bitbake packagegroup-ni-coreimagerepo 2>&1 | tee bitbake.stdout.txt
+                                  # Create the core feed package index for use by the image build steps
                                   bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-
-                                  if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
-                                      ../scripts/jenkins/sign-feed-index.sh \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} core" \
-                                          "./tmp-glibc/deploy/ipk"
-                                  fi
                                """
-
-                            sh "cp -Lr $build_dir/tmp-glibc/deploy/ipk -T $feed_dir/main"
                         }
 
                         stage("$distro_flavour images") {
@@ -425,11 +416,16 @@ node (params.BUILD_NODE_SLAVE) {
 
                                   . ./ni-oe-init-build-env $build_dir
 
-                                  dist_recipes="dist-nilrt-grub-gateway dist-nilrt-efi-ab-gateway dist-nilrt-efi-ab"
+                                  dist_recipes=" \
+                                      dist-nilrt-grub-gateway \
+                                      dist-nilrt-efi-ab \
+                                      dist-nilrt-efi-ab-gateway \
+                                  "
 
                                   bitbake \$dist_recipes
 
                                   # move created recipe ipks to their own dist feed
+                                  rm -rf   ./tmp-glibc/deploy/ipk-dist
                                   mkdir -p ./tmp-glibc/deploy/ipk-dist
                                   for dist_recipe in \$dist_recipes; do
                                       dep_ipk_path=`find ./tmp-glibc/work -type d -path "./tmp-glibc/work/*/\$dist_recipe/*/deploy-ipks"`
@@ -441,26 +437,8 @@ node (params.BUILD_NODE_SLAVE) {
                                           rm -v "./tmp-glibc/deploy/ipk/\$dep_ipk"
                                       done
                                   done
-
-
-                                  # make a package index for the new dist feed
-                                  rm -rf tmp-glibc/deploy/ipk
-                                  ln -s \$PWD/tmp-glibc/deploy/ipk-dist tmp-glibc/deploy/ipk
-                                  bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-
-                                  # sign the dist feed
-                                  if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
-                                      ../scripts/jenkins/sign-feed-index.sh \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} dist" \
-                                          "./tmp-glibc/deploy/ipk"
-                                  fi
                                """
-
-                            sh "cp -Lr $build_dir/tmp-glibc/deploy/ipk -T $feed_dir/dist"
                         }
-
 
                         stage("$distro_flavour extras feed") {
                             sh """#!/bin/bash
@@ -474,29 +452,57 @@ node (params.BUILD_NODE_SLAVE) {
                                   mkdir -p tmp-glibc/deploy/ipk-extra
                                   ln -s \$PWD/tmp-glibc/deploy/ipk-extra tmp-glibc/deploy/ipk
 
+                                  echo "Building desirable packages..."
                                   bitbake packagegroup-ni-desirable 2>&1 | tee -a bitbake.stdout.txt
 
+                                  echo "Building extra packages..."
                                   bitbake --continue packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt || true
 
                                   # make sure no main/core feed ipk exists in the extras feed
-                                  ipk_paths=`find $feed_dir/main -name *.ipk | rev | cut -d"/" -f1-2 | rev`
+                                  ipk_paths=`find ./tmp-glibc/deploy/ipk-core -name *.ipk | rev | cut -d"/" -f1-2 | rev`
                                   for ipk_file in \$ipk_paths; do
-                                      rm -f tmp-glibc/deploy/ipk/\$ipk_file
+                                      rm -fv tmp-glibc/deploy/ipk/\$ipk_file
                                   done;
-
-                                  bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
-
-                                  if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
-                                      ../scripts/jenkins/sign-feed-index.sh \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
-                                          "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
-                                          "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} extras" \
-                                          "./tmp-glibc/deploy/ipk"
-                                  fi
-
-                                  cp -Lr tmp-glibc/deploy/ipk -T $feed_dir/extra
                               """
                         }
+
+                        stage("$distro_flavour feed finalization") {
+                            sh """#!/bin/bash
+                                  set -e -o pipefail
+
+                                  . ./ni-oe-init-build-env $build_dir
+
+                                  feeds=" \
+                                      core \
+                                      dist \
+                                      extra \
+                                  "
+
+                                  for feed in \$feeds; do
+                                      echo "Finalizing \$feed feed..."
+                                      # (Re)create package indexes
+                                      rm -f "./tmp-glibc/deploy/ipk"
+                                      ln -s "\$PWD/tmp-glibc/deploy/ipk-\${feed}" "./tmp-glibc/deploy/ipk"
+                                      bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
+
+                                      # Sign the feed indexes
+                                      if [ -n "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" ]; then
+                                          ../scripts/jenkins/sign-feed-index.sh \
+                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_URL}" \
+                                              "${params.NIBUILD_PACKAGE_INDEX_SIGNING_KEY}" \
+                                              "NIOE-Pipeline ${distro_flav_build_tag} ${distro_flavour} \$feed" \
+                                              "./tmp-glibc/deploy/ipk"
+                                      fi
+
+                                      # Copy feeds to the export directory
+                                  done
+
+                                  cp -Lr $build_dir/tmp-glibc/deploy/ipk-core  -T $feed_dir/main
+                                  cp -Lr $build_dir/tmp-glibc/deploy/ipk-dist  -T $feed_dir/dist
+                                  cp -Lr $build_dir/tmp-glibc/deploy/ipk-extra -T $feed_dir/extra
+
+                               """
+                        } // stage
 
                         // a feed package morgue is created because metadata is invalidated without invalidating sstate
                         // (it's reused in a new package revision) but because PR server state is updated only at the end
