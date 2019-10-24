@@ -11,7 +11,7 @@ NIBUILD_PACKAGE_INDEX_SIGNING_KEY="$2"
 COMMENT_PREFIX="$3"
 FEED_PATH="$4"
 
-for filepath in `find "$FEED_PATH" -name Packages -o -name Packages.gz`; do
+for filepath in `find -L "$FEED_PATH" -name Packages -o -name Packages.gz`; do
     echo "Signing $filepath"
 
     rm -f "$filepath.asc"
