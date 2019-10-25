@@ -438,6 +438,7 @@ node (params.BUILD_NODE_SLAVE) {
                                       for dep_ipk in \$dep_ipks; do
                                           echo "DEP_IPK \$dep_ipk"
                                           install -vD "./tmp-glibc/deploy/ipk/\$dep_ipk" "./tmp-glibc/deploy/ipk-dist/\$dep_ipk"
+                                          rm -v "./tmp-glibc/deploy/ipk/\$dep_ipk"
                                       done
                                   done
 
