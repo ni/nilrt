@@ -30,9 +30,18 @@ packages:
   dist-nilrt-grub-gateway_20.0:
     export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
     ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-grub-gateway_*.ipk"
-  dist-nilrt-systemlink-grub_19.6_arm:
+  dist-nilrt-systemlink-grub_19.6_arm-crio:
     export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/current_gen/skyline_rt_client_runtime/export/19.6') | latest_export) + '/.archives/linux.zip') | unzip }}"
     ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/dist_nilrt_systemlink_grub_ipk/dist-nilrt-systemlink-grub_*.ipk'
   dist-nilrt-systemlink-grub_19.6_x64-crio:
     export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/current_gen/skyline_rt_client_runtime/export/19.6') | latest_export) + '/.archives/linux.zip') | unzip }}"
     ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/dist_nilrt_systemlink_grub_ipk/dist-nilrt-systemlink-grub_*.ipk'
+  dist-nilrt-systemlink-pxi_19.6_x64-crio:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/SystemImage/PXI/export/19.6') | latest_export }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/dist-nilrt-pxi-grub_*.ipk'
+  dist-nilrt-upgrade-tools_19.6_arm:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/nilrt_system_image_upgrade_tools/export/19.6/') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
+  dist-nilrt-upgrade-tools_19.6_x64:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/nilrt_system_image_upgrade_tools/export/19.6/') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
