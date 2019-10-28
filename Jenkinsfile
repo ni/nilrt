@@ -340,6 +340,7 @@ node (params.BUILD_NODE_SLAVE) {
                                   ln -s \$PWD/tmp-glibc/deploy/ipk-core tmp-glibc/deploy/ipk
 
                                   bitbake packagegroup-ni-coreimagerepo 2>&1 | tee bitbake.stdout.txt
+                                  bitbake packagegroup-ni-ptest 2>&1 | tee bitbake.stdout.txt
                                   # Create the core feed package index for use by the image build steps
                                   bitbake package-index 2>&1 | tee -a bitbake.stdout.txt
                                """
@@ -358,7 +359,6 @@ node (params.BUILD_NODE_SLAVE) {
                                     #       avoid a race condition between cleanning/building.
                                     bitbake -ccleanall \
                                             minimal-nilrt-image \
-                                            minimal-nilrt-ptest-image \
                                             minimal-nilrt-bundle-image \
                                             minimal-nilrt-bundle \
                                             nilrt-initramfs \
@@ -369,7 +369,6 @@ node (params.BUILD_NODE_SLAVE) {
 
                                     bitbake \
                                             minimal-nilrt-image \
-                                            minimal-nilrt-ptest-image \
                                             safemode-restore-image \
                                             restore-mode-image \
                                         2>&1 | tee -a bitbake.stdout.txt
@@ -388,13 +387,9 @@ node (params.BUILD_NODE_SLAVE) {
 
                                     cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.tar.bz2 \
                                         $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2
-                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2 \
-                                        $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2
 
                                     cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.ext2 \
                                         $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2
-                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.ext2 \
-                                        $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.ext2
                                 """
                             }
                             else {
