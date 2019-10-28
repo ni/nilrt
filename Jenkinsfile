@@ -601,19 +601,46 @@ node (params.BUILD_NODE_SLAVE) {
 
             def test_dir = "${archive_dir}/tests"
             dir(test_dir) {
-                // Provisioning Test
-                sh(script: """#!/bin/bash
+                parallel (
+                    // Provisioning Test
+                    Provisioning: { sh(script: """#!/bin/bash
                               set -exo pipefail
                               source /etc/profile
                               export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
                               ${workspace}/scripts/provisioningTest.sh -p ${archive_dir}/images/NILinuxRT-x64 2>&1 | \
                               tee ./provisioning.log
                            """,
-                   returnStdout: true,
-                   label: "Test - Provisioning")
-            }
-        }
-    }
+                    returnStdout: true,
+                    label: "Test - Provisioning")},
+
+                    // Ptesting
+                    Ptesting: {
+                        dir (test_dir_ptests) {
+                            deleteDir()
+
+                            sh(script: """#!/bin/bash
+                                set -euo pipefail
+
+                                python3 ${workspace}/scripts/tests/test_nilrt-ptest.py \
+                                    -f ${archive_dir}/feeds/NILinuxRT-x64/ \
+                                    "${BUILD_NUMBER}.x64" \
+                                    "${archive_dir}/images/NILinuxRT-x64/nilrt-vm-x64-qemu.zip" \
+                                    "${test_dir_ptests}"
+
+                            """,
+                            label: "Test - Ptesting")
+                        } // dir
+                    } // Ptesting
+                ) // parallel
+                // Report test results
+                junit (
+                    testResults: "${test_dir}/*.xml",
+                    healthScaleFactor: 1.0,
+                    allowEmptyResults: false,
+                    keepLongStdio: true)
+           } // dir
+        } // stage
+    } // if
 
     if (params.ENABLE_SSTATE_CACHE_SNAPSHOT || params.NI_RELEASE_BUILD) {
         stage("Packing sstate cache") {
