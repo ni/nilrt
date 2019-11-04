@@ -371,6 +371,7 @@ node (params.BUILD_NODE_SLAVE) {
                                         minimal-nilrt-ptest-image \
                                         nilrt-initramfs \
                                         init-restore-mode \
+                                        safemode-restore-image \
                                         restore-mode-image \
                                     2>&1 | tee -a bitbake.stdout.txt
 
