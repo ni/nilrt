@@ -1,0 +1,10 @@
+#!/usr/bin/expect
+
+set timeout 90
+
+set cmd [lrange $argv 0 end]
+
+eval spawn $cmd
+expect "*assword: "
+send -- "\r";
+interact

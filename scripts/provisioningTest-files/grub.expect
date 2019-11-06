@@ -1,0 +1,35 @@
+#!/usr/bin/expect -f
+#
+# Launch, login, enable ssh, and halt a grub type VM
+
+# Give the VM a reasonable number of seconds to boot
+set timeout 90
+
+spawn [lindex $argv 0]
+
+# Login
+expect {
+    "recovery login:" { exp_continue }
+    "login:"          { send -- "admin\r" }
+    timeout { exit 1 }
+}
+
+# password
+expect {
+    "assword:" { send -- "\r" }
+    timeout    { exit 1 }
+}
+
+# Enable ssh
+expect {
+    "# "    { send -- "sed -i '/sshd.enabled/s/False/True/' /etc/natinst/share/ni-rt.ini\r" }
+    timeout { exit 1 }
+}
+
+# Shutdown
+expect {
+    "# "    { send -- "halt\r" }
+    timeout { exit 1 }
+}
+
+expect EOF
