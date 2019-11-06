@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 error_and_die () {
     echo >&2 "ERROR: $1"
@@ -7,26 +7,39 @@ error_and_die () {
 }
 
 print_usage_and_die () {
-    echo >&2 "Usage: $0 -h | -n <vm name> -r <recipe name of an initramfs for the ISO to boot> -d <boot disk size in MB> -m <ram size in MB>"
-    echo >&2 ' Must be run from a bitbake environment.'
-    echo >&2 ' MACHINE env must be defined.'
+    echo >&2 'Usage: $0 -h'
+    echo >&2 '   or: $0 -n <name> -r <recipe name> -d <disk size> -m <memory> [-q]'
+    echo >&2 ''
+    echo >&2 'Build a virtual machine with the given disk size and ram size from'
+    echo >&2 'the specified bitbake recipe (which must be an image recipe).'
+    echo >&2 ''
+    echo >&2 'Must be run from the bitbake build directory.'
+    echo >&2 'MACHINE env must be defined (ie export MACHINE x64).'
+    echo >&2 ''
+    echo >&2 '  -n <vm name>'
+    echo >&2 '  -r <recipe name of an initramfs for the ISO to boot>'
+    echo >&2 '  -d <boot disk size in MB>'
+    echo >&2 '  -m <ram size in MB>'
+    echo >&2 '  -q only build the qemu image (skip the other VM types)'
     exit 1
 }
 
-SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
+readonly SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
 
 # get args
 vmName=""
 initramfsRecipeName=""
 bootDiskSizeMB=""
 memSizeMB=""
+qemuOnly=0
 
-while getopts "n:r:d:m:h" opt; do
+while getopts "n:r:d:m:h:q" opt; do
    case "$opt" in
    n )  vmName="$OPTARG" ;;
    r )  initramfsRecipeName="$OPTARG" ;;
    d )  bootDiskSizeMB="$OPTARG" ;;
    m )  memSizeMB="$OPTARG" ;;
+   q )  qemuOnly=1 ;;
    h )  print_usage_and_die ;;
    \?)  print_usage_and_die ;;
    esac
@@ -39,13 +52,12 @@ shift $(($OPTIND - 1))
 [ -n "$memSizeMB" ] || error_and_die 'Must specify memory size with -m (in MB). Run with -h for help.'
 
 # check env
+readonly imagesDir="./tmp-glibc/deploy/images/$MACHINE"
+readonly workingDir="./buildVM-working-dir"
+
 [ -n "$MACHINE" ] || error_and_die 'No MACHINE specified in env'
-bitbake --parse-only >/dev/null || error_and_die 'Bitbake failed. Check your environment. This script must be run from the build directory.'
+[ -d "$imagesDir" ] || error_and_die '$imagesDir does not exist. This script must be run from the build directory.'
 
-imagesDir="./tmp-glibc/deploy/images/$MACHINE"
-[ -d "$imagesDir" ] || error_and_die '$imagesDir does not exist. Need to build a bootable image first.'
-
-workingDir="./buildVM-working-dir"
 baseVmDir="$workingDir/$vmName-$MACHINE"
 vmDirQemu="$baseVmDir-qemu"
 
@@ -57,15 +69,11 @@ echo "Built empty working dir at $workingDir"
 
 # add hypervisor-specific dirs
 mkdir "$vmDirQemu"
-mkdir "$baseVmDir-virtualbox"
-mkdir "$baseVmDir-vmware"
-mkdir "$baseVmDir-hyperv"
 
 # create answer file iso image
-rm -f "$workingDir/ni_provisioning.answers"
 cp "$SCRIPT_RESOURCE_DIR/ni_provisioning.answers" "$workingDir/ni_provisioning.answers"
 chmod 0444 "$workingDir/ni_provisioning.answers"
-genisoimage -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso" "$workingDir/ni_provisioning.answers"
+genisoimage -input-charset utf-8 -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso" "$workingDir/ni_provisioning.answers"
 chmod 0444 "$workingDir/ni_provisioning.answers.iso"
 echo "Built answers file at $workingDir/ni_provisioning.answers.iso"
 
@@ -106,11 +114,6 @@ function build_alt_vmdisk()
     fi
     cp "$SCRIPT_RESOURCE_DIR/deprecated.txt" "$otherVmDir"
 }
-chmod 0444 "$vmDirQemu/$vmName-$MACHINE.qcow2"
-build_alt_vmdisk  "vdi"   "$baseVmDir-virtualbox"
-build_alt_vmdisk  "vmdk"  "$baseVmDir-vmware"
-build_alt_vmdisk  "vhdx"  "$baseVmDir-hyperv"
-chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
 
 # add machine definition files
 function add_machine_def()
@@ -134,9 +137,6 @@ function add_machine_def()
     sed -i "s/\${VM_MEM_SIZE_MB}/$memSizeMB/g"          "$workingDir/$archiveDirName/$dstMachineDefFileName"
     echo "Wrote $hypervisorName machine def file $workingDir/$archiveDirName/$dstMachineDefFileName"
 }
-add_machine_def  "qemu"        "runQemuVM.sh"               "run-$vmName-$MACHINE.sh"  0755
-add_machine_def  "virtualbox"  "machine-def-$MACHINE.vbox"  "$vmName-$MACHINE.vbox"    0644
-add_machine_def  "vmware"      "machine-def-$MACHINE.vmx"   "$vmName-$MACHINE.vmx"     0644
 
 # pack archives for qemu, virtualbox, vmware, and hyperv
 function build_archive()
@@ -150,9 +150,26 @@ function build_archive()
     mv "$workingDir/$archiveName" "$imagesDir/$archiveName"
     echo "Saved $hypervisorName archive to $imagesDir/$archiveName"
 }
-build_archive  "qemu"
-build_archive  "virtualbox"
-build_archive  "vmware"
-build_archive  "hyperv"
+
+if [[ $qemuOnly -eq 0 ]] ; then
+    mkdir "$baseVmDir-virtualbox"
+    mkdir "$baseVmDir-vmware"
+    mkdir "$baseVmDir-hyperv"
+
+    chmod 0444 "$vmDirQemu/$vmName-$MACHINE.qcow2"
+    build_alt_vmdisk  "vdi"   "$baseVmDir-virtualbox"
+    build_alt_vmdisk  "vmdk"  "$baseVmDir-vmware"
+    build_alt_vmdisk  "vhdx"  "$baseVmDir-hyperv"
+    chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
+
+    add_machine_def "virtualbox" "machine-def-$MACHINE.vbox" "$vmName-$MACHINE.vbox" 0644
+    add_machine_def "vmware"     "machine-def-$MACHINE.vmx"  "$vmName-$MACHINE.vmx"  0644
+
+    build_archive "virtualbox"
+    build_archive "vmware"
+    build_archive "hyperv"
+fi
+add_machine_def "qemu" "runQemuVM.sh" "run-$vmName-$MACHINE.sh" 0755
+build_archive    "qemu"
 
 echo "DONE"
