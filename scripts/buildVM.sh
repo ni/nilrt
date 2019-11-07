@@ -8,7 +8,7 @@ error_and_die () {
 
 print_usage_and_die () {
     echo >&2 'Usage: $0 -h'
-    echo >&2 '   or: $0 -n <name> -r <recipe name> -d <disk size> -m <memory> [-q]'
+    echo >&2 '   or: $0 -n <name> -r <recipe name> -d <disk size> -m <memory> [-a <answer file>] [-q] [-v]'
     echo >&2 ''
     echo >&2 'Build a virtual machine with the given disk size and ram size from'
     echo >&2 'the specified bitbake recipe (which must be an image recipe).'
@@ -20,7 +20,9 @@ print_usage_and_die () {
     echo >&2 '  -r <recipe name of an initramfs for the ISO to boot>'
     echo >&2 '  -d <boot disk size in MB>'
     echo >&2 '  -m <ram size in MB>'
+    echo >&2 '  -a <answer file>'
     echo >&2 '  -q only build the qemu image (skip the other VM types)'
+    echo >&2 '  -v verbose mode'
     exit 1
 }
 
@@ -32,19 +34,29 @@ initramfsRecipeName=""
 bootDiskSizeMB=""
 memSizeMB=""
 qemuOnly=0
+answerFile=""
+verbose_mode=0
 
-while getopts "n:r:d:m:h:q" opt; do
+while getopts "n:r:d:m:h:a:qv" opt; do
    case "$opt" in
    n )  vmName="$OPTARG" ;;
    r )  initramfsRecipeName="$OPTARG" ;;
    d )  bootDiskSizeMB="$OPTARG" ;;
    m )  memSizeMB="$OPTARG" ;;
+   a )  answerFile="$OPTARG" ;;
    q )  qemuOnly=1 ;;
+   v )  verbose_mode=1 ;;
    h )  print_usage_and_die ;;
    \?)  print_usage_and_die ;;
    esac
 done
 shift $(($OPTIND - 1))
+
+if [ "$verbose_mode" -eq 0 ] ; then
+    do_silent() { "$@" &>/dev/null; }
+else
+    do_silent() { "$@"; }
+fi
 
 [ -n "$vmName" ] || error_and_die 'Must specify VM name with -n. Run with -h for help.'
 [ -n "$initramfsRecipeName" ] || error_and_die 'Must specify recipe name with -r. Run with -h for help.'
@@ -71,25 +83,26 @@ echo "Built empty working dir at $workingDir"
 mkdir "$vmDirQemu"
 
 # create answer file iso image
-cp "$SCRIPT_RESOURCE_DIR/ni_provisioning.answers" "$workingDir/ni_provisioning.answers"
+[ -z "$answerFile" ] && answerFile="$SCRIPT_RESOURCE_DIR/ni_provisioning.answers"
+cp "$answerFile" "$workingDir/ni_provisioning.answers"
 chmod 0444 "$workingDir/ni_provisioning.answers"
-genisoimage -input-charset utf-8 -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso" "$workingDir/ni_provisioning.answers"
+genisoimage -quiet -input-charset utf-8 -full-iso9660-filenames -o "$workingDir/ni_provisioning.answers.iso" "$workingDir/ni_provisioning.answers"
 chmod 0444 "$workingDir/ni_provisioning.answers.iso"
-echo "Built answers file at $workingDir/ni_provisioning.answers.iso"
+echo "Built answers file at $workingDir/ni_provisioning.answers.iso using $answerFile"
 
 # Copy OVMF UEFI files for qemu
 cp -r "$SCRIPT_RESOURCE_DIR/OVMF" "$vmDirQemu/"
 
 # build qcow2 disk (for qemu) by booting NILRT restore disk to
 #  partition and install OS
-qemu-img create -f qcow2 "$vmDirQemu/$vmName-$MACHINE.qcow2" "$bootDiskSizeMB""M"
+qemu-img create -q -f qcow2 "$vmDirQemu/$vmName-$MACHINE.qcow2" "$bootDiskSizeMB""M"
 chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
 enableKVM=$(id | grep -q kvm && echo "-enable-kvm -cpu kvm64" || echo "")
 
 isoImage="$imagesDir/$initramfsRecipeName-x64.iso"
 [ ! -f $isoImage ] && isoImage="$imagesDir/$initramfsRecipeName-x64.wic"
 
-qemu-system-x86_64 \
+do_silent qemu-system-x86_64 \
     $enableKVM -smp cpus=1 \
     -m "$memSizeMB" \
     -nographic \
@@ -144,7 +157,7 @@ function build_archive()
     local hypervisorName="$1"
     local archiveDirName="$vmName-$MACHINE-$hypervisorName"
     local archiveName="$archiveDirName.zip"
-    (cd "$workingDir" && zip -r "$archiveName" "$archiveDirName" && chmod 444 "$archiveName")
+    (cd "$workingDir" && zip --quiet -r "$archiveName" "$archiveDirName" && chmod 444 "$archiveName")
     rm -f "$imagesDir/$archiveName"
     [ ! -e "$imagesDir/$archiveName" ]
     mv "$workingDir/$archiveName" "$imagesDir/$archiveName"
@@ -170,6 +183,6 @@ if [[ $qemuOnly -eq 0 ]] ; then
     build_archive "hyperv"
 fi
 add_machine_def "qemu" "runQemuVM.sh" "run-$vmName-$MACHINE.sh" 0755
-build_archive    "qemu"
+build_archive   "qemu"
 
 echo "DONE"
