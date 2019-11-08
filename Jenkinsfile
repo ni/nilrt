@@ -390,6 +390,8 @@ node (params.BUILD_NODE_SLAVE) {
                             if (distro_flavour == 'x64') {
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso \
                                     $archive_img_path/restore-mode-image-${distro_flavour}.iso"
+                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/safemode-restore-image-${distro_flavour}.iso \
+                                    $archive_img_path/safemode-restore-image-${distro_flavour}.iso"
 
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
                                 sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
