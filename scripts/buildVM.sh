@@ -8,7 +8,7 @@ error_and_die () {
 
 print_usage_and_die () {
     echo >&2 'Usage: $0 -h'
-    echo >&2 '   or: $0 -n <name> -r <recipe name> -d <disk size> -m <memory> [-a <answer file>] [-q] [-v]'
+    echo >&2 '   or: $0 -n <name> -r <recipe name> -d <disk size> -m <memory> [-i <images dir>] [-a <answer file>] [-q] [-v]'
     echo >&2 ''
     echo >&2 'Build a virtual machine with the given disk size and ram size from'
     echo >&2 'the specified bitbake recipe (which must be an image recipe).'
@@ -20,6 +20,7 @@ print_usage_and_die () {
     echo >&2 '  -r <recipe name of an initramfs for the ISO to boot>'
     echo >&2 '  -d <boot disk size in MB>'
     echo >&2 '  -m <ram size in MB>'
+    echo >&2 '  -i <images dir>'
     echo >&2 '  -a <answer file>'
     echo >&2 '  -q only build the qemu image (skip the other VM types)'
     echo >&2 '  -v verbose mode'
@@ -36,13 +37,15 @@ memSizeMB=""
 qemuOnly=0
 answerFile=""
 verbose_mode=0
+imagesDir=""
 
-while getopts "n:r:d:m:h:a:qv" opt; do
+while getopts "i:n:r:d:m:h:a:qv" opt; do
    case "$opt" in
    n )  vmName="$OPTARG" ;;
    r )  initramfsRecipeName="$OPTARG" ;;
    d )  bootDiskSizeMB="$OPTARG" ;;
    m )  memSizeMB="$OPTARG" ;;
+   i )  imagesDir="$OPTARG" ;;
    a )  answerFile="$OPTARG" ;;
    q )  qemuOnly=1 ;;
    v )  verbose_mode=1 ;;
@@ -64,11 +67,11 @@ fi
 [ -n "$memSizeMB" ] || error_and_die 'Must specify memory size with -m (in MB). Run with -h for help.'
 
 # check env
-readonly imagesDir="./tmp-glibc/deploy/images/$MACHINE"
 readonly workingDir="./buildVM-working-dir"
 
 [ -n "$MACHINE" ] || error_and_die 'No MACHINE specified in env'
-[ -d "$imagesDir" ] || error_and_die '$imagesDir does not exist. This script must be run from the build directory.'
+[ -z "$imagesDir" ] && imagesDir="./tmp-glibc/deploy/images/$MACHINE"
+[ -d "$imagesDir" ] || error_and_die "$imagesDir does not exist. This script must be run from the build directory."
 
 baseVmDir="$workingDir/$vmName-$MACHINE"
 vmDirQemu="$baseVmDir-qemu"

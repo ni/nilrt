@@ -607,7 +607,7 @@ node (params.BUILD_NODE_SLAVE) {
                               set -exo pipefail
                               source /etc/profile
                               export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
-                              ${workspace}/scripts/provisioningTest.sh -p ${archive_dir}/images/NILinuxRT-x64 2>&1 | \
+                              ${workspace}/scripts/provisioningTest.sh -p ${archive_dir}/images/NILinuxRT-x64 -i ${archive_dir}/feeds/NILinuxRT-x64/dist/core2-64 2>&1 | \
                               tee ./provisioning.log
                            """,
                     returnStdout: true,

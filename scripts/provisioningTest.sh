@@ -20,7 +20,7 @@ error_and_die() {
 }
 
 print_usage_and_die() {
-    echo >&2 "Usage: $0 -h | -p <path to ISO images> [-v]"
+    echo >&2 "Usage: $0 -h | -p <path to ISO images> -i <path to ipk files> [-v]"
     echo >&2 ' It is recommended to run this script from the nilrt/build directory because it generates a directory of working files.'
     exit 1
 }
@@ -34,9 +34,10 @@ verbose_mode=0
 readonly SCRIPT_DIR=$(dirname "$BASH_SOURCE[0]")
 readonly SCRIPT_RESOURCE_DIR="$SCRIPT_DIR/provisioningTest-files"
 
-while getopts "p:h:v" opt; do
+while getopts "i:p:h:v" opt; do
     case "$opt" in
     p )  imageIsoPath="$OPTARG" ;;
+    i )  ipkPath="$OPTARG" ;;
     v )  verbose_mode=1 ;;
     h )  print_usage_and_die ;;
     \?)  print_usage_and_die ;;
@@ -45,8 +46,8 @@ done
 shift $(($OPTIND - 1))
 
 readonly workingDir="./provisioningTest-working-dir"
-readonly restoreModeImageIsoPath="$imageIsoPath/restore-mode-image-$MACHINE.iso"
-readonly safemodeRestoreImageIsoPath="$imageIsoPath/safemode-restore-image-$MACHINE.iso"
+readonly restoreModeImageIsoPath="${imageIsoPath:-}/restore-mode-image-$MACHINE.iso"
+readonly safemodeRestoreImageIsoPath="${imageIsoPath:-}/safemode-restore-image-$MACHINE.iso"
 readonly efiabVmName="provisioningTest-efi-ab"
 readonly grubVmName="provisioningTest-grub"
 readonly sshunsafeopts="-o ConnectTimeout=300 -o TCPKeepAlive=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
@@ -81,9 +82,8 @@ setupSsh_grub() {
     echo "  Enable ssh pubkey login"
 
     # Install ssh public key
-    do_silent "$SCRIPT_RESOURCE_DIR"/ssh.expect ssh ${sshopts//root/admin} -C 'mkdir -p -m 700 ~/.ssh'
-    do_silent "$SCRIPT_RESOURCE_DIR"/ssh.expect scp ${scpopts} "$workingDir"/ssh_key.pub admin@localhost:.
-    do_silent "$SCRIPT_RESOURCE_DIR"/ssh.expect ssh ${sshopts//root/admin} -C 'cat ~/ssh_key.pub >> ~/.ssh/authorized_keys'
+    do_silent ssh ${sshopts//root/admin} -C 'mkdir -p -m 700 ~/.ssh'
+    cat "$workingDir"/ssh_key.pub | do_silent ssh ${sshopts//root/admin} -C 'cat >>.ssh/authorized_keys'
 }
 
 shutdownSsh() {
@@ -120,7 +120,7 @@ install_efi_ab_gateway() {
     echo "  Install efi-ab gateway ipk"
     
     # copy ipk from build directory
-    do_silent scp $scpopts tmp-glibc/deploy/ipk/core2-64/dist-nilrt-efi-ab-gateway_*.ipk root@localhost:dist-nilrt-efi-ab-gateway.ipk
+    do_silent scp $scpopts "$ipkPath"/dist-nilrt-efi-ab-gateway_*.ipk root@localhost:dist-nilrt-efi-ab-gateway.ipk
 
     # install the ipk
     do_silent ssh $sshopts -C 'opkg install dist-nilrt-efi-ab-gateway.ipk && /usr/share/nilrt/nilrt-install'
@@ -130,16 +130,19 @@ install_grub_gateway() {
     echo "  Install grub gateway ipk"
 
     # copy ipk from build directory
-    do_silent scp $scpopts tmp-glibc/deploy/ipk/core2-64/dist-nilrt-grub-gateway_*.ipk root@localhost:dist-nilrt-grub-gateway.ipk
+    do_silent scp $scpopts "$ipkPath"/dist-nilrt-grub-gateway_*.ipk root@localhost:dist-nilrt-grub-gateway.ipk
 
     # opkg install the dist ipk
     do_silent ssh $sshopts -C 'opkg install dist-nilrt-grub-gateway.ipk && /usr/share/nilrt/nilrt-install'
 }
 
 # check env
-[ -d "$imageIsoPath" ] || error_and_die 'Must specify ISO image path with -p. Run with -h for help.'
-[ -e "$restoreModeImageIsoPath" ] || error_and_die '$restoreModeImageIsoPath does not exist.  This ISO must be built before running this script.'
-[ -e "$safemodeRestoreImageIsoPath" ] || error_and_die '$safemodeRestoreImageIsoPath does not exist.  This ISO must be built before running this script.'
+[ -d "${imageIsoPath:-}" ] || error_and_die 'Must specify ISO image path with -p. Run with -h for help.'
+[ -d "${ipkPath:-}" ] || error_and_die 'Must specify ipk path with -i. Run with -h for help.'
+[ -e "$restoreModeImageIsoPath" ] || error_and_die "$restoreModeImageIsoPath does not exist."
+[ -e "$safemodeRestoreImageIsoPath" ] || error_and_die "$safemodeRestoreImageIsoPath does not exist."
+[ -e "$ipkPath"/dist-nilrt-efi-ab-gateway_*.ipk ] || error_and_die "$ipkPath/dist-nilrt-efi-ab-gateway_*.ipk does not exist."
+[ -e "$ipkPath"/dist-nilrt-grub-gateway_*.ipk ] || error_and_die "$ipkPath/dist-nilrt-grub-gateway_*.ipk does not exist."
 
 # clean working dir
 rm -Rf "$workingDir"
@@ -150,9 +153,9 @@ echo "Built empty working dir at $workingDir"
 # Run buildVM.sh script with a timeout to create images
 echo "Deploy efi-ab and grub images to blank hard drives."
 echo "  Create efi-ab virtual machine"
-do_silent timeout 200 $SCRIPT_DIR/buildVM.sh -d 10240 -m 2048 -n "$efiabVmName" -r restore-mode-image -q -a "$SCRIPT_RESOURCE_DIR"/ni_provisioning.answers
+do_silent timeout 200 $SCRIPT_DIR/buildVM.sh -d 10240 -m 2048 -n "$efiabVmName" -r restore-mode-image -q -i "$imageIsoPath" -a "$SCRIPT_RESOURCE_DIR"/ni_provisioning.answers
 echo "  Create grub virtual machine"
-do_silent timeout 200 $SCRIPT_DIR/buildVM.sh -d 10240 -m 2048 -n "$grubVmName" -r safemode-restore-image -q -a "$SCRIPT_RESOURCE_DIR"/ni_provisioning.answers
+do_silent timeout 200 $SCRIPT_DIR/buildVM.sh -d 10240 -m 2048 -n "$grubVmName" -r safemode-restore-image -q -i "$imageIsoPath" -a "$SCRIPT_RESOURCE_DIR"/ni_provisioning.answers
 
 
 # Move the VMs to the working directory and unzip them
