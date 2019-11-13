@@ -182,7 +182,8 @@ if [[ $qemuOnly -eq 0 ]] ; then
     build_archive "vmware"
     build_archive "hyperv"
 fi
-add_machine_def "qemu" "runQemuVM.sh" "run-$vmName-$MACHINE.sh" 0755
+add_machine_def "qemu" "runQemuVM.sh"  "run-$vmName-$MACHINE.sh"  0755
+add_machine_def "qemu" "runQemuVM.bat" "run-$vmName-$MACHINE.bat" 0755
 build_archive   "qemu"
 
 echo "DONE"
