@@ -33,6 +33,7 @@ verbose_mode=0
 
 readonly SCRIPT_DIR=$(dirname "$BASH_SOURCE[0]")
 readonly SCRIPT_RESOURCE_DIR="$SCRIPT_DIR/provisioningTest-files"
+readonly QEMU_NET_OPTS="-netdev user,hostfwd=tcp::2222-:22,id=provssh -device e1000,netdev=provssh"
 
 while getopts "i:p:h:v" opt; do
     case "$opt" in
@@ -51,52 +52,91 @@ readonly safemodeRestoreImageIsoPath="${imageIsoPath:-}/safemode-restore-image-$
 readonly efiabVmName="provisioningTest-efi-ab"
 readonly grubVmName="provisioningTest-grub"
 readonly sshunsafeopts="-o ConnectTimeout=300 -o TCPKeepAlive=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-readonly sshopts="root@localhost -p 2222 -i $workingDir/ssh_key $sshunsafeopts"
+readonly sshopts="-p 2222 -i $workingDir/ssh_key $sshunsafeopts"
 readonly scpopts="-P 2222 -i $workingDir/ssh_key $sshunsafeopts"
 
 trap cleanup EXIT
 trap 'handle_err ${BASH_SOURCE} ${LINENO} ${FUNCNAME:-unknown} $? "$BASH_COMMAND"' ERR
 
-do_background() { "$@" &>>"$workingDir"/vm.log & }
+# establish SSH host-port lock for use by NILRT VMs
+exec 100>"${workingDir}"/socket-ssh-redirect.lock
+readonly LOCK_PORT=100
+readonly LOCK_PORT_TIMEOUT=300
+
+do_background() { "$@" &>>"$workingDir"/output-bg.log & }
+
 if [ "$verbose_mode" -eq 0 ] ; then
-    do_silent() { echo "$@">>"$workingDir"/output.log;"$@" &>>"$workingDir"/output.log; }
+    do_silent() { echo "$@">>"$workingDir"/output.log; "$@" &>>"$workingDir"/output.log; }
 else
-    do_silent() { echo "$@";"$@"; }
+    do_silent() { echo "$@"; "$@"; }
 fi
 
+# 1: sshlogin; like 'root@localhost'
+# 2: ssh command string
+# 3: max retries (optional)
+# 4: retry interval (optional)
+do_silent_ssh() {
+    local retries=0
+    local max_retries=${3:-5}
+    local retry_interval=${4:-5}
+
+    while [ $retries -lt $max_retries ]; do
+        ssh "${1}" $sshopts "${2}" &>>"$workingDir"/output.log && break || let "retries+=1"
+        echo "  SSH command failed, retrying (${retries}/${max_retries}) shell command: ${2}"
+        sleep $retry_interval
+    done
+
+    [ $retries -lt $max_retries ] || (echo "SSH Max retries exceeded" && exit 1)
+}
+
 background_vm() {
-    do_background "$workingDir"/"$1"-"$MACHINE"-qemu/run-"$1"-"$MACHINE".sh
+    echo "  Starting background VM: $1"
+    flock --wait "$LOCK_PORT_TIMEOUT" $LOCK_PORT
+    do_background "$workingDir"/"$1"-"$MACHINE"-qemu/run-"$1"-"$MACHINE".sh -- $QEMU_NET_OPTS
     WAIT_PID=$!
-    sleep 10
+    sleep 30
+}
+
+# 1: pexpect script name
+# 2: vm name
+pexpect_vm() {
+    local pexpect_script="$1"
+    local vm_name="$2"
+
+    echo "  Starting foreground VM: $vm_name with pexpect: $pexpect_script"
+    flock --wait $LOCK_PORT_TIMEOUT $LOCK_PORT
+    do_silent "$SCRIPT_RESOURCE_DIR/${pexpect_script}.expect" "$workingDir"/"$vm_name"-"$MACHINE"-qemu/run-"$vm_name"-"$MACHINE".sh
+    flock --unlock $LOCK_PORT
 }
 
 setupSsh_efi_ab() {
-    echo "  Enable ssh pubkey login"
+    echo "  Enable ssh pubkey login (efi-ab)"
 
     # Install ssh public key
-    do_silent ssh $sshopts -C 'mkdir -p -m 700 ~/.ssh'
-    cat "$workingDir"/ssh_key.pub | do_silent ssh $sshopts -C 'cat >>.ssh/authorized_keys'
+    do_silent_ssh root@localhost 'mkdir -p -m 700 ~/.ssh'
+    cat "$workingDir"/ssh_key.pub | do_silent_ssh root@localhost 'cat >>.ssh/authorized_keys'
 }
 
 setupSsh_grub() {
-    echo "  Enable ssh pubkey login"
+    echo "  Enable ssh pubkey login (grub)"
 
     # Install ssh public key
-    do_silent ssh ${sshopts//root/admin} -C 'mkdir -p -m 700 ~/.ssh'
-    cat "$workingDir"/ssh_key.pub | do_silent ssh ${sshopts//root/admin} -C 'cat >>.ssh/authorized_keys'
+    do_silent_ssh admin@localhost 'mkdir -p -m 700 ~/.ssh'
+    cat "$workingDir"/ssh_key.pub | do_silent_ssh admin@localhost 'cat >>.ssh/authorized_keys'
 }
 
 shutdownSsh() {
     echo "  Shutdown VM"
     # Shutdown the VM
-    do_silent ssh $sshopts -C 'halt'
+    do_silent_ssh root@localhost 'halt'
 
     # Wait for process to shutdown completely
     wait $WAIT_PID && WAIT_PID=0 # Verify VM shuts down cleanly
+    flock -u "$LOCK_PORT"
 }
 
 validate_efi_ab_partitions() {
-    local lsblk_data=$(ssh $sshopts -C 'lsblk -lno NAME,LABEL,FSTYPE,MOUNTPOINT /dev/sda' 2>/dev/null)
+    local lsblk_data=$(ssh root@localhost $sshopts -C 'lsblk -lno NAME,LABEL,FSTYPE,MOUNTPOINT /dev/sda' 2>/dev/null)
 
     echo "  Validate efi-ab partition layout"
     # Check the partition labels, file system type, and mount point
@@ -106,7 +146,7 @@ validate_efi_ab_partitions() {
 }
 
 validate_grub_partitions() {
-    local lsblk_data=$(ssh $sshopts -C 'lsblk -lno NAME,LABEL,FSTYPE,MOUNTPOINT /dev/sda' 2>/dev/null)
+    local lsblk_data=$(ssh root@localhost $sshopts -C 'lsblk -lno NAME,LABEL,FSTYPE,MOUNTPOINT /dev/sda' 2>/dev/null)
 
     echo "  Validate grub partition layout"
     # Check the partition labels, file system type, and mount point
@@ -123,7 +163,7 @@ install_efi_ab_gateway() {
     do_silent scp $scpopts "$ipkPath"/dist-nilrt-efi-ab-gateway_*.ipk root@localhost:dist-nilrt-efi-ab-gateway.ipk
 
     # install the ipk
-    do_silent ssh $sshopts -C 'opkg install dist-nilrt-efi-ab-gateway.ipk && /usr/share/nilrt/nilrt-install'
+    do_silent_ssh root@localhost 'opkg install dist-nilrt-efi-ab-gateway.ipk && /usr/share/nilrt/nilrt-install'
 }
 
 install_grub_gateway() {
@@ -133,7 +173,7 @@ install_grub_gateway() {
     do_silent scp $scpopts "$ipkPath"/dist-nilrt-grub-gateway_*.ipk root@localhost:dist-nilrt-grub-gateway.ipk
 
     # opkg install the dist ipk
-    do_silent ssh $sshopts -C 'opkg install dist-nilrt-grub-gateway.ipk && /usr/share/nilrt/nilrt-install'
+    do_silent_ssh root@localhost 'opkg install dist-nilrt-grub-gateway.ipk && /usr/share/nilrt/nilrt-install'
 }
 
 # check env
@@ -150,6 +190,7 @@ rm -Rf "$workingDir"
 mkdir -p "$workingDir"
 echo "Built empty working dir at $workingDir"
 
+
 # Run buildVM.sh script with a timeout to create images
 echo "Deploy efi-ab and grub images to blank hard drives."
 echo "  Create efi-ab virtual machine"
@@ -162,8 +203,6 @@ do_silent timeout 200 $SCRIPT_DIR/buildVM.sh -d 10240 -m 2048 -n "$grubVmName" -
 mv "$imageIsoPath"/provisioningTest-*.zip "$workingDir"
 do_silent unzip -d "$workingDir" "$workingDir"'/*.zip'
 
-# Adjust the run script to include ssh redirection for later in the test
-find "$workingDir" -iname 'run-*-'"$MACHINE"'.sh' -exec sed -i '/qcow2/i -redir tcp:2222::22 \\' {} \;
 
 #
 # Launch both newly provisioned VMs to verify that they load without panic, etc.  This test fails
@@ -172,12 +211,13 @@ find "$workingDir" -iname 'run-*-'"$MACHINE"'.sh' -exec sed -i '/qcow2/i -redir 
 #
 echo "Launch both images and validate they boot to login screen and shutdown."
 
+
 # Launch the efi-ab VM, login and shutdown
 echo "  Launch, login, and shutdown efi-ab virtual machine"
-do_silent $SCRIPT_RESOURCE_DIR/efi-ab.expect "$workingDir"/"$efiabVmName"-"$MACHINE"-qemu/run-"$efiabVmName"-"$MACHINE".sh
+pexpect_vm "efi-ab" "$efiabVmName"
 # Launch the grub VM, login, enable ssh, and shutdown
 echo "  Launch, login, enable ssh, and shutdown grub virtual machine"
-do_silent $SCRIPT_RESOURCE_DIR/grub.expect "$workingDir"/"$grubVmName"-"$MACHINE"-qemu/run-"$grubVmName"-"$MACHINE".sh
+pexpect_vm "grub" "$grubVmName"
 
 
 #
@@ -196,7 +236,7 @@ validate_efi_ab_partitions
 install_grub_gateway
 shutdownSsh
 echo "  Validate grub-gateway install completes"
-do_silent $SCRIPT_RESOURCE_DIR/grub.expect "$workingDir"/"$efiabVmName"-"$MACHINE"-qemu/run-"$efiabVmName"-"$MACHINE".sh
+pexpect_vm "grub" "$efiabVmName"
 echo "  Relaunch the efi-ab VM, but expect grub layout"
 background_vm "$efiabVmName"
 setupSsh_grub
@@ -210,7 +250,7 @@ validate_grub_partitions
 install_efi_ab_gateway
 shutdownSsh
 echo "  Validate efi-ab gateway install completes"
-do_silent $SCRIPT_RESOURCE_DIR/efi-ab.expect "$workingDir"/"$grubVmName"-"$MACHINE"-qemu/run-"$grubVmName"-"$MACHINE".sh
+pexpect_vm "efi-ab" "$grubVmName"
 echo "  Relaunch the grub VM, but expect efi-ab layout"
 background_vm "$grubVmName"
 setupSsh_efi_ab

@@ -600,18 +600,19 @@ node (params.BUILD_NODE_SLAVE) {
             }
 
             def test_dir = "${archive_dir}/tests"
+            def test_dir_ptests = "${test_dir}/ptests"
+
             dir(test_dir) {
                 parallel (
                     // Provisioning Test
                     Provisioning: { sh(script: """#!/bin/bash
-                              set -exo pipefail
-                              source /etc/profile
-                              export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
-                              ${workspace}/scripts/provisioningTest.sh -p ${archive_dir}/images/NILinuxRT-x64 -i ${archive_dir}/feeds/NILinuxRT-x64/dist/core2-64 2>&1 | \
-                              tee ./provisioning.log
-                           """,
-                    returnStdout: true,
-                    label: "Test - Provisioning")},
+                            set -exo pipefail
+                            source /etc/profile
+                            export LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1
+                            ${workspace}/scripts/provisioningTest.sh -p ${archive_dir}/images/NILinuxRT-x64 -i ${archive_dir}/feeds/NILinuxRT-x64/dist/core2-64 2>&1 | \
+                            tee ./provisioning.log
+                        """,
+                        label: "Test - Provisioning")},
 
                     // Ptesting
                     Ptesting: {
@@ -632,12 +633,6 @@ node (params.BUILD_NODE_SLAVE) {
                         } // dir
                     } // Ptesting
                 ) // parallel
-                // Report test results
-                junit (
-                    testResults: "${test_dir}/*.xml",
-                    healthScaleFactor: 1.0,
-                    allowEmptyResults: false,
-                    keepLongStdio: true)
            } // dir
         } // stage
     } // if

@@ -5,7 +5,7 @@
 # Give the VM a reasonable number of seconds to boot
 set timeout 90
 
-spawn [lindex $argv 0]
+spawn {*}[lrange $argv 0 end]
 
 # Login
 expect {
