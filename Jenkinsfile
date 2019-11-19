@@ -357,26 +357,35 @@ node (params.BUILD_NODE_SLAVE) {
                                   #       avoid a race condition between cleanning/building.
                                   bitbake -ccleanall \
                                         minimal-nilrt-image \
-                                        minimal-nilrt-bundle-image \
-                                        minimal-nilrt-bundle \
                                         minimal-nilrt-ptest-image \
-                                        nilrt-initramfs \
-                                        init-restore-mode \
-                                        safemode-restore-image \
-                                        restore-mode-image \
+                                    2>&1 | tee -a bitbake.stdout.txt
+
+                                  bitbake \
+                                        minimal-nilrt-image \
+                                        minimal-nilrt-ptest-image \
                                     2>&1 | tee -a bitbake.stdout.txt
 
                                   # Only for x64 because we don't have ARM ISO images
                                   if [ $distro_flavour == 'x64' ]; then
+                                      # Bitbake doesn't do a good job at detecting changes that require a image
+                                      # rebuild, when BUILD_FROM_FEEDS is used. Clean to always rebuild.
+                                      # NOTE: If the sstate cache is shared, this stage will need a lock to
+                                      #       avoid a race condition between cleanning/building.
+                                      bitbake -ccleanall \
+                                            minimal-nilrt-bundle-image \
+                                            minimal-nilrt-bundle \
+                                            nilrt-initramfs \
+                                            init-restore-mode \
+                                            safemode-restore-image \
+                                            restore-mode-image \
+                                        2>&1 | tee -a bitbake.stdout.txt
+
                                       bitbake \
                                             minimal-nilrt-ptest-image \
                                             safemode-restore-image \
                                             restore-mode-image \
                                         2>&1 | tee -a bitbake.stdout.txt
-                                  fi
 
-                                  # Only for x64 because we don't have ARM virtualization yet
-                                  if [ $distro_flavour == 'x64' ]; then
                                       ../scripts/buildVM.sh -d 10240 -m 1024 -n nilrt-vm -r restore-mode-image
                                   fi
                                """
