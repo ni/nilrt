@@ -366,11 +366,14 @@ node (params.BUILD_NODE_SLAVE) {
                                         restore-mode-image \
                                     2>&1 | tee -a bitbake.stdout.txt
 
-                                  bitbake \
-                                        minimal-nilrt-ptest-image \
-                                        safemode-restore-image \
-                                        restore-mode-image \
-                                    2>&1 | tee -a bitbake.stdout.txt
+                                  # Only for x64 because we don't have ARM ISO images
+                                  if [ $distro_flavour == 'x64' ]; then
+                                      bitbake \
+                                            minimal-nilrt-ptest-image \
+                                            safemode-restore-image \
+                                            restore-mode-image \
+                                        2>&1 | tee -a bitbake.stdout.txt
+                                  fi
 
                                   # Only for x64 because we don't have ARM virtualization yet
                                   if [ $distro_flavour == 'x64' ]; then
