@@ -246,7 +246,7 @@ node (params.BUILD_NODE_SLAVE) {
         }
     }
 
-    def build_targets = params.BUILD_DISTRO_FLAVOURS.tokenize()
+    def distro_flavour_list = params.BUILD_DISTRO_FLAVOURS.tokenize()
 
     // We must mount /etc/passwd and /etc/groups here to allow git to resolve
     // the uid to a valid user.
@@ -265,8 +265,8 @@ node (params.BUILD_NODE_SLAVE) {
                     -v ${NIBUILD_MNT_BALTIC}:/mnt/baltic") {
 
             def distro_flavour_builds = [:]
-            for (int i = 0; i < build_targets.size(); i++) {
-                def distro_flavour = build_targets.get(i)
+            for (int i = 0; i < distro_flavour_list.size(); i++) {
+                def distro_flavour = distro_flavour_list.get(i)
 
                 distro_flavour_builds["$distro_flavour"] = {
                     withEnv(["MACHINE=$distro_flavour"]) {
@@ -346,32 +346,19 @@ node (params.BUILD_NODE_SLAVE) {
                         }
 
                         stage("$distro_flavour images") {
-                            sh """#!/bin/bash
-                                  set -e -o pipefail
+                            if (distro_flavour == 'x64') {
+                                sh """#!/bin/bash
+                                    set -e -o pipefail
 
-                                  . ./ni-oe-init-build-env $build_dir
+                                    . ./ni-oe-init-build-env $build_dir
 
-                                  # Bitbake doesn't do a good job at detecting changes that require a image
-                                  # rebuild, when BUILD_FROM_FEEDS is used. Clean to always rebuild.
-                                  # NOTE: If the sstate cache is shared, this stage will need a lock to
-                                  #       avoid a race condition between cleanning/building.
-                                  bitbake -ccleanall \
-                                        minimal-nilrt-image \
-                                        minimal-nilrt-ptest-image \
-                                    2>&1 | tee -a bitbake.stdout.txt
-
-                                  bitbake \
-                                        minimal-nilrt-image \
-                                        minimal-nilrt-ptest-image \
-                                    2>&1 | tee -a bitbake.stdout.txt
-
-                                  # Only for x64 because we don't have ARM ISO images
-                                  if [ $distro_flavour == 'x64' ]; then
-                                      # Bitbake doesn't do a good job at detecting changes that require a image
-                                      # rebuild, when BUILD_FROM_FEEDS is used. Clean to always rebuild.
-                                      # NOTE: If the sstate cache is shared, this stage will need a lock to
-                                      #       avoid a race condition between cleanning/building.
-                                      bitbake -ccleanall \
+                                    # Bitbake doesn't do a good job at detecting changes that require a image
+                                    # rebuild, when BUILD_FROM_FEEDS is used. Clean to always rebuild.
+                                    # NOTE: If the sstate cache is shared, this stage will need a lock to
+                                    #       avoid a race condition between cleanning/building.
+                                    bitbake -ccleanall \
+                                            minimal-nilrt-image \
+                                            minimal-nilrt-ptest-image \
                                             minimal-nilrt-bundle-image \
                                             minimal-nilrt-bundle \
                                             nilrt-initramfs \
@@ -380,102 +367,130 @@ node (params.BUILD_NODE_SLAVE) {
                                             restore-mode-image \
                                         2>&1 | tee -a bitbake.stdout.txt
 
-                                      bitbake \
+                                    bitbake \
+                                            minimal-nilrt-image \
                                             minimal-nilrt-ptest-image \
                                             safemode-restore-image \
                                             restore-mode-image \
                                         2>&1 | tee -a bitbake.stdout.txt
 
-                                      ../scripts/buildVM.sh -d 10240 -m 1024 -n nilrt-vm -r restore-mode-image
-                                  fi
-                               """
+                                    ../scripts/buildVM.sh -d 10240 -m 1024 -n nilrt-vm -r restore-mode-image
 
-                            // we don't have provisioning images for NXG ARM like we have ISOs for x64, nor VMs
-                            if (distro_flavour == 'x64') {
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso \
-                                    $archive_img_path/restore-mode-image-${distro_flavour}.iso"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/safemode-restore-image-${distro_flavour}.iso \
-                                    $archive_img_path/safemode-restore-image-${distro_flavour}.iso"
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.iso \
+                                        $archive_img_path/restore-mode-image-${distro_flavour}.iso
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/safemode-restore-image-${distro_flavour}.iso \
+                                        $archive_img_path/safemode-restore-image-${distro_flavour}.iso
 
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path"
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-qemu.zip $archive_img_path"
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-virtualbox.zip $archive_img_path
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-vmware.zip $archive_img_path
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-hyperv.zip $archive_img_path
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/nilrt-vm-$distro_flavour-qemu.zip $archive_img_path
+
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.tar.bz2 \
+                                        $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2 \
+                                        $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2
+
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.ext2 \
+                                        $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2
+                                    cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.ext2 \
+                                        $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.ext2
+                                """
                             }
-
-                            if (distro_flavour == 'xilinx-zynqhf') {
-                                // cpio.gz.u-boot is a ramdisk present only for xilinx-zynqhf
-                                sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/restore-mode-image-${distro_flavour}.cpio.gz.u-boot \
-                                          $archive_img_path/restore-mode-image-${distro_flavour}.cpio.gz.u-boot"
+                            else {
+                                sh """#!/bin/bash
+                                    set -e -o pipefail
+                                    echo No images for distro_flavour=${distro_flavour}
+                                """
                             }
-
-                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.tar.bz2 \
-                                  $archive_img_path/minimal-nilrt-image-${distro_flavour}.tar.bz2"
-                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2 \
-                                  $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.tar.bz2"
-
-                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-image-${distro_flavour}.ext2 \
-                                  $archive_img_path/minimal-nilrt-image-${distro_flavour}.ext2"
-                            sh "cp -L $build_dir/tmp-glibc/deploy/images/$distro_flavour/minimal-nilrt-ptest-image-${distro_flavour}.ext2 \
-                                  $archive_img_path/minimal-nilrt-ptest-image-${distro_flavour}.ext2"
                         }
 
                         // The dist feed stage must be run immediately after the images stage.
                         // The dist recipes require packages from the core feed and the deploy/images.
                         stage("$distro_flavour dist feed") {
-                            sh """#!/bin/bash
-                                  set -e -o pipefail
+                            if (distro_flavour == 'x64') {
+                                sh """#!/bin/bash
+                                    set -e -o pipefail
 
-                                  . ./ni-oe-init-build-env $build_dir
+                                    . ./ni-oe-init-build-env $build_dir
 
-                                  dist_recipes=" \
-                                      dist-nilrt-grub-gateway \
-                                      dist-nilrt-efi-ab \
-                                      dist-nilrt-efi-ab-gateway \
-                                  "
+                                    dist_recipes=" \
+                                        dist-nilrt-grub-gateway \
+                                        dist-nilrt-efi-ab \
+                                        dist-nilrt-efi-ab-gateway \
+                                    "
 
-                                  bitbake \$dist_recipes
+                                    bitbake \$dist_recipes \
+                                        2>&1 | tee -a bitbake.stdout.txt
 
-                                  # move created recipe ipks to their own dist feed
-                                  rm -rf   ./tmp-glibc/deploy/ipk-dist
-                                  mkdir -p ./tmp-glibc/deploy/ipk-dist
-                                  for dist_recipe in \$dist_recipes; do
-                                      dep_ipk_path=`find ./tmp-glibc/work -type d -path "./tmp-glibc/work/*/\$dist_recipe/*/deploy-ipks"`
-                                      echo DEBUG: "\$dist_recipe => \$dep_ipk_path"
-                                      dep_ipks=`find "\$dep_ipk_path" -name "*.ipk" -printf "%P "`
-                                      for dep_ipk in \$dep_ipks; do
-                                          echo "DEP_IPK \$dep_ipk"
-                                          install -vD "./tmp-glibc/deploy/ipk/\$dep_ipk" "./tmp-glibc/deploy/ipk-dist/\$dep_ipk"
-                                          rm -v "./tmp-glibc/deploy/ipk/\$dep_ipk"
-                                      done
-                                  done
-                               """
+                                    # move created recipe ipks to their own dist feed
+                                    rm -rf   ./tmp-glibc/deploy/ipk-dist
+                                    mkdir -p ./tmp-glibc/deploy/ipk-dist
+                                    for dist_recipe in \$dist_recipes; do
+                                        dep_ipk_path=`find ./tmp-glibc/work -type d -path "./tmp-glibc/work/*/\$dist_recipe/*/deploy-ipks"`
+                                        echo DEBUG: "\$dist_recipe => \$dep_ipk_path"
+                                        dep_ipks=`find "\$dep_ipk_path" -name "*.ipk" -printf "%P "`
+                                        for dep_ipk in \$dep_ipks; do
+                                            echo "DEP_IPK \$dep_ipk"
+                                            install -vD "./tmp-glibc/deploy/ipk/\$dep_ipk" "./tmp-glibc/deploy/ipk-dist/\$dep_ipk"
+                                            rm -v "./tmp-glibc/deploy/ipk/\$dep_ipk"
+                                        done
+                                    done
+                                """
+                            }
+                            else {
+                                sh """#!/bin/bash
+                                    set -e -o pipefail
+
+                                    echo No dist feed for distro_flavour=${distro_flavour}
+
+                                    . ./ni-oe-init-build-env $build_dir
+
+                                    rm -rf   ./tmp-glibc/deploy/ipk-dist
+                                    mkdir -p ./tmp-glibc/deploy/ipk-dist
+                                """
+                            }
                         }
 
                         stage("$distro_flavour extras feed") {
-                            sh """#!/bin/bash
-                                  set -e -o pipefail
+                            if (distro_flavour == 'x64') {
+                                sh """#!/bin/bash
+                                    set -e -o pipefail
 
-                                  . ./ni-oe-init-build-env $build_dir
+                                    . ./ni-oe-init-build-env $build_dir
 
-                                  # Both the desirable and extra packagegroups should be deposited into the
-                                  # "extra" feed.
-                                  rm -rf tmp-glibc/deploy/ipk
-                                  mkdir -p tmp-glibc/deploy/ipk-extra
-                                  ln -s \$PWD/tmp-glibc/deploy/ipk-extra tmp-glibc/deploy/ipk
+                                    # Both the desirable and extra packagegroups should be deposited into the
+                                    # "extra" feed.
+                                    rm -rf tmp-glibc/deploy/ipk
+                                    mkdir -p tmp-glibc/deploy/ipk-extra
+                                    ln -s \$PWD/tmp-glibc/deploy/ipk-extra tmp-glibc/deploy/ipk
 
-                                  echo "Building desirable packages..."
-                                  bitbake packagegroup-ni-desirable 2>&1 | tee -a bitbake.stdout.txt
+                                    echo "Building desirable packages..."
+                                    bitbake packagegroup-ni-desirable 2>&1 | tee -a bitbake.stdout.txt
 
-                                  echo "Building extra packages..."
-                                  bitbake --continue packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt || true
+                                    echo "Building extra packages..."
+                                    bitbake --continue packagegroup-ni-extra 2>&1 | tee -a bitbake.stdout.txt || true
 
-                                  # make sure no main/core feed ipk exists in the extras feed
-                                  ipk_paths=`find ./tmp-glibc/deploy/ipk-core -name *.ipk | rev | cut -d"/" -f1-2 | rev`
-                                  for ipk_file in \$ipk_paths; do
-                                      rm -fv tmp-glibc/deploy/ipk/\$ipk_file
-                                  done;
-                              """
+                                    # make sure no main/core feed ipk exists in the extras feed
+                                    ipk_paths=`find ./tmp-glibc/deploy/ipk-core -name *.ipk | rev | cut -d"/" -f1-2 | rev`
+                                    for ipk_file in \$ipk_paths; do
+                                        rm -fv tmp-glibc/deploy/ipk/\$ipk_file
+                                    done;
+                                """
+                            }
+                            else {
+                                sh """#!/bin/bash
+                                    set -e -o pipefail
+
+                                    echo No extras feed for distro_flavour=${distro_flavour}
+
+                                    . ./ni-oe-init-build-env $build_dir
+
+                                    rm -rf tmp-glibc/deploy/ipk
+                                    mkdir -p tmp-glibc/deploy/ipk-extra
+                                    ln -s \$PWD/tmp-glibc/deploy/ipk-extra tmp-glibc/deploy/ipk
+                                """
+                            }
                         }
 
                         stage("$distro_flavour feed finalization") {
@@ -552,9 +567,9 @@ node (params.BUILD_NODE_SLAVE) {
         build(job: params.EXPORT_PR_SERVER_JOB, propagate: true)
     }
 
-    for (int i = 0; i < build_targets.size(); i++) {
-        def distro_flavour = build_targets.get(i)
-        step([$class: "JUnitResultArchiver", testResults: "build_$distro_flavour/xunit-results.xml"])
+    for (int i = 0; i < distro_flavour_list.size(); i++) {
+        def distro_flavour = distro_flavour_list.get(i)
+        step([$class: "JUnitResultArchiver", testResults: "build_$distro_flavour/xunit-results.xml", allowEmptyResults: true])
     }
 
 // The archive under ${workspace}/archive has the following structure
@@ -584,7 +599,7 @@ node (params.BUILD_NODE_SLAVE) {
     // PHASE: TESTING
     if (params.ENABLE_TESTING) {
         stage('Testing') {
-            if (!build_targets.contains('x64')) {
+            if (!distro_flavour_list.contains('x64')) {
                 echo("Skipping testing phase because x64 images were not built.")
                 return // quits the wrapping stage
             }
@@ -614,7 +629,7 @@ node (params.BUILD_NODE_SLAVE) {
     if (params.NI_INTERNAL_BUILD) {
         stage("Exporting build") {
 
-            // sanity check that parallel nodes built the same sources then clobber identical files (containing machine names)
+            // sanity check: parallel nodes built the same sources then clobber identical files (containing machine names)
             sh "md5sum $archive_dir/nilrt-gitCommitId*.txt | awk 'NR>1&&\$1!=last{exit 1}{last=\$1}' && \
                     for file in $archive_dir/nilrt-gitCommitId*.txt; do \
                         mv \$file $archive_dir/nilrt-gitCommitId.txt; \
@@ -624,39 +639,35 @@ node (params.BUILD_NODE_SLAVE) {
                         mv \$file $archive_dir/nilrt-git-submodule-status.txt; \
                     done"
 
-            // sanity check feeds (all important files are present and there are no duplicate ipks)
+            // sanity check: expected feeds dirs exist
             sh """#!/bin/bash -xe
-                  for dir in $archive_dir/feeds/NILinuxRT-*/* ; do
-                      pushd \$dir
+                if [ -e   $archive_dir/feeds/NILinuxRT-x64 ]; then
+                    pushd $archive_dir/feeds/NILinuxRT-x64
+                    for feed in main extra; do
+                        [ -d \$feed/all ]
+                        [ -d \$feed/core2-64 ]
+                        [ -d \$feed/x64 ]
+                    done
+                    [ -d dist/core2-64 ]
+                    popd
+                fi
 
-                      # assert feeds have expected subfeeds
-                      if [ `basename "\$dir"` = "dist" ]; then
-                          [ -d "core2-64" ]
-                      else
-                          [ -d "all" ]
-                          [ -d 'cortexa9hf-vfpv3' -a -d 'xilinx-zynqhf' ] || \
-                          [ -d 'core2-64' -a -d 'x64' ]
-                      fi
+                if [ -e   $archive_dir/feeds/NILinuxRT-xilinx-zynqhf ]; then
+                    pushd $archive_dir/feeds/NILinuxRT-xilinx-zynqhf
+                    [ -d main/all ]
+                    [ -d main/cortexa9hf-vfpv3 ]
+                    [ -d main/xilinx-zynqhf ]
+                    popd
+                fi
+            """
 
-                      # assert all subfeeds have package indexes
-                      for subFeedDir in `find . -type d`; do
-                          [ -f "\$subFeedDir/Packages" ]
-                          if [ '.' != "\$subFeedDir" ]; then
-                              [ -f "\$subFeedDir/Packages.gz" ]
-                              [ -f "\$subFeedDir/Packages.stamps" ]
-                          fi
-                      done
-
-                      popd
-                  done
-
-                  # search for duplicates by verifying the full path because we expect some file names to be duplicated
-                  # like the Packages(.gz) and allarch ipk's between machines
-                  [ `find $archive_dir/feeds -name '*.ipk' | wc -l` -eq \
+            // sanity check: no duplicate IPKs in sub-feeds
+            sh """#!/bin/bash -xe
+                [ `find $archive_dir/feeds -name '*.ipk' | wc -l` -eq \
                     `find $archive_dir/feeds -name '*.ipk' | sort | uniq | wc -l` ]
-               """
+            """
 
-            sh """#!/bin/bash
+            sh """#!/bin/bash -xe
                   source ${params.NIBUILD_ENV_SCRIPT_PATH}
                   cd ${params.NIBUILD_COMPONENT_PATH}
                   source ./setupEnv.sh
