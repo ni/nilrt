@@ -58,8 +58,7 @@ readonly scpopts="-P 2222 -i $workingDir/ssh_key $sshunsafeopts"
 trap cleanup EXIT
 trap 'handle_err ${BASH_SOURCE} ${LINENO} ${FUNCNAME:-unknown} $? "$BASH_COMMAND"' ERR
 
-# establish SSH host-port lock for use by NILRT VMs
-exec 100>"${workingDir}"/socket-ssh-redirect.lock
+# SSH host-port lock vars for NILRT VMs
 readonly LOCK_PORT=100
 readonly LOCK_PORT_TIMEOUT=300
 
@@ -190,6 +189,8 @@ rm -Rf "$workingDir"
 mkdir -p "$workingDir"
 echo "Built empty working dir at $workingDir"
 
+# establish SSH host-port lock for use by NILRT VMs
+exec 100>"${workingDir}"/socket-ssh-redirect.lock
 
 # Run buildVM.sh script with a timeout to create images
 echo "Deploy efi-ab and grub images to blank hard drives."
