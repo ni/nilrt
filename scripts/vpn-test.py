@@ -136,12 +136,12 @@ os.chdir("%s-qemu" % img_name)
 
 print("Booting VPN client VM")
 client_mac_address="52:54:d7:38:5c:e8"
-client = pexpect.spawn ("../vpn-test-files/start_qemu_bridge.sh %s %s.qcow2 %s" %
+client = pexpect.spawn ("../vpn-test-files/start_qemu_bridge.sh %s %s %s" %
                         (net_bridge, img_name, client_mac_address), timeout=test_timeout)
 
 print("Booting VPN server VM")
 server_mac_address="52:54:d7:38:5c:e9"
-server = pexpect.spawn ("../vpn-test-files/start_qemu_bridge.sh %s %s.qcow2 %s" %
+server = pexpect.spawn ("../vpn-test-files/start_qemu_bridge.sh %s %s %s" %
                         (net_bridge, img_name, server_mac_address), timeout=test_timeout)
 
 # create log files

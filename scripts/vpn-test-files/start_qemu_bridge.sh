@@ -24,23 +24,10 @@ fi
 # Instead, uncomment and edit this line to set a static MAC address. The benefit is that the DHCP server will assign the same IP address.
 # macaddr='52:54:be:36:42:a9'
 
-enable_kvm=$(id | grep -q kvm && echo '-enable-kvm -cpu kvm64' || echo '')
-
-efi_drives=""
-if [ -e "./OVMF/OVMF_CODE.fd" ]; then
-	efi_drives="${efi_drives} -drive if=pflash,format=raw,readonly,file=./OVMF/OVMF_CODE.fd"
-fi
-if [ -e "./OVMF/OVMF_VARS.fd" ]; then
-	efi_drives="${efi_drives} -drive if=pflash,format=raw,file=./OVMF/OVMF_VARS.fd"
-fi
-
-qemu-system-x86_64 \
-	-snapshot \
-	-nographic \
-	$enable_kvm \
-	-smp cpus=2 \
+./run-${vm_name}.sh \
+	-s \
+	-c 2 \
 	-m 1024 \
+	-- \
 	-net nic,macaddr=$macaddr \
-	-net bridge,br="$bridge_name" \
-	$efi_drives \
-	-drive file="$vm_name",index=0,media=disk
+	-net bridge,br="$bridge_name"
