@@ -21,12 +21,6 @@
 #     ipk_path: $wildcard_path_to_dist_ipk_within_export
 ---
 packages:
-  dist-nilrt-efi-ab_100.1:
-    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
-    ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-efi-ab_*.ipk"
-  dist-nilrt-efi-ab-gateway_100.1:
-    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
-    ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-efi-ab-gateway_*.ipk"
   dist-nilrt-grub-gateway_20.0:
     export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/nilrt-oe/export/100.1/') | latest_export }}"
     ipk_path: "feeds/NILinuxRT-x64/dist/**/dist-nilrt-grub-gateway_*.ipk"
