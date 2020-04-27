@@ -131,7 +131,7 @@ to build the kernel.
 
 ```bash
 /boot/linux_runmode.itb  # kernel location on ARM targets
-/lib/modules/            # kernel modules
+/mnt/userfs/lib/modules/ # kernel modules
 ```
 
 3. From the safe mode shell, reformat the run mode filesystem to using the
@@ -148,7 +148,7 @@ nisystemformat -f -t ext4
    ``/mnt/userfs``).
 
 5. Restore the NI-built kernel and module to their original locations in
-   ``/boot`` and ``/lib/modules/`` **or** install your custom-built kernel as
+   ``/boot`` and ``/mnt/userfs/lib/modules/`` **or** install your custom-built kernel as
    described in ``KERNEL_SOURCE.md``.
 
 #### Logging In
