@@ -132,13 +132,13 @@ class NILRTDistFetcher():
             subprocess.CalledProcessError: if raised by the ``opkg-make-index``
                 script.
         """
-        
+
         logging.info('Creating package index files...')
         os.chdir(self.__p_staging_feed())
         try:
             proc = sp.run(['opkg-make-index',
                            '--checksum', 'md5', '--checksum', 'sha256',
-                           '-p', 'Packages', '-v', '-f',
+                           '-p', 'Packages', '-v', '-f', '-a',
                            self.__p_staging_feed()],
                            env=self.rich_env,
                            stdout=sp.PIPE, stderr=sp.PIPE,
@@ -202,7 +202,7 @@ class NILRTDistFetcher():
             FetcherException: if the IPK export contains no Packages file
 
         """
-            
+
         export_dir = os.path.dirname(ipk_path)
 
         # try to find a Packages file in the export directory
@@ -239,7 +239,7 @@ class NILRTDistFetcher():
                 IPKs; else, copy the IPKs.
             retry: (tuple) of (retry_inerval, timeout), specifying how
                 frequently the fetcher should try to re-fetch the source file,
-                if it fails validation. 
+                if it fails validation.
 
         Returns:
             None; other than the job_queue entry
