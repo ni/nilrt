@@ -29,7 +29,7 @@ sys.path.insert(0, OPKG_UTILS_PATH)
 import opkg
 #####
 
-from pprint import pprint
+from pprint import pprint, pformat
 
 # LOGGING #
 import logging
@@ -368,8 +368,12 @@ class NILRTDistFetcherManifest():
             if not isinstance(configs, dict):
                 raise ValueError('Package entry "%s" has invalid config values. Expected dict, got %s' % (package_name, type(configs)))
             # parse config values
-            self.export = j2_env.from_string(self.raw['export']).render()
-            self._find_ipk_path(self.export, self.raw['ipk_path'])
+            try:
+                self.export = j2_env.from_string(self.raw['export']).render()
+                self._find_ipk_path(self.export, self.raw['ipk_path'])
+            except Exception as e:
+                logging.error('Parsing error during Entry: %s\n%s' % (package_name, pformat(self.raw)))
+                raise e
             self.final_only = bool(configs.get('final_only', False))
 
         def _find_ipk_path(self, export_root, ipk_path):
