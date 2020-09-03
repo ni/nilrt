@@ -1,0 +1,15 @@
+[global]
+bs=64K
+iodepth=64
+direct=1
+ioengine=libaio
+group_reporting
+time_based
+runtime=500
+numjobs=4
+
+[random_read_write]
+rw=randrw
+name=throughput-file-randrw
+filename=/home/root/test_file
+size=2GB
