@@ -1,4 +1,4 @@
-FROM debian:9.8
+FROM debian:10
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
@@ -28,7 +28,6 @@ RUN apt-get update && apt-get install --assume-yes \
 	info \
 	iputils-ping \
 	libc6-dbg \
-	libguestfs0-dbg \
 	libguestfs-tools \
 	libpulse-dev \
 	libsdl1.2-dev \
@@ -56,8 +55,8 @@ RUN apt-get update && apt-get install --assume-yes \
 	xmlstarlet \
 	zip
 
-# Install virtualbox from upstream because it's not available in debian 9
-RUN echo 'deb http://download.virtualbox.org/virtualbox/debian stretch contrib' > /etc/apt/sources.list.d/virtualbox.list
+# Install virtualbox from upstream because it's not available in debian 10
+RUN echo 'deb http://download.virtualbox.org/virtualbox/debian buster contrib' > /etc/apt/sources.list.d/virtualbox.list
 RUN wget https://www.virtualbox.org/download/oracle_vbox_2016.asc
 RUN apt-key add oracle_vbox_2016.asc
 RUN rm oracle_vbox_2016.asc
