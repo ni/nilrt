@@ -1,0 +1,24 @@
+trigger:
+- nilrt/master/*
+
+resources:
+  containers:
+  - container: rtos-build
+    image: rnd-builds.repos.natinst.com/rtos/nilrt-build:0.3
+    options:
+
+jobs:
+- job: Build_OpenEmbedded
+  container: rtos-build
+  timeoutInMinutes: 3600
+  pool:
+    name: Drivers-NIBuildFarm-RFMIBUILD
+    demands:
+      - docker
+      - Agent.OS -equals Linux
+  steps:
+  - checkout: self
+    submodules: true
+  - script: |
+      source ni-oe-init-build-env
+      ../scripts/buildall.sh
