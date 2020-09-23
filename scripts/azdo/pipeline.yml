@@ -20,5 +20,6 @@ jobs:
   - checkout: self
     submodules: true
   - script: |
+      git submodule update --remote --checkout
       source ni-oe-init-build-env
       ../scripts/buildall.sh
