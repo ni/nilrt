@@ -20,5 +20,5 @@ jobs:
   - checkout: self
     submodules: true
   - script: |
-      source ni-oe-init-build-env
+      source nilrt-build-init.env
       ../scripts/buildall.sh
