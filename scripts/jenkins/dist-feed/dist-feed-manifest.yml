@@ -54,6 +54,18 @@ packages:
   dist-nilrt-grub_20.5_x64-pxi:
     export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/SystemImage/OneRT/export/20.5') | latest_export }}"
     ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/onert_system_image_ipk_pxi/dist-nilrt-grub_*.ipk'
+  dist-nilrt-grub_20.6_arm:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/SystemImage/OneRT/export/20.6') | latest_export }}"
+    ipk_path: 'targets/linuxU/armv7-a/gcc-4.7-oe/release/onert_system_image_ipk_default/dist-nilrt-grub_*.ipk'
+  dist-nilrt-grub_20.6_x64:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/SystemImage/OneRT/export/20.6') | latest_export }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/onert_system_image_ipk_default/dist-nilrt-grub_*.ipk'
+  dist-nilrt-grub_20.6_x64-combo:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/SystemImage/OneRT/export/20.6') | latest_export }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/onert_system_image_ipk_combo/dist-nilrt-grub_*.ipk'
+  dist-nilrt-grub_20.6_x64-pxi:
+    export: "{{ (MNT_BALTIC_PENGUINEXPORTS + '/nilinux/SystemImage/OneRT/export/20.6') | latest_export }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/onert_system_image_ipk_pxi/dist-nilrt-grub_*.ipk'
   dist-nilrt-systemlink-grub_19.6_arm-crio:
     export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/current_gen/skyline_rt_client_runtime/export/19.6') | latest_export) + '/.archives/linux.zip') | unzip }}"
     ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/dist_nilrt_systemlink_grub_ipk/dist-nilrt-systemlink-grub_*.ipk'
@@ -86,4 +98,10 @@ packages:
     ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
   dist-nilrt-upgrade-tools_20.5_x64:
     export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/nilrt_system_image_upgrade_tools/export/20.5/') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
+  dist-nilrt-upgrade-tools_20.6_arm:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/nilrt_system_image_upgrade_tools/export/20.6/') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
+  dist-nilrt-upgrade-tools_20.6_x64:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/nilrt_system_image_upgrade_tools/export/20.6/') | latest_export) + '/.archives/linux.zip') | unzip }}"
     ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
