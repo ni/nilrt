@@ -9,6 +9,9 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 ## [Unreleased]
 Branch: `nilrt/master/sumo`
 
+## 8.6
+Branch: `nilrt/20.6/sumo`
+
 ### NILRT
 
 #### Changed
@@ -25,23 +28,23 @@ Branch: `nilrt/master/sumo`
   - CVE-2018-16840 use-after-free in handle close
   - CVE-2018-16842 warning message out-of-buffer read
   - CVE-2018-16890 NTLM type-2 out-of-bounds buffer read
+  - CVE-2019-15601 file: on Windows, refuse paths that start with \\
   - CVE-2019-3822  NTLMv2 type-3 header stack buffer overflow
   - CVE-2019-3823  SMTP end-of-response out-of-bounds read
   - CVE-2019-5435  Integer overflows in curl_url_set
   - CVE-2019-5436  tftp: use the current blksize for recvfrom()
   - CVE-2019-5481  FTP-KRB double-free
   - CVE-2019-5482  TFTP small blocksize heap buffer overflow
-  - CVE-2019-15601 file: on Windows, refuse paths that start with \\
   - CVE-2020-8231  libcurl: wrong connect-only connection
 - openssl fixes
+  - CVE-2018-0732
+  - CVE-2018-0734
+  - CVE-2018-0737
+  - CVE-2018-5407
   - CVE-2019-1547
-  - CVE-2019-1563
   - CVE-2019-1552
   - CVE-2019-1559
-  - CVE-2018-5407
-  - CVE-2018-0734
-  - CVE-2018-0732
-  - CVE-2018-0737
+  - CVE-2019-1563
 
 
 ### meta-nilrt
@@ -49,6 +52,9 @@ Branch: `nilrt/master/sumo`
 - Minimal support for packaging multiple kernel versions in the same IPK feed configuration. (336ae54c5306d79e6c6a7cbbb02c79cab5b93012)
 - IPK Extras Feed Content:
   - [makedumpfile](https://github.com/ni/meta-nilrt/commit/e4e53bac675ae710cc6ce676d170c8b91b1d719d)
+
+#### Fixed
+- Fixed a bug where 8.5 safemodes would error during MAX software installation to pre-8.5 runmodes. ([PR #46](https://github.com/ni/meta-nilrt/pull/46))
 
 ### linux
 #### Changed
