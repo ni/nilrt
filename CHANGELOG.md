@@ -6,9 +6,6 @@ The NI Linux Real-Time project uses a mainline branching model with product bran
 
 This changelog attempts to conform to the changelog spec on [keepachangelog.org](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
-Branch: `nilrt/master/sumo`
-
 ## 8.6
 Branch: `nilrt/20.6/sumo`
 
