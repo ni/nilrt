@@ -2,7 +2,7 @@
 bs=64K
 iodepth=64
 direct=1
-ioengine=libaio
+ioengine=sync
 group_reporting
 time_based
 runtime=500
