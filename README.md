@@ -39,8 +39,13 @@ RT devices - including custom Linux kernels and kernel modules.
     initialization script at the project root.
 
     ```bash
-    . nilrt-build-init.env
+    . nilrt-build-init.env [--org]
     ```
+
+    <font color=lightgreen>[NI]</font> builders who are connected to the NI
+    corporate network should specify `--org` in their init script args, to
+    provoke the script into adding the `ni-org.conf` snippet to your bitbake
+    directory. External builders *should not* use `--org`.
 
     This will setup the needed environment variables and build configuration
     files for building through the OpenEmbedded build system. Note that the
