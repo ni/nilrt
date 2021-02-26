@@ -3,8 +3,6 @@
 # Full automated installation; yes on all options + poweroff on finish
 PROVISION_UNSUPPORTED_TARGET="y"
 PROVISION_REPARTITION_TARGET="y"
-PROVISION_RESTORE_MINIMAL_IMAGE="y"
 PROVISION_REBOOT_METHOD="poweroff"
 
-# Install auto discoverable ESPs to support all hypervisors
-PROVISION_BOOT_SCHEME="efi-auto"
+PROVISION_BOOT_SCHEME="efi-ab"
