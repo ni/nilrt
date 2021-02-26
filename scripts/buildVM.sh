@@ -22,7 +22,6 @@ print_usage_and_die () {
     echo >&2 '  -m <ram size in MB>'
     echo >&2 '  -i <images dir>'
     echo >&2 '  -a <answer file>'
-    echo >&2 '  -q only build the qemu image (skip the other VM types)'
     echo >&2 '  -v verbose mode'
     exit 1
 }
@@ -34,7 +33,6 @@ vmName=""
 initramfsRecipeName=""
 bootDiskSizeMB=""
 memSizeMB=""
-qemuOnly=0
 answerFile=""
 verbose_mode=0
 imagesDir=""
@@ -47,7 +45,6 @@ while getopts "i:n:r:d:m:h:a:qv" opt; do
    m )  memSizeMB="$OPTARG" ;;
    i )  imagesDir="$OPTARG" ;;
    a )  answerFile="$OPTARG" ;;
-   q )  qemuOnly=1 ;;
    v )  verbose_mode=1 ;;
    h )  print_usage_and_die ;;
    \?)  print_usage_and_die ;;
@@ -118,19 +115,6 @@ do_silent qemu-system-x86_64 \
 
 echo "Built qcow2 disk at $vmDirQemu/$vmName-$MACHINE.qcow2"
 
-# build alt disk formats for virtualbox, vmware, and hyperv
-function build_alt_vmdisk()
-{
-    local fmt="$1"
-    local otherVmDir="$2"
-    qemu-img convert -f qcow2 -O "$fmt" "$vmDirQemu/$vmName-$MACHINE.qcow2" "$otherVmDir/$vmName-$MACHINE.$fmt"
-    if [[ $fmt == "vdi" ]]; then
-        # virtualbox unfortunately requires unique UUIDs
-        VBoxManage internalcommands sethduuid "$otherVmDir/$vmName-$MACHINE.$fmt"
-    fi
-    cp "$SCRIPT_RESOURCE_DIR/deprecated.txt" "$otherVmDir"
-}
-
 # add machine definition files
 function add_machine_def()
 {
@@ -141,10 +125,6 @@ function add_machine_def()
     local archiveDirName="$vmName-$MACHINE-$hypervisorName"
     local vmMachineUuid="`uuidgen`"
     local vmDiskUuid=""
-    if [[ $hypervisorName == "virtualbox" ]]; then
-        # virtualbox unfortunately requires a UUID reference in it's machine definition
-        vmDiskUuid="`VBoxManage showhdinfo "$workingDir/$archiveDirName/$vmName-$MACHINE.vdi" | grep '^UUID: ' | tr -s ' ' | cut -d' ' -f2`"
-    fi
     cp "$SCRIPT_RESOURCE_DIR/$srcMachineDefFileName" "$workingDir/$archiveDirName/$dstMachineDefFileName"
     chmod "$dstMachineDefPerm" "$workingDir/$archiveDirName/$dstMachineDefFileName"
     sed -i "s/\${VM_NAME}/$vmName-$MACHINE/g"           "$workingDir/$archiveDirName/$dstMachineDefFileName"
@@ -167,24 +147,6 @@ function build_archive()
     echo "Saved $hypervisorName archive to $imagesDir/$archiveName"
 }
 
-if [[ $qemuOnly -eq 0 ]] ; then
-    mkdir "$baseVmDir-virtualbox"
-    mkdir "$baseVmDir-vmware"
-    mkdir "$baseVmDir-hyperv"
-
-    chmod 0444 "$vmDirQemu/$vmName-$MACHINE.qcow2"
-    build_alt_vmdisk  "vdi"   "$baseVmDir-virtualbox"
-    build_alt_vmdisk  "vmdk"  "$baseVmDir-vmware"
-    build_alt_vmdisk  "vhdx"  "$baseVmDir-hyperv"
-    chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
-
-    add_machine_def "virtualbox" "machine-def-$MACHINE.vbox" "$vmName-$MACHINE.vbox" 0644
-    add_machine_def "vmware"     "machine-def-$MACHINE.vmx"  "$vmName-$MACHINE.vmx"  0644
-
-    build_archive "virtualbox"
-    build_archive "vmware"
-    build_archive "hyperv"
-fi
 add_machine_def "qemu" "runQemuVM.sh"  "run-$vmName-$MACHINE.sh"  0755
 add_machine_def "qemu" "runQemuVM.bat" "run-$vmName-$MACHINE.bat" 0755
 build_archive   "qemu"
