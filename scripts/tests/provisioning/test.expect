@@ -1,0 +1,65 @@
+#!/usr/bin/expect -f
+#
+# Start a NILRT VM and instrument installing and running the provisioning
+# ptests. This script assumes that there is a running HTTP server at the ipv4
+# $vm_host_ip, on port 8990.
+# 
+# Expected arguments:
+#   1) path to the run-VM script
+#   2+) ipk feed paths (optional)
+log_file -noappend provisioning.log
+
+set ipk_feeds [lrange $argv 1 end]
+# The SLIRP networking static ipv4 to use for the VM host (as viewed from the
+# guest). Can be any ip on the 10.0.2.0/24 subnet. 10.0.2.2 is the QEMU
+# default, if none is specified.
+set vm_host_ip "10.0.2.2"
+# Set the login username
+set USER root
+
+# boot the VM with the run-vm script
+spawn [lindex $argv 0] -s -- -device e1000,netdev=n1 -netdev user,id=n1,ipv6=off,net=10.0.2.0/24,host=$vm_host_ip
+
+# getty
+# run-postinsts on a non-accelerated VM might take ~300 seconds, so increase
+# the timeout to provide plenty of time.
+set timeout 900
+expect {
+	"login: " { send "root\r" }
+	timeout {
+		send_user "TIMEOUT while waiting for getty."
+		exit 1
+	}
+}
+
+set timeout 90
+# configure opkg
+expect -re "$USER@.*# $" {
+	send "touch /etc/opkg/testing.conf\r"
+	set feed_index 0
+	foreach feed_uri $ipk_feeds {
+		send -- "echo src test-feed.$feed_index http://$vm_host_ip:8990/$feed_uri >>/etc/opkg/testing.conf\r"
+		set feed_index [expr $feed_index + 1]
+	}
+	send "cat /etc/opkg/testing.conf\r"
+	send "opkg update\r"
+}
+
+# setup ptests 
+expect -re "$USER@.*# $" {
+	send "opkg install init-restore-mode-ptest\r"
+}
+
+# run ptests
+expect -re "$USER@.*# $" {
+	send "ptest-runner -l\r"
+	send "ptest-runner\r"
+}
+
+# shutdown
+expect {
+	-re "$USER@.*# $" { send -- "halt\r" }
+	timeout { exit 1 }
+}
+
+expect EOF
