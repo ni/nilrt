@@ -34,20 +34,22 @@ expect {
 
 set timeout 90
 # configure opkg
-expect -re "$USER@.*# $" {
-	send "touch /etc/opkg/testing.conf\r"
-	set feed_index 0
-	foreach feed_uri $ipk_feeds {
-		send -- "echo src test-feed.$feed_index http://$vm_host_ip:8990/$feed_uri >>/etc/opkg/testing.conf\r"
-		set feed_index [expr $feed_index + 1]
+expect {
+	-re "$USER@.*# $" {
+		send "touch /etc/opkg/testing.conf\r"
+		set feed_index 0
+		foreach feed_uri $ipk_feeds {
+			send -- "echo src test-feed.$feed_index http://$vm_host_ip:8990/$feed_uri >>/etc/opkg/testing.conf\r"
+			set feed_index [expr $feed_index + 1]
+		}
+		send "cat /etc/opkg/testing.conf\r"
+		send "opkg update\r"
+		send "opkg install init-restore-mode-ptest\r"
 	}
-	send "cat /etc/opkg/testing.conf\r"
-	send "opkg update\r"
-}
-
-# setup ptests 
-expect -re "$USER@.*# $" {
-	send "opkg install init-restore-mode-ptest\r"
+	timeout {
+		send_user "TIMEOUT waiting for opkg to configure and ptests to install.\r"
+		exit 1
+	}
 }
 
 # run ptests
@@ -57,7 +59,7 @@ expect {
 		send "ptest-runner\r"
 	}
 	timeout {
-		send_user "TIMEOUT waiting for ptest-runner to exit."
+		send_user "TIMEOUT waiting for ptest-runner to exit.\r"
 		exit 1
 	}
 }
@@ -66,7 +68,7 @@ expect {
 expect {
 	-re "$USER@.*# $" { send -- "halt\r" }
 	timeout {
-		send_user "TIMEOUT waiting for VM to shut down."
+		send_user "TIMEOUT waiting for VM to shut down.\r"
 		exit 1
 	}
 }
