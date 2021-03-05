@@ -27,7 +27,7 @@ set timeout 900
 expect {
 	"login: " { send "root\r" }
 	timeout {
-		send_user "TIMEOUT while waiting for getty."
+		send_user "\nTIMEOUT while waiting for getty.\n"
 		exit 1
 	}
 }
@@ -47,7 +47,7 @@ expect {
 		send "opkg install init-restore-mode-ptest\r"
 	}
 	timeout {
-		send_user "TIMEOUT waiting for opkg to configure and ptests to install.\r"
+		send_user "\nTIMEOUT waiting for opkg to configure and ptests to install.\n"
 		exit 1
 	}
 }
@@ -59,7 +59,7 @@ expect {
 		send "ptest-runner\r"
 	}
 	timeout {
-		send_user "TIMEOUT waiting for ptest-runner to exit.\r"
+		send_user "\nTIMEOUT waiting for ptest-runner to exit.\n"
 		exit 1
 	}
 }
@@ -68,7 +68,7 @@ expect {
 expect {
 	-re "$USER@.*# $" { send -- "halt\r" }
 	timeout {
-		send_user "TIMEOUT waiting for VM to shut down.\r"
+		send_user "\nTIMEOUT waiting for VM to shut down.\n"
 		exit 1
 	}
 }
