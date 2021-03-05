@@ -24,7 +24,7 @@ error_and_die() {
 
 usage() {
 	local exit_code=${1:-2}
-	test $exit_code -eq 0 && exec 1>&2
+	test $exit_code -eq 0 || exec 1>&2
 	cat <<EOF
 $(basename $BASH_SOURCE) -h|--help
   Print this usage information and exit.
