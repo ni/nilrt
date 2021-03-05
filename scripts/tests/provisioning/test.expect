@@ -51,15 +51,24 @@ expect -re "$USER@.*# $" {
 }
 
 # run ptests
-expect -re "$USER@.*# $" {
-	send "ptest-runner -l\r"
-	send "ptest-runner\r"
+expect {
+	-re "$USER@.*# $" {
+		send "ptest-runner -l\r"
+		send "ptest-runner\r"
+	}
+	timeout {
+		send_user "TIMEOUT waiting for ptest-runner to exit."
+		exit 1
+	}
 }
 
 # shutdown
 expect {
 	-re "$USER@.*# $" { send -- "halt\r" }
-	timeout { exit 1 }
+	timeout {
+		send_user "TIMEOUT waiting for VM to shut down."
+		exit 1
+	}
 }
 
 expect EOF
