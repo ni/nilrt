@@ -1,7 +1,6 @@
 #NI_PROVISIONING_ANSWERS_V1
 
 # Full automated installation; yes on all options + poweroff on finish
-PROVISION_UNSUPPORTED_TARGET="y"
 PROVISION_REPARTITION_TARGET="y"
 PROVISION_REBOOT_METHOD="poweroff"
 
