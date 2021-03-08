@@ -25,7 +25,7 @@ spawn [lindex $argv 0] -s -- -device e1000,netdev=n1 -netdev user,id=n1,ipv6=off
 # the timeout to provide plenty of time.
 set timeout 900
 expect {
-	"login: " { send "root\r" }
+	"login: " { send "$USER\r" }
 	timeout {
 		send_user "\nTIMEOUT while waiting for getty.\n"
 		exit 1
@@ -47,7 +47,7 @@ expect {
 		send "opkg install init-restore-mode-ptest\r"
 	}
 	timeout {
-		send_user "\nTIMEOUT waiting for opkg to configure and ptests to install.\n"
+		send_user "\nTIMEOUT waiting for shell.\n"
 		exit 1
 	}
 }
@@ -59,7 +59,7 @@ expect {
 		send "ptest-runner\r"
 	}
 	timeout {
-		send_user "\nTIMEOUT waiting for ptest-runner to exit.\n"
+		send_user "\nTIMEOUT waiting for opkg to configure and ptests to install.\n"
 		exit 1
 	}
 }
@@ -68,9 +68,14 @@ expect {
 expect {
 	-re "$USER@.*# $" { send -- "halt\r" }
 	timeout {
-		send_user "\nTIMEOUT waiting for VM to shut down.\n"
+		send_user "\nTIMEOUT waiting for ptest-runner to exit.\n"
 		exit 1
 	}
 }
 
-expect EOF
+expect {
+	EOF
+	timeout {
+		send_user "\nTIMEOUT waiting for VM to shut down.\n"
+	}
+}
