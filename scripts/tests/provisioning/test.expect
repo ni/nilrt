@@ -3,10 +3,11 @@
 # Start a NILRT VM and instrument installing and running the provisioning
 # ptests. This script assumes that there is a running HTTP server at the ipv4
 # $vm_host_ip, on port 8990.
-# 
+#
 # Expected arguments:
 #   1) path to the run-VM script
-#   2+) ipk feed paths (optional)
+#   2) name of the log file
+#   3+) ipk feed paths (optional)
 log_file -noappend provisioning.log
 
 set ipk_feeds [lrange $argv 1 end]
