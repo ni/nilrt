@@ -1,0 +1,127 @@
+#!/usr/bin/expect -f
+#
+# Start a NILRT efi-ab VM, install grub gateway IPK and migrate to safemode.
+# This script assumes that there is a running HTTP server at the ipv4
+# $vm_host_ip, on port 8990.
+#
+# Expected arguments:
+#   1) path to the run-VM script
+#   2) name of the log file
+#   3+) ipk feed paths (optional)
+log_file -noappend [lindex $argv 1]
+
+set ipk_feeds [lrange $argv 2 end]
+# The SLIRP networking static ipv4 to use for the VM host (as viewed from the
+# guest). Can be any ip on the 10.0.2.0/24 subnet. 10.0.2.2 is the QEMU
+# default, if none is specified.
+set vm_host_ip "10.0.2.2"
+# Set the login username
+set USER root
+
+# boot the VM with the run-vm script
+spawn [lindex $argv 0] -- -device e1000,netdev=n1 -netdev user,id=n1,ipv6=off,net=10.0.2.0/24,host=$vm_host_ip
+
+# getty
+# run-postinsts on a non-accelerated VM might take ~300 seconds, so increase
+# the timeout to provide plenty of time.
+set timeout 900
+expect {
+	"login: " { send "$USER\r" }
+	timeout {
+		send_user "\nTIMEOUT while waiting for getty.\n"
+		exit 1
+	}
+}
+
+set timeout 90
+# configure opkg
+expect {
+	-re "$USER@.*# $" {
+		send "touch /etc/opkg/testing.conf\r"
+		set feed_index 0
+		foreach feed_uri $ipk_feeds {
+			send -- "echo src test-feed.$feed_index http://$vm_host_ip:8990/$feed_uri \[trusted=yes\] >>/etc/opkg/testing.conf\r"
+			set feed_index [expr $feed_index + 1]
+		}
+		send "cat /etc/opkg/testing.conf\r"
+		send "opkg update\r"
+		send "opkg install dist-nilrt-grub-gateway\r"
+	}
+	timeout {
+		send_user "\nTIMEOUT waiting for shell.\n"
+		exit 1
+	}
+}
+
+# start provisioning
+expect {
+	-re "$USER@.*# $" {
+		send "/usr/share/nilrt/nilrt-install\r"
+	}
+	timeout {
+		send_user "\nTIMEOUT waiting for opkg to configure and ptests to install.\n"
+		exit 1
+	}
+}
+
+# reboot
+expect {
+	-re "$USER@.*# $" { send -- "reboot\r" }
+	timeout {
+		send_user "\nTIMEOUT waiting for nilrt-install script to complete.\n"
+		exit 1
+	}
+}
+
+expect {
+	"$USER@recovery:/#" {}
+	timeout {
+		send_user "\nTIMEOUT while waiting for system to start provisioning.\n"
+		exit 1
+	}
+}
+
+# Wait for shell after provisioning is complete
+set timeout 900
+expect {
+	"NI Linux Real-Time (safe mode on" {}
+	timeout {
+		send_user "\nTIMEOUT while waiting for system to boot after provisioning.\n"
+		exit 1
+	}
+}
+
+set USER admin
+
+set timeout 90
+expect {
+	"login: " { send "$USER\r" }
+	timeout {
+		send_user "\nTIMEOUT while waiting for getty.\n"
+		exit 1
+	}
+}
+
+expect {
+	"Password: " { send "\r" }
+	timeout {
+		send_user "\nTIMEOUT while waiting for getty.\n"
+		exit 1
+	}
+}
+
+# shutdown
+expect {
+	-re "$USER@.*# $" { send -- "halt\r" }
+	timeout {
+		send_user "\nTIMEOUT waiting for login.\n"
+		exit 1
+	}
+}
+
+expect {
+	EOF
+	timeout {
+		send_user "\nTIMEOUT waiting for VM to shut down.\n"
+	}
+}
