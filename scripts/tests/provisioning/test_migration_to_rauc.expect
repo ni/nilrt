@@ -8,7 +8,7 @@
 #   1) path to the run-VM script
 #   2) name of the log file
 #   3+) ipk feed paths (optional)
-log_file -noappend provisioning.log
+log_file -noappend [lindex $argv 1]
 
 set ipk_feeds [lrange $argv 1 end]
 # The SLIRP networking static ipv4 to use for the VM host (as viewed from the
