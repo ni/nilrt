@@ -29,8 +29,6 @@ Arguments:
   -n name         The name of the final VM archive
   -r recipe_name  The name of the recovery media ISO, within the images_dir
                   Example: \`foo-bar-x64.iso\` has recipe_name: \`foo-bar\`
-  -v              Enable verbose mode. VM serial output will be connected to
-                  stdout.
 EOF
     exit $rc
 }
@@ -43,10 +41,9 @@ initramfsRecipeName=""
 bootDiskSizeMB=""
 memSizeMB=""
 answerFile=""
-verbose_mode=0
 imagesDir=""
 
-while getopts "i:n:r:d:m:a:hv" opt; do
+while getopts "i:n:r:d:m:a:h" opt; do
    case "$opt" in
    a )  answerFile="$OPTARG" ;;
    d )  bootDiskSizeMB="$OPTARG" ;;
@@ -55,17 +52,10 @@ while getopts "i:n:r:d:m:a:hv" opt; do
    m )  memSizeMB="$OPTARG" ;;
    n )  vmName="$OPTARG" ;;
    r )  initramfsRecipeName="$OPTARG" ;;
-   v )  verbose_mode=1 ;;
    \?)  print_usage_and_die ;;
    esac
 done
 shift $(($OPTIND - 1))
-
-if [ "$verbose_mode" -eq 0 ] ; then
-    do_silent() { "$@" &>/dev/null; }
-else
-    do_silent() { "$@"; }
-fi
 
 [ -n "$vmName" ] || error_and_die 'Must specify VM name with -n. Run with -h for help.'
 [ -n "$initramfsRecipeName" ] || error_and_die 'Must specify recipe name with -r. Run with -h for help.'
@@ -111,7 +101,7 @@ enableKVM=$(id | grep -q kvm && echo "-enable-kvm -cpu kvm64" || echo "")
 isoImage="$imagesDir/$initramfsRecipeName-x64.iso"
 [ ! -f $isoImage ] && isoImage="$imagesDir/$initramfsRecipeName-x64.wic"
 
-do_silent qemu-system-x86_64 \
+qemu-system-x86_64 \
     $enableKVM -smp cpus=1 \
     -m "$memSizeMB" \
     -nographic \
