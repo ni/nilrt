@@ -120,7 +120,7 @@ do_silent qemu-system-x86_64 \
     -drive file="$vmDirQemu/$vmName-$MACHINE.qcow2",index=0,media=disk \
     -drive file="$isoImage",index=1,media=cdrom,readonly \
     -drive file="$workingDir/ni_provisioning.answers.iso",index=2,media=cdrom,readonly \
-    </dev/null
+# end qemu-system-x86_64
 
 echo "Built qcow2 disk at $vmDirQemu/$vmName-$MACHINE.qcow2"
 
