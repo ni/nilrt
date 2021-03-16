@@ -34,6 +34,7 @@ EOF
 }
 
 readonly SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
+readonly MACHINE=x64
 
 # get args
 vmName=""
