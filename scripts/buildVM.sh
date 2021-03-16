@@ -7,23 +7,32 @@ error_and_die () {
 }
 
 print_usage_and_die () {
-    echo >&2 'Usage: $0 -h'
-    echo >&2 '   or: $0 -n <name> -r <recipe name> -d <disk size> -m <memory> [-i <images dir>] [-a <answer file>] [-q] [-v]'
-    echo >&2 ''
-    echo >&2 'Build a virtual machine with the given disk size and ram size from'
-    echo >&2 'the specified bitbake recipe (which must be an image recipe).'
-    echo >&2 ''
-    echo >&2 'Must be run from the bitbake build directory.'
-    echo >&2 'MACHINE env must be defined (ie export MACHINE x64).'
-    echo >&2 ''
-    echo >&2 '  -n <vm name>'
-    echo >&2 '  -r <recipe name of an initramfs for the ISO to boot>'
-    echo >&2 '  -d <boot disk size in MB>'
-    echo >&2 '  -m <ram size in MB>'
-    echo >&2 '  -i <images dir>'
-    echo >&2 '  -a <answer file>'
-    echo >&2 '  -v verbose mode'
-    exit 1
+    local rc=${1:-2}
+    if [ $rc -ne 0 ]; then
+        exec 1>&2
+    fi
+    cat <<EOF
+buildVM.sh -h
+  Print this help message and exit
+buildVM.sh -n name -r recipe_name -d disk_size -m memory \\
+           [-a answer_file] [-i images_dir] [-v]
+  Create a NILRT virtual machine archive (QEMU).
+
+Arguments:
+  -a answer_file  Use the answer file at answer_file, instead of the default.
+  -d disk_size    The size of the built-VM qcow2 disk (in GB)
+  -h              Print this help message and exit.
+  -i images_dir   The location of the bitbake images deploy dir
+                  Default: ./tmp-glibc/deploy/images/\$MACHINE
+  -m memory       The virtual memory size (in MB), for the VM
+                  (during provisioning)
+  -n name         The name of the final VM archive
+  -r recipe_name  The name of the recovery media ISO, within the images_dir
+                  Example: \`foo-bar-x64.iso\` has recipe_name: \`foo-bar\`
+  -v              Enable verbose mode. VM serial output will be connected to
+                  stdout.
+EOF
+    exit $rc
 }
 
 readonly SCRIPT_RESOURCE_DIR="`dirname "$BASH_SOURCE[0]"`/buildVM-files"
@@ -37,16 +46,16 @@ answerFile=""
 verbose_mode=0
 imagesDir=""
 
-while getopts "i:n:r:d:m:h:a:qv" opt; do
+while getopts "i:n:r:d:m:a:hv" opt; do
    case "$opt" in
+   a )  answerFile="$OPTARG" ;;
+   d )  bootDiskSizeMB="$OPTARG" ;;
+   h )  print_usage_and_die 0 ;;
+   i )  imagesDir="$OPTARG" ;;
+   m )  memSizeMB="$OPTARG" ;;
    n )  vmName="$OPTARG" ;;
    r )  initramfsRecipeName="$OPTARG" ;;
-   d )  bootDiskSizeMB="$OPTARG" ;;
-   m )  memSizeMB="$OPTARG" ;;
-   i )  imagesDir="$OPTARG" ;;
-   a )  answerFile="$OPTARG" ;;
    v )  verbose_mode=1 ;;
-   h )  print_usage_and_die ;;
    \?)  print_usage_and_die ;;
    esac
 done
