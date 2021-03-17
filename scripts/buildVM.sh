@@ -97,13 +97,20 @@ cp -r "$SCRIPT_RESOURCE_DIR/OVMF" "$vmDirQemu/"
 #  partition and install OS
 qemu-img create -q -f qcow2 "$vmDirQemu/$vmName-$MACHINE.qcow2" "$bootDiskSizeMB""M"
 chmod 0644 "$vmDirQemu/$vmName-$MACHINE.qcow2"
-enableKVM=$(id | grep -q kvm && echo "-enable-kvm -cpu kvm64" || echo "")
+
+# Enable the KVM hypervisor layer, if it seems like it is supported.
+if [ -w /dev/kvm ]; then
+    echo "INFO: /dev/kvm detected as writable. Enabling KVM hypervisor."
+    enableKVM="-enable-kvm"
+else
+    echo "INFO: /dev/kvm is not writable. KVM will not be enabled."
+fi
 
 isoImage="$imagesDir/$initramfsRecipeName-x64.iso"
 [ ! -f $isoImage ] && isoImage="$imagesDir/$initramfsRecipeName-x64.wic"
 
 qemu-system-x86_64 \
-    $enableKVM -smp cpus=1 \
+    ${enableKVM:-} -cpu qemu64 -smp cpus=1 \
     -m "$memSizeMB" \
     -nographic \
     -drive if=pflash,format=raw,readonly,file="$vmDirQemu/OVMF/OVMF_CODE.fd" \
