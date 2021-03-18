@@ -85,10 +85,18 @@ else
 	nilrt_net0_args="user,id=nilrt_net0"
 fi
 
+# Enable the KVM hypervisor layer, if it seems like it is supported.
+if [ -w /dev/kvm ]; then
+    echo "INFO: /dev/kvm detected as writable. Enabling KVM hypervisor."
+    enableKVM="-enable-kvm"
+else
+    echo "INFO: /dev/kvm is not writable. KVM will not be enabled."
+fi
+
 SCRIPT_DIR="`dirname "$BASH_SOURCE[0]"`"
 set -x
 qemu-system-x86_64 \
-	-enable-kvm -cpu kvm64 -smp cpus=${cpu_count:-1} \
+	${enableKVM:-} -cpu qemu64 -smp cpus=${cpu_count:-1} \
 	-m "${mem_mbs:-${VM_MEM_SIZE_MB}}" \
 	-nographic \
 	-drive if=pflash,format=raw,readonly,file="$SCRIPT_DIR/OVMF/OVMF_CODE.fd" \
