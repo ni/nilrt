@@ -40,7 +40,7 @@ expect {
 		send "touch /etc/opkg/testing.conf\r"
 		set feed_index 0
 		foreach feed_uri $ipk_feeds {
-			send -- "echo src test-feed.$feed_index http://$vm_host_ip:8990/$feed_uri >>/etc/opkg/testing.conf\r"
+			send -- "echo src test-feed.$feed_index http://$vm_host_ip:8990/$feed_uri \[trusted=yes\] >>/etc/opkg/testing.conf\r"
 			set feed_index [expr $feed_index + 1]
 		}
 		send "cat /etc/opkg/testing.conf\r"
