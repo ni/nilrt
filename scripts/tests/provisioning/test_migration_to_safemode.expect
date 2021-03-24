@@ -41,7 +41,7 @@ expect {
 	}
 }
 
-set timeout 90
+set timeout 180
 # configure opkg
 expect {
 	-re "$USER@.*# $" {
