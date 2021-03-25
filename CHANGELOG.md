@@ -9,6 +9,25 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 ## [Unreleased]
 Branch: `nilrt/master/sumo`
 
+
+## 8.7
+Branch: `nilrt/20.7/sumo`
+
+### meta-nilrt
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/commit/4e075099adf828d17fd9c111c043efdba55247f1) an unsupported preview of newer kernel bases (currently 5.10) via the `packagegroup-ni-next-kernel` recipe.
+  - Kernel development headers for the `-next` kernel [are distributed](https://github.com/ni/meta-nilrt/commit/0ce447888ee09add1a8f83656b102e32d7af50a5) via the `kernel-devsrc-next` recipe.
+
+#### Changed
+- Kernel development headers [are now](https://github.com/ni/meta-nilrt/pull/63) distributed via the `kernel-devsrc` package.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/127) a trivial error during early init about not being able to capture the `fw_printenv.lock`.
+
+----
+
+
 ## 8.6
 Branch: `nilrt/20.6/sumo`
 
@@ -22,7 +41,6 @@ Branch: `nilrt/20.6/sumo`
 - [Drop support](https://github.com/ni/meta-nilrt/commit/1e6453ebca8735de96eaaf3bc931d22998c8dfb3) for VxWorks in curl and openssl
 
 #### Security
-
 - curl fixes
   - CVE-2018-16839 SASL password overflow via integer overflow
   - CVE-2018-16840 use-after-free in handle close
@@ -48,6 +66,7 @@ Branch: `nilrt/20.6/sumo`
 
 
 ### meta-nilrt
+
 #### Added
 - Minimal support for packaging multiple kernel versions in the same IPK feed configuration. (336ae54c5306d79e6c6a7cbbb02c79cab5b93012)
 - IPK Extras Feed Content:
@@ -60,14 +79,16 @@ Branch: `nilrt/20.6/sumo`
 #### Changed
 - Change `NR_CPUS` to 64 (the default) to support devices with more than 16 cores. (997fc3df5a3e740f585e6298cae9bd9d63832f7a)
 
+----
+
 
 ## 8.5
 Branch: `nilrt/20.5/sumo`
 
 ### meta-nilrt
+
 #### Added
 - Add the `/etc/machine-info` file vi the `base-files` package. It conforms to the [FreeDesktop machine-info](https://www.freedesktop.org/software/systemd/man/machine-info.html) spec and provides a canonical location to store the system comment.
-
 
 #### Changed
 - Reconfigure `/var/cache` as a non-volatile storage location, since small memory devices might otherwise run out of memory while installing large IPKs. (20ea59ab3e8938e8f45f5e073a315b75d4b7ec0f)
@@ -76,15 +97,17 @@ Branch: `nilrt/20.5/sumo`
 - Fixed a race condition between NVMe enumeration and root mounting in the initramfs, which could affect PXIe-8881 devices with NVMe storage. (b420fca37b7d72d553356c310bacc6ba1aa1f4fc)
 - glibc: Fix an `EAGAIN` retry loop in the PI Condvars patchset. (e9c9843b4b3d51a2ec0326b0bb388af56d1c76ac)
 
+----
+
 
 ## 8.1
 Branch: `nilrt/20.1/sumo`
 
 ### meta-nilrt
+
 #### Added
 - Added `perf` packages to the `packagegroup-ni-desirable`. (e0a6a88b02ec4d2db25fd3c916e7f8a4b45d3bb0)
 - Added the `systemimageupdateinfo` script, which interrogates the system state to determine which NILRT bootflow is in use. (5001fee264c1e98d4176a2565542dcc5e5894a11)
-
 
 #### Fixed
 - Network file shares are now unmounted at shutdown. (d9a2c5d4f93cafb43e2094c567ae4d0e067b7a0c)
@@ -95,6 +118,8 @@ Branch: `nilrt/20.1/sumo`
 # Historic Changelog
 
 Adapted from the legacy [Feature Updates and Changelog](https://forums.ni.com/t5/NI-Linux-Real-Time-Documents/Feature-Updates-and-Changelog-for-NI-Linux-Real-Time/ta-p/3532049?profile.language=en) document on forums.ni.com.
+
+----
 
 
 ## 8.0
