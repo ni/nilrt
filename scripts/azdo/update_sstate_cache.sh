@@ -10,7 +10,8 @@ usage() {
 Syntax:
 $(basename $BASH_SOURCE) push local_sstate_cache_dir argo_sstate_cache_dir
    Push the local sstate-cache directory contents to the remote argo
-   server directory.
+   server directory. Note that this script assumes sequential pushes
+   to the cache.
 
 $(basename $BASH_SOURCE) pull local_sstate_cache_dir argo_sstate_cache_dir
    Fetch the latest sstate cache from the remote argo cache directory
