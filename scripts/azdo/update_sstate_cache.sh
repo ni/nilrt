@@ -51,6 +51,7 @@ push_cache() {
 	echo Pushing sstate cache to argo at $temp_argo_dir
 	cp -rL "$local_sstate_cache_dir"/* $temp_argo_dir/
 	mv $temp_argo_dir ${temp_argo_dir%.latest}
+	trap - EXIT
 	rm ${temp_argo_dir%.latest}/DONOTUSE
 
 	# Cap the number of cache directories on the argo server at
