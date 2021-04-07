@@ -38,10 +38,6 @@
 	path = sources/meta-security
 	url = ../meta-security.git
 	branch = nilrt/master/sumo
-[submodule "sources/meta-orgconf"]
-	path = sources/meta-orgconf
-	url = ../meta-orgconf.git
-	branch = nilrt/master/sumo
 [submodule "sources/meta-sdr"]
 	path = sources/meta-sdr
 	url = ../meta-sdr.git
