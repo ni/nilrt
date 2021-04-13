@@ -26,17 +26,18 @@ usage() {
 	cat <<EOF
 $(basename $BASH_SOURCE) -h|--help
   Print this usage information and exit.
-$(basename $BASH_SOURCE) [-i ipk_feed_dir] nilrt_vm_path
+$(basename $BASH_SOURCE) [-i ipk_feed_dir] nilrt_vm_path expect_file
+                         [expect_file ...]
   Start the NILRT VM, setup the feeds  and run the expect file
 
 Options:
--i|--ipk-feed  Path to a local IPK feed, which will be added to the VM's opkg
-               configuration.
+  -i|--ipk-feed  Path to a local IPK feed, which will be added to the VM's opkg
+                 configuration.
 
 Arguments:
-nilrt_vm_path  Path to an already-provisioned NILRT VM directory. (See the
-               buildVM.sh script in the NILRT.git source.)
-expect_file    Path to the .expect file
+  expect_file    Path to the .expect file
+  nilrt_vm_path  Path to an already-provisioned NILRT VM directory. (See the
+                 buildVM.sh script in the NILRT.git source.)
 EOF
 	exit $exit_code
 }
@@ -75,8 +76,7 @@ if [ ${#positionals} -lt 2 ]; then
 fi
 
 nilrt_vm_path=${positionals[0]}
-expect_file=${positionals[1]}
-log_file="${expect_file%.*}".log
+expect_files=${positionals[@]:1}
 
 [ -d "${nilrt_vm_path}" ] || error_and_die "NILRT VM path \"$nilrt_vm_path\" does not exist."
 
@@ -142,10 +142,14 @@ test -n "${vm_run_script}" || error_and_die "Could not find VM run script in \"$
 ipk_feeds_names=$(find ${feed_server_pubdir} -maxdepth 1 -type l -printf "%f\n")
 popd
 
-# Run the expect file. It should record all stdout to the log file in the VM dir.
-"${SCRIPT_ROOT}/${expect_file}" \
-	${vm_run_script} \
-	${log_file} \
-	${ipk_feeds_names}
+for expect_file in ${expect_files[@]}; do
+	log_file="${expect_file%.*}".log
+	# Run the expect file. It should record all stdout to the log file in
+	# the VM dir.
+	"${SCRIPT_ROOT}/${expect_file}" \
+		${vm_run_script} \
+		${log_file} \
+		${ipk_feeds_names}
+done
 
 feed_server_teardown
