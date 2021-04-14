@@ -117,3 +117,9 @@ packages:
   dist-nilrt-upgrade-tools_20.6_x64:
     export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/nilrt_system_image_upgrade_tools/export/20.6/') | latest_export) + '/.archives/linux.zip') | unzip }}"
     ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
+  dist-nilrt-upgrade-tools_21.0_arm:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/build/exports/ni/nilr/nilrt_system_image_ugprade_tools_ipk/official/export/21.0/') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
+  dist-nilrt-upgrade-tools_21.0_x64:
+    export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/build/exports/ni/nilr/nilrt_system_image_ugprade_tools_ipk/official/export/21.0/') | latest_export) + '/.archives/linux.zip') | unzip }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.9-oe/release/nilrt_system_image_ugprade_tools_ipk/dist-nilrt-upgrade-tools_*.ipk'
