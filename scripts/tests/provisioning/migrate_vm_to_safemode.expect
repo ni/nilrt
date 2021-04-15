@@ -16,7 +16,7 @@ set ipk_feeds [lrange $argv 2 end]
 # default, if none is specified.
 set vm_host_ip "10.0.2.2"
 # Set the login username
-set USER root
+set USER admin
 
 # boot the VM with the run-vm script
 spawn [lindex $argv 0] -- -device e1000,netdev=n1 -netdev user,id=n1,ipv6=off,net=10.0.2.0/24,host=$vm_host_ip
@@ -27,6 +27,14 @@ spawn [lindex $argv 0] -- -device e1000,netdev=n1 -netdev user,id=n1,ipv6=off,ne
 set timeout 900
 expect {
 	"login: " { send "$USER\r" }
+	timeout {
+		send_user "\nTIMEOUT while waiting for getty.\n"
+		exit 1
+	}
+}
+
+expect {
+	"Password: " { send "\r" }
 	timeout {
 		send_user "\nTIMEOUT while waiting for getty.\n"
 		exit 1
