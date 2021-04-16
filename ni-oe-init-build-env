@@ -20,7 +20,14 @@ esac; done
 BITBAKEDIR=${BITBAKEDIR:-${SCRIPT_ROOT}/sources/bitbake}
 BUILDDIR=${BUILDDIR:-${SCRIPT_ROOT}/build}
 
-BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} ENABLE_BUILD_TAG_PUSH"
+BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
+	ENABLE_BUILD_TAG_PUSH \
+	GIT_REPODIR \
+"
+
+# Define GIT_REPODIR as the directory containing the OE layer submodule repos.
+# This variable is used by the bblayers.conf file.
+export GIT_REPODIR=${SCRIPT_ROOT}/sources
 
 # define the location of bitbake configuration files, which will be copied
 # into the build workspace, if one needs to be created.
