@@ -83,7 +83,7 @@ expect {
 
 set timeout 500
 expect {
-	"$USER@recovery:/#" {}
+	"root@recovery:/#" {}
 	timeout {
 		send_user "\nTIMEOUT while waiting for system to start provisioning.\n"
 		exit 1
