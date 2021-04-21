@@ -45,6 +45,7 @@ set timeout 180
 # configure opkg
 expect {
 	-re "$USER@.*# $" {
+		send "rm -f /etc/opkg/base-feeds.conf\r"
 		send "touch /etc/opkg/testing.conf\r"
 		set feed_index 0
 		foreach feed_uri $ipk_feeds {
