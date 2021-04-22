@@ -14,7 +14,6 @@
 #  This script returns 0 when the grub-gateway ptest suite passes, or a
 #  positive value otherwise.
 set -euo pipefail
-#set -x
 
 SCRIPT_ROOT=$(dirname "$BASH_SOURCE")
 
