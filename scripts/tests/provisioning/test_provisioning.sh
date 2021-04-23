@@ -7,6 +7,7 @@
 #  * configures opkg with a locally-hosted ipk feed.
 #  * installs and runs the provisioning ISO's ptest package.
 #  * evaluates the ptest results.
+set -euo pipefail
 
 script_dir="$(dirname "$0")"
 
