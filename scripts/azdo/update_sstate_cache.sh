@@ -106,6 +106,10 @@ validate_args() {
 
 local_sstate_cache_dir=$2
 argo_sstate_cache_dir=$3
+
+echo SKIP: Skipping the push/pull request for the short-term
+exit 0
+
 case "$1" in
 	push)
 		validate_args
