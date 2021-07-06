@@ -35,7 +35,7 @@ of NILRT for your hardware.
 
     Run the following command to configure for ARM targets:
 
-        export MACHINE=xilinx-zynqhf
+        export MACHINE=xilinx-zynq
 
     or the following command to configure for x64 targets:
 
