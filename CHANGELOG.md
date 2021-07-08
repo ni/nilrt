@@ -9,9 +9,46 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 ## [Unreleased]
 Branch: `nilrt/master/sumo`
 
+----
+
+
+## 8.8
+Branch: `nilrt/21.0/sumo`
+
+
+### NILRT
+
+#### Removed
+- [Deprecated](https://github.com/ni/nilrt/pull/53) and removed the [meta-orgconf](https://github.com/ni/meta-orgconf) layer from the project submodules. OE content from that layer has been moved into meta-nilrt, and configuration content has been moved to nilrt.git.
+
+  NI-internal builders should source the [`ni-oe-init-build-env`](https://github.com/ni/nilrt/blob/nilrt/20.7/sumo/ni-oe-init-build-env) script with the `--org` option, to enable organization-specific bitbake configuration settings.
+
+
+### meta-nilrt
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/164) a `packagegroup-ni-nohz-kernel` packagegroup and a version of the kernel with `NO_HZ_FULL` enabled, for customers who have strict real-time performance requirements.
+- [Added](https://github.com/ni/meta-nilrt/pull/171) a strongswan VPN 5.x recipe (unsupported).
+- [Added](https://github.com/ni/meta-nilrt/pull/173) a grpc-device server implementation (`ni-grpc-device`) for NI drivers which use grpc for network communication.
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/150) `u-boot-fw-utils`.
+- [Changed](https://github.com/ni/meta-nilrt/pull/156) the opkg feed URI syntax for the distro, to always include the release minor rev, even if it is `0`. This release will use the string `2021.0`.
+- [Updated](https://github.com/ni/meta-nilrt/pull/160) XFCE art assets to reflect the new company identity.
+
+#### Fixed
+- cURL:
+    - [Fixed](https://github.com/ni/meta-nilrt/pull/165) an API break in cURL which caused some PharLAP installations to fail.
+- kernel-devsrc:
+    - [Fixed](https://github.com/ni/meta-nilrt/pull/192) a misconfiguration in the `kernel-devsrc` recipe which caused dkms (re)compilation to fail in cases where the `elfutils-dev` package is installed.
+
+
+----
+
 
 ## 8.7
 Branch: `nilrt/20.7/sumo`
+
 
 ### meta-nilrt
 
