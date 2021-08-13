@@ -46,10 +46,6 @@
 	path = sources/meta-java
 	url = ../meta-java.git
 	branch = nilrt/master/sumo
-[submodule "sources/meta-measured"]
-	path = sources/meta-measured
-	url = ../meta-measured.git
-	branch = nilrt/master/sumo
 [submodule "sources/meta-qt5"]
 	path = sources/meta-qt5
 	url = ../meta-qt5.git
