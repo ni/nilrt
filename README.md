@@ -11,44 +11,46 @@ Build Steps
 ------
 
 1. Get the source by running the following commands:
+    ```bash
+    git clone https://github.com/ni/nilrt.git
+    cd nilrt
+    git checkout nilrt/$release
+    git submodule init
+    git submodule update --remote --checkout
+    ```
 
-        git clone https://github.com/ni/nilrt.git
-        cd nilrt
-        git checkout nilrt/<release>
-        git submodule init
-        git submodule update --remote --checkout
+2. Set up your build environment.
 
-2. Set up your shell environment to run bitbake:
+    It is highly recommended that you use the included Dockerfile in
+    `:scripts/docker/` to create a build container, and use it as your bitbake
+    environment. OE builds are highly sensitive to the host toolchain, and you
+    may experience odd bitbake errors if your native OS has tools which are
+    too-new or too-old.
 
-    Source NILRT's environment script by running the following command:
+    Once you've entered your prefered build environment, source the
+    initialization script at the project root.
 
-        . ni-oe-init-build-env
+    ```bash
+    . nilrt-build-init.env [--org]
+    ```
 
-    This will setup the needed environment variables and build
-configuration files for building through OpenEmbedded build system.
-Note that the configuration files (that exist in the build/conf
-directory) include some basic default configurations, allowing
-modification or overriding of these default configurations.
+    <font color=lightgreen>[NI]</font> builders who are connected to the NI
+    corporate network should specify `--org` in their init script args, to
+    provoke the script into adding the `ni-org.conf` snippet to your bitbake
+    directory. External builders *should not* use `--org`.
 
-    Set an appropriate MACHINE variable so that bitbake can tune builds
-of NILRT for your hardware.
+    This will setup the needed environment variables and build configuration
+    files for building through the OpenEmbedded build system. Note that the
+    configuration files (that exist in the build/conf directory) include some
+    basic default configurations, allowing modification or overriding of these
+    default configurations.
 
-    Run the following command to configure for ARM targets:
+3. Build the package or packages that you want for your target. For example, to
+build the Python3, Ruby, and Apache targets, run the following commands:
 
-        export MACHINE=xilinx-zynq
-
-    or the following command to configure for x64 targets:
-
-        export MACHINE=x64
-
-    **NOTE** It's not recommended to run bitbake for different
-MACHINE's in the same workspace (build directory).
-
-3. Build the package or packages that you want for your target.
-For example, to build Python, Ruby, and Apache for Zynq targets, run the
-following commands:
-
-        bitbake python ruby apache2
+    ```bash
+    bitbake python3 ruby apache2
+    ```
 
     To build every package in National Instruments' feed, run the
 following commands:
