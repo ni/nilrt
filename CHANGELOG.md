@@ -7,7 +7,25 @@ The NI Linux Real-Time project uses a mainline branching model with product bran
 This changelog attempts to conform to the changelog spec on [keepachangelog.org](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
-Branch: `nilrt/master/sumo`
+Branch: `nilrt/master/hardknott`
+
+### NILRT
+
+#### Changed
+- Rebased OE layer submodules from the OE/`sumo` release stable branches, to the OE/`hardknott` branches - where available.
+  - A full list of the upstream changes between OE/sumo (yocto 2.5) and OE/hardknott (yocto 3.3) can be found in the Yocto project documentation's [Migration Guide](https://docs.yoctoproject.org/migration-guides/index.html).
+- Upgraded the bitbake submodule to bitbake `1.50.2`.
+- [Upgraded](https://github.com/ni/nilrt/pull/73) the nilrt-build dockerfile to a debian 10 base.
+  - Added a more user-friendly way to enter the docker build container using `docker-compose`.
+
+
+### meta-nilrt
+
+#### Changed
+- `gcc` has been upgraded to version `10.2`.
+- `openssl` has been upgraded to `1.1.1k`.
+- `python2` support has been totally deprecated in favor of `python3`.
+
 
 ----
 
