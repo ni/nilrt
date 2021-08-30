@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  pr-server:
+    build:
+      context: .
+      dockerfile: pr-server.Dockerfile
+      args:
+        PRSERVER_BB_REF: nilrt/master/hardknott
+        PRSERVER_BB_REMOTE: https://github.com/ni/bitbake
+    environment:
+      PRSERVER_HOST: 0.0.0.0
+      PRSERVER_PORT: 8585
+      VERBOSE: "false"
+    network_mode: host
