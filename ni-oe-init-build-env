@@ -21,9 +21,21 @@ BITBAKEDIR=${BITBAKEDIR:-${SCRIPT_ROOT}/sources/bitbake}
 BUILDDIR=${BUILDDIR:-${SCRIPT_ROOT}/build}
 
 BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
+	BB_NUMBER_THREADS \
 	ENABLE_BUILD_TAG_PUSH \
 	GIT_REPODIR \
 "
+
+# Users can assert the maximum number of concurrent bitbake threads via the
+# BB_NUMBER_THREADS variable, or let this script calculate a reasonable value
+# based on the number of cores.
+if [ -z "$BB_NUMBER_THREADS" ]; then
+	echo "INFO: BB_NUMBER_THREADS not set. Calculating..."
+	# num_cores * 2 is the recommended value from the yocto manual
+	BB_NUMBER_THREADS=$(($(nproc) * 2))
+fi
+export BB_NUMBER_THREADS
+echo "BB_NUMBER_THREADS=${BB_NUMBER_THREADS}"
 
 # Define GIT_REPODIR as the directory containing the OE layer submodule repos.
 # This variable is used by the bblayers.conf file.
