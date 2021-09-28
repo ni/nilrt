@@ -29,6 +29,35 @@ Branch: `nilrt/master/hardknott`
 
 ----
 
+## 8.9
+Branch: `nilrt/21.3/sumo`
+
+The NI LinuxRT 8.9 release upgrades the x64 architecture linux kernel version to 5.10, and is otherwise a bug-fix release for the sumo mainline.
+
+
+### meta-nilrt
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/195) the `pstore-save` utility; which mimicks the functionality of `systemd-pstore`.
+
+#### Changed
+- [Disabled](https://github.com/ni/meta-nilrt/pull/206) lockdep in the `linux-nilrt-debug` kernel, so that non-GPL modules (like `ni-kal`, et al.) can be installed when using the debug kernel.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/212) the NILRT x64 linux kernel version to 5.10.
+    - The NILRT ARM kernel [will remain](https://github.com/ni/meta-nilrt/commit/1eac98d48b29330ffe5ed6d2ea5a76ee529d909a) on linux 4.14 for the time being.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/194) `uboot` to `uboot_2017`; support for the *Elvis III* device.
+
+### Deprecated
+- [Disabled](https://github.com/ni/meta-nilrt/pull/213) `perf` scripting support on NILRT ARM, because it conflicts with the x64 kernel's 5.10 version.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/191) an opkg bug where unprivileged users would receive an error code when trying to perform operations which should not require root privileges.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/192) a bug where installing the `elfutils-dev` package could break subsequent DKMS module compilations.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/196) a bug with NILRT provisioning, where the provisioning tool would mistakenly install its payload to an onboard eMMC block device which is not the primary device storage.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/203) an `fw_printenv` bug, where value strings which include an `=` symbol would be insanely truncated during output.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/240) an obscure error with kernel module compilation on systems with system clocks set to a time before the `kernel-devsrc` IPK package file was packed.
+
+----
+
 
 ## 8.8
 Branch: `nilrt/21.0/sumo`
