@@ -66,3 +66,7 @@
 	path = sources/meta-rauc
 	url = ../meta-rauc.git
 	branch = nilrt/master/hardknott
+[submodule "sources/pyrex"]
+	path = sources/pyrex
+	url = https://github.com/amstewart/pyrex
+	branch = master
