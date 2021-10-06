@@ -16,15 +16,17 @@ while [ $# -ge 1 ]; do case "$1" in
 		;;
 esac; done
 
+NILRT_ROOT="${SCRIPT_ROOT}"
 
-BITBAKEDIR=${BITBAKEDIR:-${SCRIPT_ROOT}/sources/bitbake}
-BUILDDIR=${BUILDDIR:-${SCRIPT_ROOT}/build}
+# GIT_REPODIR is used by the meta-nilrt bblayers.conf to locate the BB layer
+# top-level directory.
+export GIT_REPODIR="${NILRT_ROOT}/sources"
 
-BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
-	BB_NUMBER_THREADS \
-	ENABLE_BUILD_TAG_PUSH \
-	GIT_REPODIR \
-"
+# Enable color terminal
+export TERM=xterm-256color
+
+BITBAKEDIR=${BITBAKEDIR:-${NILRT_ROOT}/sources/bitbake}
+BUILDDIR=${BUILDDIR:-./build}
 
 # Users can assert the maximum number of concurrent bitbake threads via the
 # BB_NUMBER_THREADS variable, or let this script calculate a reasonable value
@@ -37,34 +39,49 @@ fi
 export BB_NUMBER_THREADS
 echo "BB_NUMBER_THREADS=${BB_NUMBER_THREADS}"
 
-# Define GIT_REPODIR as the directory containing the OE layer submodule repos.
-# This variable is used by the bblayers.conf file.
-export GIT_REPODIR=${SCRIPT_ROOT}/sources
-
 # define the location of bitbake configuration files, which will be copied
 # into the build workspace, if one needs to be created.
-TEMPLATECONF=${TEMPLATECONF:-${SCRIPT_ROOT}/sources/meta-nilrt/conf}
+export TEMPLATECONF=${TEMPLATECONF:-${NILRT_ROOT}/sources/meta-nilrt/conf}
 
-export TEMPLATECONF
+set -x
 
-# Call OE-upstream's build env initialization script, which will create a build
-# workspace called either "${1:-build}/" and `cd` into it.
-cd ${SCRIPT_ROOT}
-. ./sources/openembedded-core/oe-init-build-env ${positionals[@]}
+export PYREXCONFFILE="${SCRIPT_ROOT}/pyrex.ini"
+export PYREX_CONFIG_BIND="${NILRT_ROOT}"
+export PYREX_OEINIT="${NILRT_ROOT}/sources/openembedded-core/oe-init-build-env"
+export PYREX_ROOT="${NILRT_ROOT}/sources/pyrex"
 
-if $enable_ni_org_conf; then
-	if [ ! -e conf/site.conf ]; then
-		echo "Adding NI org.conf as conf/site.conf..."
-		cp ${SCRIPT_ROOT}/scripts/azdo/conf/ni-org.conf ./conf/site.conf
-	fi
+# Define here all NILRT-specific variables which need to be passed to bitbake
+export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
+	GIT_REPODIR \
+"
+
+unset SCRIPT_ROOT
+
+if [ -z "$PYREX_TEMP_ENV_FILE" ]; then
+	PYREX_TEMP_ENV_FILE=$(mktemp -t pyrex-env.XXXXXX)
 fi
 
-# Add a marker to the prompt based on whether or not bitbake is in the
-# environment.
-if which bitbake >/dev/null; then
-	if [[ ! "${PS1}" =~ ^\(bb\).* ]]; then
-		export PS1="(bb) $PS1"
-	fi
-else
-	echo "ERROR: 'bitbake' command is not available in the environment."
+pyrex_cleanup() {
+	rm -f "$PYREX_TEMP_ENV_FILE"
+	unset PYREX_OEINIT PYREX_ROOT PYREX_TEMP_ENV_FILE pyrex_cleanup
+}
+
+
+"$PYREX_ROOT/pyrex.py" capture \
+		-a PYREX_OEINIT "$PYREX_OEINIT" \
+		-e PYREXCONFFILE \
+		-e TEMPLATECONF \
+		-- 9 "$@" \
+		9> "$PYREX_TEMP_ENV_FILE"
+if [ $? -ne 0 ]; then
+	pyrex_cleanup
+	return 1
 fi
+
+. "$PYREX_TEMP_ENV_FILE"
+if [ $? -ne 0 ]; then
+	pyrex_cleanup
+	return 1
+fi
+
+pyrex_cleanup
