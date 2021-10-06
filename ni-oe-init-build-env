@@ -1,20 +1,70 @@
 #!/usr/bin/env
 
 SCRIPT_ROOT=$(realpath $(dirname ${BASH_SOURCE:-${0}}))
+set -x
+
+
+usage() {
+	cat >&2 <<EOF
+$(basename ${BASH_SOURCE}) [-h] [-o] \
+    [-s SSTATE_MIRROR_PREFIX SSTATE_MIRROR_PATH] \
+	[[--] OE_INIT_ARGS...]
+
+Arguments:
+-h, --help    Print this usage text and exit.
+-o, --org
+	Enable configurations which are only valid when the build host is connected
+	to the NI corporate network. Community builders should not use this
+    setting.
+-s, --sstate-mirror SSTATE_MIRROR_PREFIX SSTATE_MIRROR_PATH
+	Add the SSTATE_MIRROR_PREFIX/_PATH pair to the bitbake environment's
+    SSTATE_MIRRORS variable.
+
+Positionals:
+PYREX_ARGS    Arguments passed to pyrex.py as positional arguments.
+EOF
+}
 
 enable_ni_org_conf=false
+sstate_mirrors=()
 positionals=()
 
+set -u
 while [ $# -ge 1 ]; do case "$1" in
+	-h|--help)
+		usage
+		return 0
+		;;
 	-o|--org)
 		enable_ni_org_conf=true
 		shift
+		;;
+	-s|--sstate-mirror)
+		if [ -z "${2:-}" -o -z "${3:-}" ]; then
+			echo "ERROR: --sstate-mirror argument expected two strings." >&2
+			return 2
+		fi
+		sstate_mirrors+=("$2 $3")
+		shift 3
+		;;
+	--)
+		shift
+		for positional in $@; do
+			positionals+=($positional)
+		done
+		break
+		;;
+	-*|--*)
+		echo "ERROR: Unknown script argument $1." >&2
+		return 2
 		;;
 	*)
 		positionals+=($1)
 		shift
 		;;
 esac; done
+set +u
+
 
 NILRT_ROOT="${SCRIPT_ROOT}"
 
@@ -22,16 +72,17 @@ NILRT_ROOT="${SCRIPT_ROOT}"
 # top-level directory.
 export GIT_REPODIR="${NILRT_ROOT}/sources"
 
-# Enable color terminal
-export TERM=xterm-256color
+# Enable color terminal by default
+export TERM=${TERM:-xterm-256color}
 
 BITBAKEDIR=${BITBAKEDIR:-${NILRT_ROOT}/sources/bitbake}
-BUILDDIR=${BUILDDIR:-./build}
 
+set -x
+## BITBAKE VARIABLES ##
 # Users can assert the maximum number of concurrent bitbake threads via the
 # BB_NUMBER_THREADS variable, or let this script calculate a reasonable value
 # based on the number of cores.
-if [ -z "$BB_NUMBER_THREADS" ]; then
+if [ -z "${BB_NUMBER_THREADS:-}" ]; then
 	echo "INFO: BB_NUMBER_THREADS not set. Calculating..."
 	# num_cores * 2 is the recommended value from the yocto manual
 	BB_NUMBER_THREADS=$(($(nproc) * 2))
@@ -43,21 +94,27 @@ echo "BB_NUMBER_THREADS=${BB_NUMBER_THREADS}"
 # into the build workspace, if one needs to be created.
 export TEMPLATECONF=${TEMPLATECONF:-${NILRT_ROOT}/sources/meta-nilrt/conf}
 
-set -x
+export SSTATE_MIRRORS="${SSTATE_MIRRORS:-} ${sstate_mirrors[@]/%/ \\n}"
 
+# Define here all NILRT-specific variables which need to be passed to bitbake
+# (should include everything we've set above which is non-standard)
+export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE:-} \
+	GIT_REPODIR \
+	SSTATE_MIRRORS \
+"
+
+
+## PYREX VARIABLES ###
+# Setup pyrex config variables
 export PYREXCONFFILE="${SCRIPT_ROOT}/pyrex.ini"
 export PYREX_CONFIG_BIND="${NILRT_ROOT}"
 export PYREX_OEINIT="${NILRT_ROOT}/sources/openembedded-core/oe-init-build-env"
 export PYREX_ROOT="${NILRT_ROOT}/sources/pyrex"
 
-# Define here all NILRT-specific variables which need to be passed to bitbake
-export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
-	GIT_REPODIR \
-"
 
 unset SCRIPT_ROOT
 
-if [ -z "$PYREX_TEMP_ENV_FILE" ]; then
+if [ -z "${PYREX_TEMP_ENV_FILE:-}" ]; then
 	PYREX_TEMP_ENV_FILE=$(mktemp -t pyrex-env.XXXXXX)
 fi
 
@@ -66,12 +123,13 @@ pyrex_cleanup() {
 	unset PYREX_OEINIT PYREX_ROOT PYREX_TEMP_ENV_FILE pyrex_cleanup
 }
 
-
+# Invoke pyrex to: standup our build container and BB build directory, and to
+# "capture" the current shell within the pyrex toolchain context.
 "$PYREX_ROOT/pyrex.py" capture \
 		-a PYREX_OEINIT "$PYREX_OEINIT" \
 		-e PYREXCONFFILE \
 		-e TEMPLATECONF \
-		-- 9 "$@" \
+		-- 9 "${positionals[@]}" \
 		9> "$PYREX_TEMP_ENV_FILE"
 if [ $? -ne 0 ]; then
 	pyrex_cleanup
