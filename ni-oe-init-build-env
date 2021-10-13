@@ -1,7 +1,6 @@
 #!/usr/bin/env
 
 SCRIPT_ROOT=$(realpath $(dirname ${BASH_SOURCE:-${0}}))
-set -x
 
 
 usage() {
@@ -31,6 +30,11 @@ positionals=()
 
 set -u
 while [ $# -ge 1 ]; do case "$1" in
+	-d|--download-dir)
+		shift
+		export DL_DIR=$(realpath "$1")
+		shift
+		;;
 	-h|--help)
 		usage
 		return 0
@@ -77,7 +81,6 @@ export TERM=${TERM:-xterm-256color}
 
 BITBAKEDIR=${BITBAKEDIR:-${NILRT_ROOT}/sources/bitbake}
 
-set -x
 ## BITBAKE VARIABLES ##
 # Users can assert the maximum number of concurrent bitbake threads via the
 # BB_NUMBER_THREADS variable, or let this script calculate a reasonable value
@@ -99,6 +102,7 @@ export SSTATE_MIRRORS="${SSTATE_MIRRORS:-} ${sstate_mirrors[@]/%/ \\n}"
 # Define here all NILRT-specific variables which need to be passed to bitbake
 # (should include everything we've set above which is non-standard)
 export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE:-} \
+	DL_DIR \
 	GIT_REPODIR \
 	SSTATE_MIRRORS \
 "
@@ -122,6 +126,17 @@ pyrex_cleanup() {
 	rm -f "$PYREX_TEMP_ENV_FILE"
 	unset PYREX_OEINIT PYREX_ROOT PYREX_TEMP_ENV_FILE pyrex_cleanup
 }
+
+
+# Do some initial setup on the build directory
+if $enable_ni_org_conf; then
+	{
+		install -D --mode=0644 \
+			"${NILRT_ROOT}/scripts/azdo/conf/ni-org.conf" \
+			"${NILRT_ROOT}/build/conf/site.conf"
+	} || exit 1
+fi
+
 
 # Invoke pyrex to: standup our build container and BB build directory, and to
 # "capture" the current shell within the pyrex toolchain context.
