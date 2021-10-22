@@ -69,6 +69,15 @@ while [ $# -ge 1 ]; do case "$1" in
 esac; done
 set +u
 
+if [ -n "$BUILDDIR" ]; then
+	if [ ${#positionals[@]} -ge 1 ]; then
+		echo "WARNING: BUILDDIR defined in env, but positional arguments to $(basename $BASH_SOURCE) take priority." >&2
+	else
+		echo "INFO: Using BUILDDIR from environment: ${BUILDDIR}"
+		positionals[0]="$BUILDDIR"
+	fi
+fi
+
 
 NILRT_ROOT="${SCRIPT_ROOT}"
 
