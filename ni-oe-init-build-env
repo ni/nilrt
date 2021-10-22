@@ -119,7 +119,7 @@ export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE:-} \
 
 ## PYREX VARIABLES ###
 # Setup pyrex config variables
-export PYREXCONFFILE="${SCRIPT_ROOT}/pyrex.ini"
+export PYREXCONFFILE=${PYREXCONFFILE:-"${SCRIPT_ROOT}/pyrex.ini"}
 export PYREX_CONFIG_BIND="${NILRT_ROOT}"
 export PYREX_OEINIT="${NILRT_ROOT}/sources/openembedded-core/oe-init-build-env"
 export PYREX_ROOT="${NILRT_ROOT}/sources/pyrex"
