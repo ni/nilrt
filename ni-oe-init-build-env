@@ -69,14 +69,16 @@ while [ $# -ge 1 ]; do case "$1" in
 esac; done
 set +u
 
-if [ -n "$BUILDDIR" ]; then
-	if [ ${#positionals[@]} -ge 1 ]; then
-		echo "WARNING: BUILDDIR defined in env, but positional arguments to $(basename $BASH_SOURCE) take priority." >&2
-	else
-		echo "INFO: Using BUILDDIR from environment: ${BUILDDIR}"
-		positionals[0]="$BUILDDIR"
-	fi
-fi
+# Determine the OE build workspace path. We honor the user's BUILDDIR env
+# variable, unless it is undefined, or overwritten with positional arguments.
+if [ -n "${positionals[0]}" ]; then
+	BUILDDIR=${positionals[0]}
+	positionals=${positionals[@]:1}  # shift array
+elif [ -z "$BUILDDIR" ]; then
+	# if the user has expressed no preference, default to :build/
+	BUILDDIR="${SCRIPT_ROOT}/build"
+fi  # implicit-else: use the users's BUILDDIR value
+echo "INFO: Using ${BUILDDIR} as the OE build workspace."
 
 
 NILRT_ROOT="${SCRIPT_ROOT}"
@@ -142,7 +144,7 @@ if $enable_ni_org_conf; then
 	{
 		install -D --mode=0644 \
 			"${NILRT_ROOT}/scripts/azdo/conf/ni-org.conf" \
-			"${NILRT_ROOT}/build/conf/site.conf"
+			"${BUILDDIR}/conf/site.conf"
 	} || exit 1
 fi
 
@@ -153,7 +155,7 @@ fi
 		-a PYREX_OEINIT "$PYREX_OEINIT" \
 		-e PYREXCONFFILE \
 		-e TEMPLATECONF \
-		-- 9 "${positionals[@]}" \
+		-- 9 "${BUILDDIR}" "${positionals[@]}" \
 		9> "$PYREX_TEMP_ENV_FILE"
 if [ $? -ne 0 ]; then
 	pyrex_cleanup
