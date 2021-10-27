@@ -113,9 +113,13 @@ export SSTATE_MIRRORS="${SSTATE_MIRRORS:-} ${sstate_mirrors[@]/%/ \\n}"
 # Define here all NILRT-specific variables which need to be passed to bitbake
 # (should include everything we've set above which is non-standard)
 export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE:-} \
+	BB_NUMBER_THREADS \
 	BUILDNAME \
+	DISTRO \
 	DL_DIR \
 	GIT_REPODIR \
+	MACHINE \
+	SSTATE_DIR \
 	SSTATE_MIRRORS \
 "
 
