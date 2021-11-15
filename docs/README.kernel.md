@@ -2,113 +2,176 @@
 
 ## Introduction
 
-Use these instructions to build a kernel that can boot on NI Linux Real-Time
-(NILRT) targets.
+Use these instructions to build a kernel that can boot on
+x64 and ARM-based NI Linux Real-Time (NILRT) targets.
 
-Note: National Instruments does not support kernels other than one provided by
-National Instruments. Any kernel other than what is provided by National
-Instruments may not have the same performance, determinism, features, or basic
-functionality.
+Note: National Instruments does not support kernels other than one
+provided by National Instruments. Any kernel other than what is
+provided by National Instruments may not have the same performance,
+determinism, features, or basic functionality.
 
 
 ### Requirements
 
-1. A linux build machine
-2. GNU `make`
-3. The `mksquashfs` utility
+A Linux machine to build the kernel with:
+- GNU Make installed
+- u-boot-tools package installed (for ARM)
 
 
 ## Downloading the Source
 
-The kernel source for NI Linux Real-Time kernel is available for download from
-NI's fork of the linux repo. The repo follows a mainline-branching model with
-mainline branch refs like `nilrt/master/${linux_version_base}` and product
-release branch refs like `nilrt/${product_version}/${linux_version_base}`.
+1. Clone the source from github.com/ni/linux.
 
-```bash
-git clone https://github.com/ni/linux.git
-cd linux
-git checkout nilrt/20.6/4.14  # the NI 20.6 release kernel
-```
+    git clone https://github.com/ni/linux.git
+    cd linux
+
+2. Checkout the branch that corresponds to the release you are using.
+
+    git checkout nilrt/<release>/4.14
+
+Note that only kernel versions 4.14 and below support ARM targets at
+this time.
 
 
 ### Using the Tools
 
 You can use any cross-compilation toolchain of your choosing, or you can
-download the toolchains from ni.com
-([armv7](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-for-armv7.html#338449),
-[x64](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-x64.html#338443)),
-or build them yourself.
+download the toolchains from ni.com, or build them yourself.
 
-Refer to the README to get started with building OpenEmbedded components, and
-build the NILRT SDK containing a GCC toolchain.
+The toolchains are available for download at:
+x86_64: http://www.ni.com/download/labview-real-time-module-2014/4959/en/
+armv7-a: http://www.ni.com/download/labview-real-time-module-2014/4957/en/
 
-The README describes how to build SDKs for both Linux and Windows machines.
-Building the kernel is presently only supported on Linux.
+Refer to the README to get started with building OpenEmbedded
+components, and build the NILRT SDK containing a GCC toolchain.
+
+The README describes how to build SDKs for both Linux and Windows
+machines. Building the kernel is presently only supported on Linux.
 
 
-### Compiling the kernel
+### Compiling and Installing the kernel
 
-1. Set the kernel configuration to match NI’s settings:
+For x64-based targets:
 
-    **ARMV7-A:**
+1. Set the kernel configuration to match NI’s settings.
 
-    ```bash
-    export ARCH=arm
-    export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
-    make nati_zynq_defconfig
-    ```
-
-    **X86_64:**
-    ```bash
     export ARCH=x86_64
     export CROSS_COMPILE=/path/to/toolchain/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-
     make nati_x86_64_defconfig
-    ```
 
-2. Build the kernel by running `make ni-pkg` (the `ARCH` and `CROSS_COMPILE`
-variables have already been set in the previous steps). This creates the kernel
-image, headers squashfs image, and modules suitable for use on NI Linux
-Real-Time targets.
+2. Compile the kernel.
 
-    Once the kernel image and support files have been created, copy the kernel
-image, modules, and header squashfs to the target. Enable the Secure Shell
-Server on your target or enable WebDAV to copy the files to the controller. Note
-that `$KERNEL_ROOT` refers to the location where the kernel source exists on
-your Linux build machine and $ARCH refers to the architecture for which you
-built the kernel.
+    make -j<number_of_parallel_jobs> bzImage modules
+    make modules_install INSTALL_MOD_PATH=<temporary_host_side_modules_location>
 
-    **ARMV7-A:**
+3. (optional) Backup /boot/runmode/bzImage on the target.
 
-    The kernel image is the `ni_zynq_custom_runmodekernel.itb` file at
-    `$KERNEL_ROOT/ni-install/arm/boot`. Copy this file to
-    `/boot/linux_runmode.itb` on the target.
+    cd /boot/runmode/
+    mv bzImage bzImage-`uname -r`
 
-    **X86_64:**
+4. Copy the new kernel to the target.
 
-    The kernel image is the bzImage file at `$KERNEL_ROOT/ni-install/x86/boot`.
-    Copy this file to `/boot/runmode/` on the target.
+    scp arch/x86/boot/bzImage admin@<target>:/boot/runmode/
+    cd <temporary_host_side_modules_location>
+    tar cz lib | ssh admin@<target> tar xz -C /
 
-    **ALL TARGETS:**
+Note that the build and source symlinks in the modules directory do
+not need to be copied over to the target. The `tar` command above will
+not follow the symlinks.
 
-    Copy the resulting `$KERNEL_ROOT/ni-install/$ARCH/lib/modules/` directory to
-    the target such that all of the new kernel modules exist on the target at
-    `/lib/modules/$VERSION/`.
+5. Reboot the target.
 
-    Copy the resulting `$KERNEL_ROOT/ni-install/$ARCH/headers/headers.squashfs`
-    to the target's `/usr/local/natinst/tools/module-versioning-image.squashfs`
-    file.
+    reboot
 
-    Finally, remove the cached version of the kernel header version file by
-    deleting the `/usr/local/natinst/tools/kernel_version` file (if it exists).
+6. (optional) Check version of the updated kernel on the target.
 
-    Reboot the target and check that the target successfully boots. Log into a
-    shell and check that your kernel is running by issuing `uname -a`.
+    uname -a
 
-    At this point, you should also be able to install NI drivers to the
-    controller from MAX.
+For ARM-based targets:
 
------
+1. Set the kernel configuration to match NI’s settings.
+
+    export ARCH=arm
+    export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
+    make nati_zynq_defconfig
+
+2. Compile the kernel.
+
+    make ni-pkg
+
+3. Copy the new kernel to the target.
+
+    scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@<target>:/boot/linux_runmode.itb
+    cd ni-install/arm/lib/modules/
+    tar cz lib | ssh admin@<target> tar xz -C /
+
+Note that the build and source symlinks in the modules directory do
+not need to be copied over to the target. The `tar` command above will
+not follow the symlinks.
+
+5. Reboot the target.
+
+    reboot
+
+6. (optional) Check version of the updated kernel on the target.
+
+    uname -a
+
+### Rebuilding NI out-of-tree Drivers with DKMS
+
+DKMS needs access to the kernel headers/config/source in order to
+re-version out-of-tree NI drivers. You can copy the full kernel
+source to the target and create the appropriate symlinks in
+/lib/modules. But, this will not work very well on RT targets that
+have limited disk space.
+
+An alternative is to network mount the kernel source directory from
+the host build machine.
+
+1. Start the sshd daemon on the host.
+
+    sudo systemctl start sshd
+
+2. Install sshfs on the target.
+
+    opkg update
+    opkg install sshfs-fuse
+    modprobe fuse
+
+3. Mount the kernel source on the target.
+
+    mkdir /usr/src/linux
+    sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
+
+4. Fix dangling build and source symlinks.
+
+    cd /lib/modules/`uname -r`/
+    rm build source
+    ln -s /usr/src/linux source
+    ln -s source build
+
+5. Prepare the tools needed for dkms.
+
+    cd /lib/modules/`uname -r`/build
+    make prepare
+    make modules_prepare
+
+Note that you may need to install the bc package on ARM targets.
+
+6. Re-version the NI modules.
+
+    dkms autoinstall
+
+If you get strange gcc errors during this step, ensure that the gcc
+version used to build the kernel on the host machine is compatible
+with the gcc version on the target. Check the output logs under:
+/var/lib/dkms/<ni_module>/<version>/build/make.log.
+
+7. (optional) Check dkms status.
+
+    dkms status
+
+8. Reboot the target.
 
 **HELP! MY TARGET DOESN'T BOOT!**
 
