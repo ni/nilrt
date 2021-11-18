@@ -124,46 +124,6 @@ own risk!!!*
     Boot your NI Linux Real-Time compatible hardware from the recovery
 disk and follow on-screen instructions to perform a factory reset.
 
-6. (Optional/Advanced) Build a NILRT Software Development Kit (SDK) with
-GCC compiler toolchain.
-
-    Run the following to build an SDK for x64 Linux machines:
-
-        SDKMACHINE=x86_64 bitbake -c populate_sdk host-toolchain-sysroot
-
-    Run the following to build an SDK for x86 Windows machines:
-
-        SDKMACHINE=i686-mingw32 bitbake -c populate_sdk host-toolchain-sysroot
-
-    The resulting archives are located at the following paths for Linux
-and Windows, respectively:
-
-        tmp-glibc/deploy/sdk/oecore-x86_64-*.sh
-        tmp-glibc/deploy/sdk/oecore-i686-*.tar.bz2
-
-    The Linux archive is a self-extracting shell script (a.k.a. shar).
-To install the SDK, copy archive to your build machine and run it with
-the following arguments to extract into your $HOME directory:
-
-        /path/to/oecore-x86_64-*.sh -y -d "$HOME/NILRTSDK"
-
-    $HOME/NILRTSDK/sysroots/x86_64-nilrtsdk-linux/ is a *NIX style
-system root (sysroot) for your build machine. It contains a GCC
-cross-compiler which may run on your build machine to produce NILRT
-binaries.
-
-    The other directory under $HOME/NILRTSDK/sysroots/ is an NILRT
-system root containing headers and shared libraries that GCC may link
-during it's build process. These are the same files you might find on
-an NILRT system. The name of this sysroot directory depends on the
-configured $MACHINE and tuning options in NILRT config files.
-
-    The Windows archive is a bzipped tarball, which may be extracted by
-any compatible archiver utility. It has a similar directory structure as
-the Linux shar, but the build system's sysroot is named
-i686-nilrtsdk-mingw32 instead of x86_64-nilrtsdk-linux. It will have the
-same NILRT sysroot.
-
 Creating a Docker Build Container
 -----
 
