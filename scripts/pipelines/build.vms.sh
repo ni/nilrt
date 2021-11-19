@@ -52,6 +52,7 @@ EOF
 
 MACHINE=${MACHINE:-x64}
 RECOVERY_IMAGE_RECIPE_NAME=nilrt-recovery-image
+PYREX_RUN=pyrex-run
 
 answers_file="${SCRIPT_RESOURCE_DIR}/ni_provisioning.answers"
 disk_size_mb=4096
@@ -152,20 +153,21 @@ build_qemu_vm() {
 	cp -r "$SCRIPT_RESOURCE_DIR/OVMF" .
 
 	# Provision a qcow2 disk with NILRT using the recovery media ISO.
-	qemu-img create -q \
+	$PYREX_RUN qemu-img create -q \
 		-f qcow2 "./$vm_name-$MACHINE.qcow2" \
 		"$disk_size_mb""M"
 	chmod 0644 "./$vm_name-$MACHINE.qcow2"
 
 	# Enable the KVM hypervisor layer, if it seems like it is supported.
-	if [ -w /dev/kvm ]; then
+	if $($PYREX_RUN test -w /dev/kvm); then
 	    log INFO "/dev/kvm detected as writable; enabling KVM hypervisor."
 	    enableKVM="-enable-kvm"
 	else
-	    log INFO "/dev/kvm is not writable; KVM will not be enabled."
+	    log WARN "/dev/kvm is not writable; KVM will not be enabled."
 	fi
 
-	qemu-system-x86_64 \
+	echo "Provisioning NILRT on QEMU VM..."
+	$PYREX_RUN qemu-system-x86_64 \
 		${enableKVM:-} -cpu qemu64 -smp cpus=1 \
 		-m "$memory_mb" \
 		-nographic \
@@ -174,7 +176,6 @@ build_qemu_vm() {
 		-drive file="./${vm_fullname}.qcow2",index=0,media=disk \
 		-drive file="${recovery_iso}",index=1,media=cdrom,readonly=on \
 		-drive file="$build_workspace/ni_provisioning.answers.iso",index=2,media=cdrom,readonly=on \
-	>/dev/null
 	# end qemu-system-x86_64
 
 	write_vm_startup_script "runQemuVM.sh" "start-vm.sh" "$primary_disk"
@@ -188,13 +189,13 @@ build_qemu_vm() {
 create_answers_iso() {
 	cp "$answers_file" "ni_provisioning.answers"
 	chmod 0444 "ni_provisioning.answers"
-	genisoimage -quiet \
+	$PYREX_RUN genisoimage -quiet \
 		-input-charset utf-8 \
 		-full-iso9660-filenames \
 		-o "ni_provisioning.answers.iso" \
 		"ni_provisioning.answers"
 	chmod 0444 "ni_provisioning.answers.iso"
-	log INFO "Built answers file at $(realpath ./ni_provisioning.answers.iso) using $answers_file."
+	log DEBUG "Built answers file at $(realpath ./ni_provisioning.answers.iso) using $answers_file."
 }
 
 error_and_die () {
@@ -222,6 +223,7 @@ write_vm_startup_script() {
     sed -i "s%\${VM_DISK_UUID}%${disk_uuid}%g" "${script_destination_path}"
     sed -i "s%\${VM_MEM_SIZE_MB}%${memory_mb}%g" "${script_destination_path}"
 }
+
 
 # Source the common build setup script, so that we're pyrex-enabled and our
 # working directory is changed to the build directory.
