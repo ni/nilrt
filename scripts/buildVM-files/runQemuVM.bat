@@ -12,5 +12,5 @@ IF NOT [%1] == [] (
 	-m %mem_MB% ^
 	-nographic ^
 	-bios "%~dp0%OVMF\OVMF_CODE.fd" ^
-	-drive file="%~dp0%${VM_NAME}.qcow2" ^
+	-drive file="%~dp0%${PRIMARY_DISK}" ^
 	%qemu_extra_args%
