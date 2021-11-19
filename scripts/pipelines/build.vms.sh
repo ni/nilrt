@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_ROOT=$(realpath $(dirname $BASH_SOURCE))
-SCRIPT_RESOURCE_DIR=$(realpath "${SCRIPT_ROOT}/../buildVM-files")
+SCRIPT_RESOURCE_DIR=$(realpath "${SCRIPT_ROOT}/vm-resources")
 
 LOG_VERBOSEONLY_CHANNELS=(INFO)
 log() {
