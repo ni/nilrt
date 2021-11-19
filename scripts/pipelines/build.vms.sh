@@ -21,8 +21,7 @@ log() {
 usage() {
 	cat <<EOF
 $(basename ${BASH_SOURCE}) [--help] [--verbose] \\
-    [-a ANSWER_FILE] [-d DISK_SIZE] [-i IMAGES_DIR] [-m MEMORY] [-n NAME] \\
-    [-r RECOVERY_ISO]
+    [-a ANSWER_FILE] [-d DISK_SIZE] [-m MEMORY] [-n NAME] [-r RECOVERY_ISO]
 
 Create a NILRT virtual machine archive (QEMU).
 
@@ -31,9 +30,6 @@ Create a NILRT virtual machine archive (QEMU).
     A path to a NILRT provisioning answers file.
 -d,--disk-size DISK_SIZE
     The primary size of the VM's main storage device. Defaults to 4096 MB.
--i,--images-dir IMAGES_DIR
-	The filepath to the bitbake deploy/images directory which contains the
-    recovery media ISO.
 -m,--memory MEMORY_MB
 	The desired size (in megabytes) for the VM's virtual RAM. Defaults to
     1024 MB.
@@ -54,9 +50,10 @@ MACHINE=${MACHINE:-x64}
 RECOVERY_IMAGE_RECIPE_NAME=nilrt-recovery-image
 PYREX_RUN=pyrex-run
 
+DEFAULT_IMAGES_DIR="./tmp-glibc/deploy/images/${MACHINE}"
+
 answers_file="${SCRIPT_RESOURCE_DIR}/ni_provisioning.answers"
 disk_size_mb=4096
-images_dir="./tmp-glibc/deploy/images/${MACHINE}"
 memory_mb=1024
 recovery_iso=
 positionals=()
@@ -81,15 +78,6 @@ while [ $# -ge 1 ]; do case "$1" in
 	-d|--disk-size)
 		shift
 		disk_size_mb=$1
-		shift
-		;;
-	-i|--images-dir)
-		shift
-		if [ ! -d "$1" ]; then
-			log ERROR "Images directory $1 does not exist or is not a directory."
-			exit 2
-		fi
-		images_dir="$1"
 		shift
 		;;
 	-m|--memory)
@@ -230,7 +218,7 @@ write_vm_startup_script() {
 . "${SCRIPT_ROOT}/build.common.sh"
 
 # Realize filepaths which might be relative to the OE build workspace
-images_dir=$(realpath "$images_dir")
+DEFAULT_IMAGES_DIR=$(realpath "${DEFAULT_IMAGES_DIR}")
 build_workspace=$(realpath "$build_workspace")
 
 # clean the vm workspace
@@ -246,7 +234,7 @@ for arch in $MACHINE; do
 	# Check that the recovery ISO path is valid.
 	# We are doing this late in the script because the path might be relative to
 	# the OE build workspace, and we have just recently changed into it.
-	recovery_iso=$(realpath "${recovery_iso:=${images_dir}/${RECOVERY_IMAGE_RECIPE_NAME}-${arch}.iso}")
+	recovery_iso=$(realpath "${recovery_iso:=${DEFAULT_IMAGES_DIR}/${RECOVERY_IMAGE_RECIPE_NAME}-${arch}.iso}")
 	if [ ! -r "${recovery_iso}" ]; then
 		log ERROR "Recovery ISO at ${recovery_iso} does not exist or is not readable."
 		exit 2
