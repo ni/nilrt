@@ -101,7 +101,7 @@ qemu-system-x86_64 \
 	-nographic \
 	-drive if=pflash,format=raw,readonly,file="$SCRIPT_DIR/OVMF/OVMF_CODE.fd" \
 	-drive if=pflash,format=raw,file="$SCRIPT_DIR/OVMF/OVMF_VARS.fd" \
-	-drive file="$SCRIPT_DIR/${VM_NAME}.qcow2",index=0,media=disk \
+	-drive file="$SCRIPT_DIR/${PRIMARY_DISK}",index=0,media=disk \
 	-device e1000,netdev=nilrt_net0,mac=$macaddr \
 	-netdev ${nilrt_net0_args} \
 	${qemu_args:-}
