@@ -145,6 +145,11 @@ pyrex_cleanup() {
 	unset PYREX_OEINIT PYREX_ROOT PYREX_TEMP_ENV_FILE pyrex_cleanup
 }
 
+# If user hasn't checked out submodules, do that now.
+if [ ! -f "$PYREX_OEINIT" ]; then
+	git submodule init
+	git submodule update --remote --checkout
+fi
 
 # Do some initial setup on the build directory
 if $enable_ni_org_conf; then
