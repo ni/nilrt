@@ -38,19 +38,13 @@ Create a NILRT virtual machine archive (QEMU).
 -r,--recovery-iso RECOVERY_ISO
 	The filepath to the NILRT recovery media ISO, which will provision the
     primary disk.
-
-# Environmentals
-MACHINE
-	The machine architecture of the created VM. Only the 'x64' architecture is
-     supported at this time. Default, if unset: x64
 EOF
 }
 
-MACHINE=${MACHINE:-x64}
 RECOVERY_IMAGE_RECIPE_NAME=nilrt-recovery-image
 PYREX_RUN=pyrex-run
 
-DEFAULT_IMAGES_DIR="./tmp-glibc/deploy/images/${MACHINE}"
+DEFAULT_IMAGES_DIR="./tmp-glibc/deploy/images/x64"
 
 answers_file="${SCRIPT_RESOURCE_DIR}/ni_provisioning.answers"
 disk_size_mb=4096
@@ -142,9 +136,9 @@ build_qemu_vm() {
 
 	# Provision a qcow2 disk with NILRT using the recovery media ISO.
 	$PYREX_RUN qemu-img create -q \
-		-f qcow2 "./$vm_name-$MACHINE.qcow2" \
+		-f qcow2 "./$vm_name-x64.qcow2" \
 		"$disk_size_mb""M"
-	chmod 0644 "./$vm_name-$MACHINE.qcow2"
+	chmod 0644 "./$vm_name-x64.qcow2"
 
 	# Enable the KVM hypervisor layer, if it seems like it is supported.
 	if $($PYREX_RUN test -w /dev/kvm); then
@@ -228,22 +222,20 @@ pushd "$build_workspace" >/dev/null
 
 create_answers_iso
 
-for arch in $MACHINE; do
-	# Check that the recovery ISO path is valid.
-	# We are doing this late in the script because the path might be relative to
-	# the OE build workspace, and we have just recently changed into it.
-	recovery_iso=$(realpath "${recovery_iso:=${DEFAULT_IMAGES_DIR}/${RECOVERY_IMAGE_RECIPE_NAME}-${arch}.iso}")
-	if [ ! -r "${recovery_iso}" ]; then
-		log ERROR "Recovery ISO at ${recovery_iso} does not exist or is not readable."
-		exit 2
-	fi
+# Check that the recovery ISO path is valid.
+# We are doing this late in the script because the path might be relative to
+# the OE build workspace, and we have just recently changed into it.
+recovery_iso=$(realpath "${recovery_iso:=${DEFAULT_IMAGES_DIR}/${RECOVERY_IMAGE_RECIPE_NAME}-x64.iso}")
+if [ ! -r "${recovery_iso}" ]; then
+	log ERROR "Recovery ISO at ${recovery_iso} does not exist or is not readable."
+	exit 2
+fi
 
-	vm_fullname=${vm_name}-${arch}
+vm_fullname=${vm_name}-x64
 
-	build_qemu_vm "${vm_fullname}" "./${vm_fullname}-qemu"
+build_qemu_vm "${vm_fullname}" "./${vm_fullname}-qemu"
 
-	archive_vm_dir "${vm_fullname}-qemu"
-done
+archive_vm_dir "${vm_fullname}-qemu"
 
 popd >/dev/null
 exit 0
