@@ -207,8 +207,6 @@ write_vm_startup_script() {
 		"./${script_destination_path}"
 
     sed -i "s%\${PRIMARY_DISK}%${primary_disk}%g" "${script_destination_path}"
-    sed -i "s%\${VM_MACHINE_UUID}%${vm_uuid}%g" "${script_destination_path}"
-    sed -i "s%\${VM_DISK_UUID}%${disk_uuid}%g" "${script_destination_path}"
     sed -i "s%\${VM_MEM_SIZE_MB}%${memory_mb}%g" "${script_destination_path}"
 }
 
