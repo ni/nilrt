@@ -34,7 +34,7 @@ Create a NILRT virtual machine archive (QEMU).
 	The desired size (in megabytes) for the VM's virtual RAM. Defaults to
     1024 MB.
 -n,--name NAME
-    The desired name for the VM archive.
+    The desired name for the VM archive. Defaults to 'nilrt'.
 -r,--recovery-iso RECOVERY_ISO
 	The filepath to the NILRT recovery media ISO, which will provision the
     primary disk.
