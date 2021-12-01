@@ -182,7 +182,7 @@ create_answers_iso() {
 
 error_and_die () {
 	log ERROR $1
-    exit 1
+	exit 1
 }
 
 # Copies a vm startup script template from the resource directory into the CWD,
@@ -200,8 +200,8 @@ write_vm_startup_script() {
 		"${SCRIPT_RESOURCE_DIR}/${script_template}" \
 		"./${script_destination_path}"
 
-    sed -i "s%\${PRIMARY_DISK}%${primary_disk}%g" "${script_destination_path}"
-    sed -i "s%\${VM_MEM_SIZE_MB}%${memory_mb}%g" "${script_destination_path}"
+	sed -i "s%\${PRIMARY_DISK}%${primary_disk}%g" "${script_destination_path}"
+	sed -i "s%\${VM_MEM_SIZE_MB}%${memory_mb}%g" "${script_destination_path}"
 }
 
 
