@@ -192,9 +192,6 @@ write_vm_startup_script() {
 	local script_destination_path=$2
 	local primary_disk=$3
 
-	local vm_uuid=$(uuidgen)
-	local disk_uuid=""
-
 	install \
 		--mode=0755 \
 		"${SCRIPT_RESOURCE_DIR}/${script_template}" \
