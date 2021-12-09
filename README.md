@@ -34,6 +34,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 3. Build (or pull) the `build-nilrt` pyrex container image.
     ```bash
     bash ./docker/create-build-nilrt.sh  # will tag the image as build-nilrt:latest
+    docker images build-nilrt:latest  # should print the image you just built
     ```
 
 4. Enter the NILRT build environment. Sourcing the init script the first time will automatically setup your pyrex container shim.
