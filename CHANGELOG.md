@@ -29,6 +29,22 @@ Branch: `nilrt/master/hardknott`
 
 ----
 
+## 8.10
+Branch: `nilrt/21.5/sumo`
+
+### meta-nilrt
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/271) the unsupported preview of newer kernel (that is installable via `packagegroup-ni-next-kernel`) to 5.15.
+- [Changed](https://github.com/ni/meta-nilrt/pull/265/files) repo fetch protocol in the sources for NI hosted repos from git to https after github [removed support](https://github.blog/2021-09-01-improving-git-protocol-security-github/) for unencrypted git protocol.
+
+#### Fixed
+- [Fixed](https://github.com/ni/grub/commit/61a02ce279575ea846e6ee7f8c9fb686fd54328c) GRUB implementation on some hardware by adding support for 64-bit linear frame buffer address.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/279/commits/812da23e7d3ef66df360faf32a3a86992dc0f281) a bug in `opkg` that causes multiple `opkg` processes to use the same volatile cache directory causing package installation failures.
+
+----
+
+
 ## 8.9
 Branch: `nilrt/21.3/sumo`
 
