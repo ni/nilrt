@@ -61,7 +61,7 @@ fi
 echo "INFO: Building the extra package feed."
 set -x
 bitbake packagegroup-ni-desirable
-bitbake --continue packagegroup-ni-extra || true
+bitbake --continue packagefeed-ni-extra || true
 set +x
 
 # If the user provided a core/ feed path, dedupe against it.
