@@ -46,7 +46,7 @@ core_feed_path="$(realpath ${positionals[0]})"
 echo "INFO: Building the extra package feed."
 set -x
 bitbake packagegroup-ni-desirable
-bitbake --continue packagegroup-ni-extra
+bitbake --continue packagegroup-ni-extra || true
 set +x
 
 # If the user provided a core/ feed path, dedupe against it.
