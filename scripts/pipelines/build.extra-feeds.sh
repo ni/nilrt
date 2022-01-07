@@ -17,6 +17,8 @@ EOF
 	exit ${1:-2}
 }
 
+core_feed_path=""
+
 positionals=()
 while [ $# -ge 1 ]; do case "$1" in
 	-h|--help)
@@ -36,7 +38,9 @@ esac; done
 # variable as a part of their native arg-parsing.
 # core_feed_path must be absolute here, because entering the pyrex build env
 # will switch the CWD.
-core_feed_path="$(realpath ${positionals[0]})"
+if [ ${#positionals[@]} -gt 0 ]; then
+	core_feed_path="$(realpath ${positionals[0]})"
+fi
 
 
 ## MAIN
