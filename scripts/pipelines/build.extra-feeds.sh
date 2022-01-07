@@ -7,22 +7,33 @@ DELETE_DUPLICATE_IPKS="bash ${SCRIPT_ROOT}/delete-duplicate-ipks.sh"
 ## ARGUMENT PARSING
 usage() {
 	cat <<EOF
-$(basename $BASH_SOURCE) [CORE_FEED_PATH]
+$(basename $BASH_SOURCE) [--help] [--no-index] [CORE_FEED_PATH]
+
 Builds the NILRT extra/ package feed. If CORE_FEED_PATH is asserted, also
 remove any packages from the extras feed which is already in core/.
 
-Positionals:
-CORE_FEED_PATH  Filepath to the root of the NILRT core/ IPK feed.
+# Options
+-n, --no-index
+  If asserted, skip creating the package-index at the end of feed generation.
+
+# Positional Arguments
+CORE_FEED_PATH
+	Filepath to the root of the NILRT core/ IPK feed.
 EOF
 	exit ${1:-2}
 }
 
+skip_package_index=false
 core_feed_path=""
 
 positionals=()
 while [ $# -ge 1 ]; do case "$1" in
 	-h|--help)
 		usage 0
+		;;
+	-n|--no-index)
+		skip_package_index=true
+		shift
 		;;
 	-*|--*)
 		echo "ERROR: unknown option: $1" >&2
@@ -64,5 +75,9 @@ if [ -n "${core_feed_path}" ]; then
 fi
 
 # Package index generation must happen after we have deduped IPKs.
-echo "INFO: Generating extra/ feed indexes."
-bitbake package-index
+if [ "$skip_package_index" != true ]; then
+	echo "INFO: Generating extra/ feed indexes."
+	bitbake package-index
+else
+	echo "INFO: Skipping package index generation by user request."
+fi
