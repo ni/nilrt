@@ -7,22 +7,27 @@ DELETE_DUPLICATE_IPKS="bash ${SCRIPT_ROOT}/delete-duplicate-ipks.sh"
 ## ARGUMENT PARSING
 usage() {
 	cat <<EOF
-$(basename $BASH_SOURCE) [--help] [--no-index] [CORE_FEED_PATH]
+$(basename $BASH_SOURCE) [--help] [--desirable-only] [--no-index] \\
+    [CORE_FEED_PATH]
 
 Builds the NILRT extra/ package feed. If CORE_FEED_PATH is asserted, also
 remove any packages from the extras feed which is already in core/.
 
 # Options
+-d, --desirable-only
+  If asserted, only build the 'desirable' packagegroup and do not attempt to
+  build the entire 'extra' feed (which takes a long time.)
 -n, --no-index
   If asserted, skip creating the package-index at the end of feed generation.
 
 # Positional Arguments
 CORE_FEED_PATH
-	Filepath to the root of the NILRT core/ IPK feed.
+  Filepath to the root of the NILRT core/ IPK feed.
 EOF
 	exit ${1:-2}
 }
 
+desirable_only=false
 skip_package_index=false
 core_feed_path=""
 
@@ -30,6 +35,10 @@ positionals=()
 while [ $# -ge 1 ]; do case "$1" in
 	-h|--help)
 		usage 0
+		;;
+	-d|--desirable-only)
+		desirable_only=true
+		shift
 		;;
 	-n|--no-index)
 		skip_package_index=true
@@ -59,10 +68,13 @@ fi
 # Now in the OE+Pyrex build/ workspace...
 
 echo "INFO: Building the extra package feed."
-set -x
 bitbake packagegroup-ni-desirable
-bitbake --continue packagefeed-ni-extra || true
-set +x
+
+if [ ! "$desirable_only" = true ]; then
+	bitbake --continue packagefeed-ni-extra || true
+else
+	echo "INFO: 'desirable-only' requested; skipping full extra feed build."
+fi
 
 # If the user provided a core/ feed path, dedupe against it.
 if [ -n "${core_feed_path}" ]; then
