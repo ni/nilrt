@@ -41,7 +41,7 @@ Create a NILRT virtual machine archive (QEMU).
 EOF
 }
 
-RECOVERY_IMAGE_RECIPE_NAME=nilrt-recovery-image
+RECOVERY_IMAGE_RECIPE_NAME=nilrt-recovery-media
 PYREX_RUN=pyrex-run
 
 DEFAULT_IMAGES_DIR="./tmp-glibc/deploy/images/x64"
