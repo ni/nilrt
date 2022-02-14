@@ -20,7 +20,8 @@ RT devices - including custom Linux kernels and kernel modules.
 
 This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transparently provide most of the toolchain requirements needed to run bitbake. However, there are are still a few setup steps.
 
-1. Checkout the source and initialize the project submodules.
+1. #### Initial repo and submodules
+   Checkout the source and initialize the project submodules.
     ```bash
     git clone https://github.com/ni/nilrt.git
     cd nilrt
@@ -29,9 +30,11 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     git submodule update --remote --checkout
     ```
 
-2. [Install the docker engine](https://docs.docker.com/engine/install/) on your build host. If you can successfully run `docker run hello-world`, then you have everything you should need.
+2. #### Install docker
+   [Install the docker engine](https://docs.docker.com/engine/install/) on your build host. If you can successfully run `docker run hello-world`, then you have everything you should need.
 
-3. Build (or pull) the `build-nilrt` pyrex container image.
+3. #### Set up pyrex
+   Build (or pull) the `build-nilrt` pyrex container image.
     ```bash
     bash ./docker/create-build-nilrt.sh  # will tag the image as build-nilrt:latest
 
@@ -39,7 +42,8 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     docker images build-nilrt:latest  # should print the image you just built
     ```
 
-4. Enter the NILRT build environment. Sourcing the init script the first time will automatically setup your pyrex container shim.
+4. #### Set up build environment
+   Enter the NILRT build environment. Sourcing the init script the first time will automatically setup your pyrex container shim.
     ```bash
     . ./ni-oe-init-build-env [--org]
 
@@ -49,7 +53,8 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     <font color=lightgreen>[NI]</font> builders who are connected to the NI corporate network should specify `-org` in their init script args, to provoke the script into adding the `ni-org.conf` snippet to your bitbake directory. External builders *should not* use `--org`.
 
-5. Build the package or packages that you want for your target. For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
+5. #### Build package or packagegroups
+   For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
 
         bitbake python ruby apache2
 
@@ -68,13 +73,14 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
         tmp-glibc/deploy/ipk/...
         
-6. Bitbake can transform tmp-glibc/deploy/ipk/<tune> into package feeds when you run the following command:
+6. #### Building package feeds
+   Bitbake can transform tmp-glibc/deploy/ipk/<tune> into package feeds when you run the following command:
 
         bitbake package-index
 
     You must rebuild the package-index before building images or if any package whom the images you are trying to build depends on has been changed and rebuilt.
-    
-7. Building various images
+
+7. #### Building various images
 
     **NOTE** You must build packagefeed-ni-core and package_index first to build images.
 
