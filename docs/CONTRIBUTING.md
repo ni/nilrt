@@ -72,3 +72,36 @@ At a minimum, you should add an additional message trailer declaring the upstrea
 #### .patch file names
 
 When bitbake applies `.patch` files to a recipe, it copies all `.patch` files into the recipe's workspace, then applies them in alphanumeric-order. In your PR, be mindful of how your `.patch` file is ordered versus the other files in the recipe. Keep in mind that some `.patch` files might come from other layers.
+
+## Developer Certificate of Origin (DCO)
+
+   Developer's Certificate of Origin 1.1
+
+   By making a contribution to this project, I certify that:
+
+   (a) The contribution was created in whole or in part by me and I
+       have the right to submit it under the open source license
+       indicated in the file; or
+
+   (b) The contribution is based upon previous work that, to the best
+       of my knowledge, is covered under an appropriate open source
+       license and I have the right under that license to submit that
+       work with modifications, whether created in whole or in part
+       by me, under the same open source license (unless I am
+       permitted to submit under a different license), as indicated
+       in the file; or
+
+   (c) The contribution was provided directly to me by some other
+       person who certified (a), (b) or (c) and I have not modified
+       it.
+
+   (d) I understand and agree that this project and the contribution
+       are public and that a record of the contribution (including all
+       personal information I submit with it, including my sign-off) is
+       maintained indefinitely and may be redistributed consistent with
+       this project or the open source license(s) involved.
+
+(taken from [developercertificate.org](https://developercertificate.org/))
+
+See [COPYING.MIT](https://github.com/ni/nilrt/blob/HEAD/COPYING.MIT)
+for details about how nilrt is licensed.
