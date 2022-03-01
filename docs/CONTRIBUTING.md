@@ -19,11 +19,6 @@ Current Project Maintainers:
 
 To support rolling product development, NILRT frequently maintains multiple mainline development branches, each rebased upon a different OE upstream stable release. The mainline branch refs are namespaced like `nilrt/master/${oe_stable}`. The mainline branches are generally open to contribution until they reach the end of their life.
 
-Status | NI Release | NILRT Version | Branch Ref
--------|------------|---------------|-----------
-Open | 21.X  | 9.X | [nilrt/master/dunfell](https://github.com/ni/nilrt/tree/nilrt/master/dunfell)
-Open | 20.X  | 8.X | [nilrt/master/sumo](https://github.com/ni/nilrt/tree/nilrt/master/sumo)
-
 NILRT follows a mainline-branch model. Near a release, the project maintainers create a product branch for stable production builds. The branches are named `nilrt/${ni_release}/${oe_stable}` like `nilrt/20.6/sumo`, and are only open to necessary bug fixes and security backports relevant to the product release.
 
 
