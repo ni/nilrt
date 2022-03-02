@@ -58,10 +58,6 @@
 	path = sources/meta-qt5-extra
 	url = ../meta-qt5-extra.git
 	branch = nilrt/master/hardknott
-[submodule "sources/meta-ivi"]
-	path = sources/meta-ivi
-	url = ../meta-ivi.git
-	branch = nilrt/master/hardknott
 [submodule "sources/meta-rauc"]
 	path = sources/meta-rauc
 	url = ../meta-rauc.git
