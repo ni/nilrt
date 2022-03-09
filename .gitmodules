@@ -42,10 +42,6 @@
 	path = sources/meta-sdr
 	url = ../meta-sdr.git
 	branch = nilrt/master/hardknott
-[submodule "sources/meta-java"]
-	path = sources/meta-java
-	url = ../meta-java.git
-	branch = nilrt/master/hardknott
 [submodule "sources/meta-measured"]
 	path = sources/meta-measured
 	url = ../meta-measured.git
