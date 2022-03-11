@@ -26,10 +26,6 @@
 	path = sources/meta-mingw
 	url = ../meta-mingw.git
 	branch = nilrt/master/hardknott
-[submodule "sources/meta-mono"]
-	path = sources/meta-mono
-	url = ../meta-mono.git
-	branch = nilrt/master/hardknott
 [submodule "sources/meta-virtualization"]
 	path = sources/meta-virtualization
 	url = ../meta-virtualization.git
