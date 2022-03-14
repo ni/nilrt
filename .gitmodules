@@ -22,10 +22,6 @@
 	path = sources/openembedded-core
 	url = ../openembedded-core.git
 	branch = nilrt/master/hardknott
-[submodule "sources/meta-mingw"]
-	path = sources/meta-mingw
-	url = ../meta-mingw.git
-	branch = nilrt/master/hardknott
 [submodule "sources/meta-virtualization"]
 	path = sources/meta-virtualization
 	url = ../meta-virtualization.git
