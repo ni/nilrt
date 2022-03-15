@@ -120,6 +120,9 @@ packages:
   dist-nilrt-grub_21.8_x64:
     export: "{{ (MNT_NIRVANA_PERFORCEEXPORTS + '/build/exports/ni/nilr/nilrt_onert_system_image/official/export/21.8') | latest_export }}"
     ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/onert_system_image_ipk/dist-nilrt-grub_*.ipk'
+  dist-nilrt-grub_22.0_x64:
+    export: "{{ (MNT_NIRVANA_PERFORCEEXPORTS + '/build/exports/ni/nilr/nilrt_onert_system_image/prototype/export/22.0') | latest_export }}"
+    ipk_path: 'targets/linuxU/x64/gcc-4.7-oe/release/onert_system_image_ipk/dist-nilrt-grub_*.ipk'
   dist-nilrt-systemlink-grub_19.6_arm-crio:
     export: "{{ (((MNT_NIRVANA_PERFORCEEXPORTS + '/MAX/sysmgmt/installers/current_gen/skyline_rt_client_runtime/export/19.6') | latest_export) + '/.archives/linux.zip') | unzip }}"
     ipk_path: 'targets/linuxU/armv7-a/gcc-4.9-oe/release/dist_nilrt_systemlink_grub_ipk/dist-nilrt-systemlink-grub_*.ipk'
