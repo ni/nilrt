@@ -34,10 +34,6 @@
 	path = sources/meta-sdr
 	url = ../meta-sdr.git
 	branch = nilrt/master/hardknott
-[submodule "sources/meta-measured"]
-	path = sources/meta-measured
-	url = ../meta-measured.git
-	branch = nilrt/master/hardknott
 [submodule "sources/meta-qt5"]
 	path = sources/meta-qt5
 	url = ../meta-qt5.git
