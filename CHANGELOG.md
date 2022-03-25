@@ -168,6 +168,7 @@ The 8.11 release is a regular, quarterly release of NI LinuxRT. It primarily con
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/288) `opkg` to version `0.5.0`.
 - [Moved](https://github.com/ni/meta-nilrt/pull/327) `tbb` from the `extra/` feed to `main/`.
 - [Upgraded](https://github.com/ni/linux/pull/59) the `linux` kernel from `5.10.83-rt58` to `5.10.106-rt64`.
+    - [Fixed](https://github.com/ni/linux/commit/051c9569fc919a173fbc7a56c75efdbba3b13b8c) [an issue](https://github.com/ni/linux/issues/44) in `buildnipkg` which prohibited booting on roboRIO-2.0.
 
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/320) a `busybox` incompatibility in the `update-ca-certificates` script.
