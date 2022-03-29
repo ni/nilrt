@@ -1,5 +1,0 @@
-Jinja2>=2.10.1
-PyYAML>=5.1.2
---trusted-host ni-pypi.amer.corp.natinst.com
---index-url http://ni-pypi.amer.corp.natinst.com/simple/
-niversion==2.0.0-dev0
