@@ -66,3 +66,6 @@
 	path = sources/meta-rauc
 	url = ../meta-rauc.git
 	branch = nilrt/master/sumo
+[submodule "sources/pyrex"]
+	path = sources/pyrex
+	url = ../pyrex.git
