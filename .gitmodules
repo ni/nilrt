@@ -69,3 +69,4 @@
 [submodule "sources/pyrex"]
 	path = sources/pyrex
 	url = ../pyrex.git
+	branch = nilrt/master/sumo
