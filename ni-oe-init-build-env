@@ -133,6 +133,9 @@ export PYREX_CONFIG_BIND="${NILRT_ROOT}"
 export PYREX_OEINIT="${NILRT_ROOT}/sources/openembedded-core/oe-init-build-env"
 export PYREX_ROOT="${NILRT_ROOT}/sources/pyrex"
 
+export PYREX_BUILD_NILRT_IMAGE="${PYREX_BUILD_NILRT_IMAGE:-build-nilrt:latest}"
+echo "INFO: Using pyrex image: ${PYREX_BUILD_NILRT_IMAGE}"
+
 
 unset SCRIPT_ROOT
 
