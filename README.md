@@ -15,6 +15,7 @@ Community (non-NI) developers can use this project to build packages for
 open-source software projects, which are installable to their existing NI Linux
 RT devices - including custom Linux kernels and kernel modules.
 
+Additional community documentation can be found at https://nilrt-docs.ni.com.
 
 ## Entering the Bitbake Build Environment
 
