@@ -48,5 +48,5 @@
 	branch = nilrt/master/hardknott
 [submodule "sources/pyrex"]
 	path = sources/pyrex
-	url = ../pyrex
+	url = ../pyrex.git
 	branch = nilrt/master/hardknott
