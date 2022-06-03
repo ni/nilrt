@@ -37,10 +37,10 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 3. #### Set up pyrex
    Build (or pull) the `build-nilrt` pyrex container image.
     ```bash
-    bash ./docker/create-build-nilrt.sh  # will tag the image as build-nilrt:latest
+    bash ./docker/create-build-nilrt.sh  # will tag the image as build-nilrt:${NILRT_codename}
 
     # Verification
-    docker images build-nilrt:latest  # should print the image you just built
+    docker images build-nilrt  # should print the image you just built
     ```
 
 4. #### Set up build environment
@@ -52,7 +52,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     bitbake --version  # If this succeeds, you're done.
     ```
 
-    <font color=lightgreen>[NI]</font> builders who are connected to the NI corporate network should specify `-org` in their init script args, to provoke the script into adding the `ni-org.conf` snippet to your bitbake directory. External builders *should not* use `--org`.
+    **NI builders** who are connected to the NI corporate network should specify `-org` in their init script args, to provoke the script into adding the `ni-org.conf` snippet to your bitbake directory. External builders *should not* use `--org`.
 
 5. #### Build package or packagegroups
    For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
@@ -73,13 +73,16 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     The resulting ipk files that can be installed through opkg exist at the following directory:
 
         tmp-glibc/deploy/ipk/...
-        
+
 6. #### Building package feeds
-   Bitbake can transform tmp-glibc/deploy/ipk/<tune> into package feeds when you run the following command:
+    The NILRT repo has scripting in the [`:scripts/pipelines/`](https://github.com/ni/nilrt/tree/HEAD/scripts/pipelines) directory, which can be used to automate the process of building package feeds. The NI build pipelines use these scripts directly - so they are canonical.
 
-        bitbake package-index
+    ```bash
+    # after completing the build setup steps above...
+    bash ../scripts/pipelines/build.core-feeds.sh
+    ```
 
-    You must rebuild the package-index before building images or if any package whom the images you are trying to build depends on has been changed and rebuilt.
+    These scripts are also a good source for understanding the steps to build a package feed manually.
 
 7. #### Building various images
 
