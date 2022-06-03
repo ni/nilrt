@@ -60,6 +60,7 @@ set -e
 docker build \
 	-f "${PYREX_ROOT}/image/Dockerfile" \
 	-t "pyrex-base:${NILRT_codename}" \
+	--build-arg=PYREX_BASE=$PYREX_BASE \
 	"${PYREX_ROOT}/image"
 
 # build the build-nilrt image
