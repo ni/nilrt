@@ -82,7 +82,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     bash ../scripts/pipelines/build.core-feeds.sh
     ```
 
-    These scripts are also a good source for understanding the steps to build a package feed manually.
+    These scripts are also a good source for understanding the steps to build a package feed manually. Note that if you are building package feeds *manually*, you must bitbake the special `package-index` target before using the feed.
 
 7. #### Building various images
 
@@ -95,11 +95,11 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
         The resulting root file system images for the NILRT safemode image is located at the following paths:
 
             tmp-glibc/deploy/images/x64/nilrt-safemode-rootfs-x64.tar.gz
-    
+
         You can install this on target by copying the file over to the target and running the following command:
 
             tar xf nilrt-safemode-rootfs-x64.tar.gz -C /boot/.safe/
-    
+
     * Build a runmode image by running the following command:
 
             bitbake nilrt-base-system-image
@@ -107,7 +107,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
         The resulting root file system images for the NILRT runmode image is located at the following paths:
 
             tmp-glibc/deploy/images/x64/nilrt-base-system-image-x64.tar.gz
-    
+
         You can install this on target by copying the file over to the target while the target is in safe mode and running the following commands:
 
             tar xf nilrt-base-system-image-x64.tar.gz
