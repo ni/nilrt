@@ -9,7 +9,15 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 ## [Unreleased]
 Branch: `nilrt/master/hardknott`
 
-### NILRT
+----
+
+## 9.0
+Branch: `nilrt/22.5/hardknott`
+
+### nilrt
+
+#### Added
+- Added [Pyrex](https://github.com/garmin/pyrex) usage for build containers to manage dependencies and versions.
 
 #### Changed
 - Rebased OE layer submodules from the OE/`sumo` release stable branches, to the OE/`hardknott` branches - where available.
@@ -18,6 +26,17 @@ Branch: `nilrt/master/hardknott`
 - [Upgraded](https://github.com/ni/nilrt/pull/73) the nilrt-build dockerfile to a debian 10 base.
   - Added a more user-friendly way to enter the docker build container using `docker-compose`.
 
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/308) an issue where SSH sessions were not properly closed on reboot or shutdown.
+
+#### Removed
+- Removed the following OpenEmbedded Layers either because they were abandoned upstream, or because official support was dropped within NILRT.
+  - [meta-ivi](https://github.com/ni/nilrt/pull/119).
+  - [meta-java](https://github.com/ni/nilrt/pull/120).
+  - [meta-measured](https://github.com/ni/nilrt/pull/127).
+  - [meta-mingw](https://github.com/ni/nilrt/pull/124).
+  - [meta-mono](https://github.com/ni/nilrt/pull/123).
+
 
 ### meta-nilrt
 
@@ -25,7 +44,15 @@ Branch: `nilrt/master/hardknott`
 - `gcc` has been upgraded to version `10.2`.
 - `openssl` has been upgraded to `1.1.1k`.
 - `python2` support has been totally deprecated in favor of `python3`.
+- [Replaced](https://github.com/ni/meta-nilrt/pull/316) `packagegroup-ni-xfce` with `packagegroup-ni-graphical` which includes the former.
+- Changed the available images to build. The following images are recommended when building NI Linux Real-Time.
+  - `nilrt-base-system-image` - The base system image for runmode.
+  - `nilrt-recovery-media` - The recovery media/safemode installation iso.
 
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/277) the `restore` images and `lvcomms` images. The distributions that required these images are not supported in newer versions.
+- [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
+- [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
 
 ----
 
