@@ -71,7 +71,7 @@ echo "INFO: Building the extra package feed."
 bitbake packagegroup-ni-desirable
 
 if [ ! "$desirable_only" = true ]; then
-	bitbake --continue packagefeed-ni-extra || true
+	bitbake --continue packagegroup-ni-extra || true
 else
 	echo "INFO: 'desirable-only' requested; skipping full extra feed build."
 fi
