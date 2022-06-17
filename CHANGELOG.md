@@ -11,6 +11,34 @@ Branch: `nilrt/master/sumo`
 
 ----
 
+
+## 8.12
+Branch: `nilrt/22.5/sumo`
+
+The 8.12 release is a regular, quarterly release of NI LinuxRT. It primarily contains minor improvements and bug fixes to OE-sumo-based release images.
+
+
+### nilrt
+
+#### Added
+- [Added](https://github.com/ni/nilrt/pull/142) pyrex support so that builds happen in a container.
+
+
+### meta-nilrt
+
+#### Changed
+- [Updated](https://github.com/ni/meta-nilrt/pull/395) default machine to `xilinx-zynq`
+
+
+### openembedded-core
+
+#### Fixed
+- [Fixed](https://github.com/ni/openembedded-core/pull/59) an issue where opkg's stderr output ends up in opkg status file.
+
+
+---
+
+
 ## 8.11
 Branch: `nilrt/21.8/sumo`
 
