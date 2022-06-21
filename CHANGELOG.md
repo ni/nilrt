@@ -22,9 +22,11 @@ Branch: `nilrt/22.5/hardknott`
 #### Changed
 - Rebased OE layer submodules from the OE/`sumo` release stable branches, to the OE/`hardknott` branches - where available.
   - A full list of the upstream changes between OE/sumo (yocto 2.5) and OE/hardknott (yocto 3.3) can be found in the Yocto project documentation's [Migration Guide](https://docs.yoctoproject.org/migration-guides/index.html).
+  - glibc is [kept at 2.24](https://github.com/ni/openembedded-core/pull/56) (`sumo` version) as 2.33 (`hardknott`'s version) has a locking bug on RT applications.
 - Upgraded the bitbake submodule to bitbake `1.50.2`.
 - [Upgraded](https://github.com/ni/nilrt/pull/73) the nilrt-build dockerfile to a debian 10 base.
   - Added a more user-friendly way to enter the docker build container using `docker-compose`.
+- [Updated](https://github.com/ni/meta-nilrt/pull/377) inode size in filesystem to support dates past year 2038.
 
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/308) an issue where SSH sessions were not properly closed on reboot or shutdown.
@@ -45,6 +47,7 @@ Branch: `nilrt/22.5/hardknott`
 - `openssl` has been upgraded to `1.1.1k`.
 - `python2` support has been totally deprecated in favor of `python3`.
 - [Replaced](https://github.com/ni/meta-nilrt/pull/316) `packagegroup-ni-xfce` with `packagegroup-ni-graphical` which includes the former.
+- [Upgraded](https://github.com/ni/linux/pull/64) the `linux` kernel to `5.10.115-rt67`.
 - Changed the available images to build. The following images are recommended when building NI Linux Real-Time.
   - `nilrt-base-system-image` - The base system image for runmode.
   - `nilrt-recovery-media` - The recovery media/safemode installation iso.
