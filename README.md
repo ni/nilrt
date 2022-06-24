@@ -18,11 +18,34 @@ Build Steps
         git submodule init
         git submodule update --remote --checkout
 
-2. Set up your shell environment to run bitbake:
+2. Install docker
 
-    Source NILRT's environment script by running the following command:
+    Install the docker engine on your build host. If you can
+successfully run docker run hello-world, then you have everything
+you should need.
 
-        . ni-oe-init-build-env
+3. Set up pyrex
+
+    Build (or pull) the build-nilrt pyrex container image.
+
+        bash ./docker/create-build-nilrt.sh  # will tag the image as build-nilrt:${NILRT_codename}
+
+        # Verification
+        docker images build-nilrt  # should print the image you just built```
+
+4. Set up build environment
+
+    Enter the NILRT build environment. Sourcing the init script the
+first time will automatically setup your pyrex container shim. NI
+builders who are connected to the NI corporate network should specify
+-org in their init script args, to provoke the script into adding the
+ni-org.conf snippet to your bitbake directory. External builders
+should not use --org.
+
+        . ./ni-oe-init-build-env [--org]
+
+        # Verification
+        bitbake --version  # If this succeeds, you're done.```
 
     This will setup the needed environment variables and build
 configuration files for building through OpenEmbedded build system.
@@ -44,7 +67,7 @@ of NILRT for your hardware.
     **NOTE** It's not recommended to run bitbake for different
 MACHINE's in the same workspace (build directory).
 
-3. Build the package or packages that you want for your target.
+5. Build the package or packages that you want for your target.
 For example, to build Python, Ruby, and Apache for Zynq targets, run the
 following commands:
 
@@ -70,7 +93,7 @@ the following directory:
 
         tmp-glibc/deploy/ipk/...
 
-4. (Optional/Advanced) Bitbake can transform tmp-glibc/deploy/ipk/ into
+6. (Optional/Advanced) Bitbake can transform tmp-glibc/deploy/ipk/ into
 a package feed when you run the following command:
 
         bitbake package-index
@@ -86,7 +109,7 @@ to other hosts on your local network. You may need to configure your
 firewall to permit Python to access port 8080. Otherwise, the server
 will only be accessible locally on address localhost:8080.
 
-5. (Optional/Advanced) Build a bootable recovery disk by running the
+7. (Optional/Advanced) Build a bootable recovery disk by running the
 following commands:
 
         bitbake restore-mode-image
