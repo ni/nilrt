@@ -54,6 +54,12 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     **NI builders** who are connected to the NI corporate network should specify `-org` in their init script args, to provoke the script into adding the `ni-org.conf` snippet to your bitbake directory. External builders *should not* use `--org`.
 
+   If you are building on a `nilrt/master/*` branch ref (rather than a release branch) **and** if you are building outside of the NI corporate network, you will need to set the version of the `ni-main` opkg feed to one which has already been published to `download.ni.com`. Do this by setting the `NILRT_MAIN_FEED_VERSION` bitbake variable to the latest published release. eg.
+
+   ```
+   echo 'NILRT_MAIN_FEED_VERSION = "2022Q3"' >> ./conf/local.conf
+   ```
+
 5. #### Build package or packagegroups
    For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
 
