@@ -6,6 +6,8 @@ The NI Linux Real-Time project uses a mainline branching model with product bran
 
 This changelog attempts to conform to the changelog spec on [keepachangelog.org](https://keepachangelog.com/en/1.0.0/).
 
+To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
+
 ## [Unreleased]
 Branch: `nilrt/master/hardknott`
 
@@ -38,7 +40,6 @@ Branch: `nilrt/22.5/hardknott`
   - [meta-measured](https://github.com/ni/nilrt/pull/127).
   - [meta-mingw](https://github.com/ni/nilrt/pull/124).
   - [meta-mono](https://github.com/ni/nilrt/pull/123).
-
 
 ### meta-nilrt
 
