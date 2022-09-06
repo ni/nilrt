@@ -71,7 +71,7 @@ class CLIParser(ArgumentParser):
 - example (finding differences between 8.11 and 9.0):
     ./scripts/diff-pkg-changes.py \\
         nilrt/21.8/sumo nilrt/22.5/hardknott \\
-        --feed_base http://nickdanger.amer.corp.natinst.com/feeds
+        --feed_base http://nickdanger.natinst.com/feeds
 - example (updating an existing file):
     ./scripts/diff-pkg-changes.py ... >> ./docs/feed-changelog.json''',
             formatter_class = RawTextHelpFormatter
