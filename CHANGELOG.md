@@ -13,6 +13,48 @@ Branch: `nilrt/master/hardknott`
 
 ----
 
+## 9.1
+Branch: `nilrt/22.8/hardknott`
+
+### nilrt
+
+#### Added
+- Added NILRT GRUB version 22.8 to dist feed
+- Added scripts to diff feeds between NILRT releases
+
+#### Removed
+- Moved styleguide information from CONTRIBUTING to meta-nilrt instead
+
+### meta-nilrt
+See the [feed changelog](./docs/feed-changelog.md) for all updates to packages.
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/427) `dkms`.
+  - [Upgraded](https://github.com/ni/meta-nilrt/pull/455) to v3.0.6.
+- [Added](https://github.com/ni/meta-nilrt/pull/450) a boot-time message to display the CPLD reset source.
+
+#### Changed
+- In `packagegroup-ni-base`:
+  - [Added](https://github.com/ni/meta-nilrt/pull/419) `modutils-initscripts`.
+  - [Added](https://github.com/ni/meta-nilrt/pull/429) `efibootmgr`.
+- [Removed](https://github.com/ni/meta-nilrt/pull/422) `ni-rtlog` from the base image.
+  - [Removed](https://github.com/ni/meta-nilrt/pull/434) the now-unnecessary `ni-lv2020` feed.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/432) Linux kernel version to 5.15.
+- [Added](https://github.com/ni/meta-nilrt/pull/435) configuration file for `libpam`.
+- [Replaced](https://github.com/ni/meta-nilrt/pull/452) per-mitigation configuration options with a global toggle. If subsets of mitigations are desired, a configuration file is available.
+- [Enabled](https://github.com/ni/meta-nilrt/pull/453) unlimited core dumps for debugging use cases.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/424) `openvpn` wrapper scripts sourcing configuration from an incorrect location.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/425) `getty` running on preexisting ttys.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/430) `xfce-nilrt-settings` referring to an incorrect location, which prevented programs from showing up in right-click menus.
+
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/439) several connectivity packages.
+- [Removed](https://github.com/ni/meta-nilrt/pull/440) several devtool packages.
+
+----
+
 ## 9.0
 Branch: `nilrt/22.5/hardknott`
 
