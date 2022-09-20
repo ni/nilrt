@@ -106,6 +106,18 @@ Branch: `nilrt/22.5/hardknott`
 
 ----
 
+## 8.13
+
+Branch: `nilrt/22.8/sumo`
+
+### nilrt
+
+#### Fixed
+- [Fixed](https://github.com/ni/nilrt/commit/979c1003) an error in the extra feed build pipeline script which referenced the wrong recipe name.
+
+
+----
+
 ## 8.12
 Branch: `nilrt/22.5/sumo`
 
