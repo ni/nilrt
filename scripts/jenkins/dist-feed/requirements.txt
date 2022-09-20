@@ -1,4 +1,0 @@
-Jinja2>=2.10.1
-PyYAML>=5.1.2
---index-url https://pypi.ni.systems
-niversion==2.0.0-dev0
