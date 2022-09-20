@@ -6,6 +6,9 @@ The NI Linux Real-Time project uses a mainline branching model with product bran
 
 This changelog attempts to conform to the changelog spec on [keepachangelog.org](https://keepachangelog.com/en/1.0.0/).
 
+The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
+
+
 ## [Unreleased]
 Branch: `nilrt/master/sumo`
 
