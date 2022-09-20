@@ -103,50 +103,8 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
 
-----
-
-## 8.11
-Branch: `nilrt/21.8/sumo`
-
-The 8.11 release is a regular, quarterly release of NI LinuxRT. It primarily contains bug fixes to the OE-sumo-based release images. Most development was performed in 2022 Q1.
-
-
-### nilrt
-
-#### Added
-- [Added](https://github.com/ni/nilrt/pull/117) a `CONTRIBUTING` file with a Developer Certificate of Origin agreement.
-
-#### Fixed
-- Audited recipes throughout the meta-layers and, where needed, switched the github recipe source lines to use `https` as their transport protocol. This accommodated GitHub deprecating their `git` transport endpoints.
-
-
-### meta-nilrt
-
-#### Changed
-- [Upgraded](https://github.com/ni/meta-nilrt/pull/288) `opkg` to version `0.5.0`.
-- [Moved](https://github.com/ni/meta-nilrt/pull/327) `tbb` from the `extra/` feed to `main/`.
-- [Upgraded](https://github.com/ni/linux/pull/59) the `linux` kernel from `5.10.83-rt58` to `5.10.106-rt64`.
-    - [Fixed](https://github.com/ni/linux/commit/051c9569fc919a173fbc7a56c75efdbba3b13b8c) [an issue](https://github.com/ni/linux/issues/44) in `buildnipkg` which prohibited booting on roboRIO-2.0.
-
-#### Fixed
-- [Fixed](https://github.com/ni/meta-nilrt/pull/320) a `busybox` incompatibility in the `update-ca-certificates` script.
-- [Fixed](https://github.com/ni/meta-nilrt/pull/326) NILRT's static uid/gid assignments to deconflict static assignments from colliding with dynamically created accounts.
-- [Fixed](https://github.com/ni/meta-nilrt/pull/332) a build failure in the `libxkbcommon` package. It, and the rest of the `qtbase` dependencies should now be provided in the `main/` package feed.`
-
-
-### openembedded-core
-
-### Changed
-- [Upgraded](https://github.com/ni/openembedded-core/pull/39) `opkg` and `opkg-utils` to version `0.5.0`.
-    - `libsolv` upgraded to `0.7.17`.
-- [Upgraded](https://github.com/ni/openembedded-core/pull/42) `ca-certificates` to `20211016` to resolve a revoked Mozilla DST certificate which caused malformed codepaths to execute in openssl.
-
-### Fixed
-- [Fixed](https://github.com/ni/openembedded-core/pull/48) kernel modules being errantly marked as configuration files in opkg.
-
 
 ----
-
 
 ## 8.12
 Branch: `nilrt/22.5/sumo`
@@ -172,8 +130,7 @@ The 8.12 release is a regular, quarterly release of NI LinuxRT. It primarily con
 - [Fixed](https://github.com/ni/openembedded-core/pull/59) an issue where opkg's stderr output ends up in opkg status file.
 
 
----
-
+----
 
 ## 8.11
 Branch: `nilrt/21.8/sumo`
