@@ -25,6 +25,9 @@ Branch: `nilrt/22.8/hardknott`
 #### Removed
 - Moved styleguide information from CONTRIBUTING to meta-nilrt instead
 
+#### Fixed
+- [Fixed](https://github.com/ni/linux/pull/75) USB Ethernet breakage for cRIO-903x targets.
+
 ### meta-nilrt
 See the [feed changelog](./docs/feed-changelog.md) for all updates to packages.
 
