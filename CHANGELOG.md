@@ -112,6 +112,8 @@ Branch: `nilrt/22.5/hardknott`
 
 Branch: `nilrt/22.8/sumo`
 
+The 8.13 release is a regular release of the NI LinuxRT "sumo" mainline, supporting all ARM32 hardware.
+
 ### nilrt
 
 #### Fixed
