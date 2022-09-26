@@ -92,7 +92,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
 7. #### Building various images
 
-    **NOTE** You must build packagefeed-ni-core and package_index first to build images.
+    **NOTE** You must build packagefeed-ni-core and package-index first to build images.
 
     * Build a safemode image by running the following command:
 
