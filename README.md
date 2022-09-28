@@ -18,7 +18,18 @@ Build Steps
         git submodule init
         git submodule update --remote --checkout
 
-2. Set up your shell environment to run bitbake:
+2. [Install the docker engine](https://docs.docker.com/engine/install/) on your build host.
+    If you can successfully run `docker run hello-world`, then you have everything you should need.
+
+3.    Build (or pull) the `build-nilrt` pyrex container image.
+        ```bash
+        bash ./docker/create-build-nilrt.sh  # will tag the image as build-nilrt:${NILRT_codename}
+
+        # Verification
+        docker images build-nilrt  # should print the image you just built
+        ```
+
+3. Set up your shell environment to run bitbake:
 
     Source NILRT's environment script by running the following command:
 
@@ -44,11 +55,16 @@ of NILRT for your hardware.
     **NOTE** It's not recommended to run bitbake for different
 MACHINE's in the same workspace (build directory).
 
-3. Build the package or packages that you want for your target.
+4. Build the package or packages that you want for your target.
 For example, to build Python, Ruby, and Apache for Zynq targets, run the
 following commands:
 
         bitbake python ruby apache2
+
+    **NOTE** Some packages may have updated their default branch naming such that it no longer matches the expected value.
+    This can be fixed by updating the `SRC_URI` variable for the package to add a `branch` value.
+
+        SRC_URI = "git://github.com/fedora-sysv/initscripts;protocol=https;branch=main"
 
     To build every package in National Instruments' feed, run the
 following commands:
@@ -70,7 +86,7 @@ the following directory:
 
         tmp-glibc/deploy/ipk/...
 
-4. (Optional/Advanced) Bitbake can transform tmp-glibc/deploy/ipk/ into
+5. (Optional/Advanced) Bitbake can transform tmp-glibc/deploy/ipk/ into
 a package feed when you run the following command:
 
         bitbake package-index
@@ -86,7 +102,7 @@ to other hosts on your local network. You may need to configure your
 firewall to permit Python to access port 8080. Otherwise, the server
 will only be accessible locally on address localhost:8080.
 
-5. (Optional/Advanced) Build a bootable recovery disk by running the
+6. (Optional/Advanced) Build a bootable recovery disk by running the
 following commands:
 
         bitbake restore-mode-image
