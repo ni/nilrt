@@ -66,10 +66,9 @@ the searching starts:
    `$EXPORTS_DIR/ni/nilr/nilrt_os_common/official/export`.
 
 There is no way to select a particular version to be searched for; the script
-will always pick the version with the latest timestamp. This may be frustrating
-if work is ongoing for multiple versions. If you would like to change this
-behavior, modify the functions `get_latest_x86_64_images` and
-`get_latest_armv7_a_images`.
+will pick the latest export (according to NI's export versioning scheme) from
+latest release. If you would like to change this behavior, modify the functions
+`get_latest_x86_64_images` and `get_latest_armv7_a_images`.
 
 ### Software requirements
 Running the script requires QEMU (for x86_64 guests) and an SSH client to be
