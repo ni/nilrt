@@ -33,8 +33,8 @@ trap cleanup EXIT
 SSH_OPTIONS="-q -o StrictHostKeyChecking=no -o UpdateHostKeys=no"
 
 identify_latest() {
-    local latest_majmin="$(ls -t "$2" | head -1)"
-    local latest_export="$(ls -t "$2/$latest_majmin" | head -1)"
+    local latest_majmin="$(ls -r "$2" | head -1)"
+    local latest_export="$(ls -t "$2/$latest_majmin" | sed 'y/dabf/wxyz/' | sort -rV | sed 'y/wxyz/dabf/' | head -1)"
     log "Latest export under $2 is $latest_export"
     echo "$2/$latest_majmin/$latest_export"
 }
