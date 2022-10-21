@@ -8,7 +8,7 @@ SCRIPT_ROOT=$(realpath $(dirname $BASH_SOURCE))
 
 function usage() {
     cat <<EOF
-$(basename $0) [-h] [-a]
+$(basename $0) [-h] [-a] [-d NILRT_ROOT]
 
 Get information on the specific commit versions for NILRT components after a build.
 
@@ -17,11 +17,15 @@ Get information on the specific commit versions for NILRT components after a bui
     Print this message and exit.
 -a
     Include all SRCREVs and not just AUTOREVs.
+-d NILRT_ROOT
+    Specify the nilrt repository root if the build directory is not contained in 
+    a subdirectory of the nilrt repository.
 EOF
 }
 
 buildhistory_opts=
-while getopts ":ho:a" opt; do
+nilrt_root=
+while getopts ":had:" opt; do
     case $opt in
         h )
             usage >&1
@@ -29,6 +33,13 @@ while getopts ":ho:a" opt; do
             ;;
         a )
             buildhistory_opts="-a"
+            ;;
+        d )
+            nilrt_root="${OPTARG}"
+            ;;
+        \: )
+            echo "ERROR: Missing argument for option -${OPTARG}." >&2
+            exit 1
             ;;
         \? )
             echo "ERROR: Invalid option -${OPTARG}." >&2
@@ -40,8 +51,10 @@ shift $(($OPTIND - 1))
 
 # Gets nilrt and submodule repo hashes.
 function get_repo_hashes() {
+    pushd "${nilrt_root}" &> /dev/null
     local nilrt_rev=$(git rev-parse HEAD)
     local submodule_status=$(git submodule status)
+    popd &> /dev/null
     cat <<EOF
 # git repo hashes for nilrt and submodules.
 # Checkout these commits to use the same versions as this build.
