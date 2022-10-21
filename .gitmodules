@@ -13,7 +13,7 @@
 [submodule "sources/meta-nilrt"]
 	path = sources/meta-nilrt
 	url = ../meta-nilrt.git
-	branch = nilrt/master/hardknott
+	branch = nilrt/master/kirkstone
 [submodule "sources/meta-selinux"]
 	path = sources/meta-selinux
 	url = ../meta-selinux.git
