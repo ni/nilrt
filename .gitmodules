@@ -66,6 +66,10 @@
 	path = sources/meta-rauc
 	url = ../meta-rauc.git
 	branch = nilrt-academic/master/sumo
+[submodule "sources/meta-xilinx"]
+	path = sources/meta-xilinx
+	url = ../meta-xilinx.git
+	branch = nilrt-academic/master/sumo
 [submodule "sources/pyrex"]
 	path = sources/pyrex
 	url = ../pyrex.git
