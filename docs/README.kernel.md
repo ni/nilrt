@@ -1,4 +1,4 @@
-# ﻿NI Linux Real-Time Kernel Source README
+# NI Linux Real-Time Kernel Source README
 
 ## Introduction
 
