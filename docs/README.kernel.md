@@ -46,14 +46,14 @@ apt-get update && apt-get install -y \
 
 1. Clone the source from github.com/ni/linux.
 
-    ```
+    ```bash
     git clone https://github.com/ni/linux.git
     cd linux
     ```
 
 2. Checkout the branch that corresponds to the release you are using.
 
-    ```
+    ```bash
     git checkout nilrt/<release>/4.14
     ```
 
@@ -79,11 +79,11 @@ machines. Building the kernel is presently only supported on Linux.
 
 ### Compiling and Installing the kernel
 
-For x64-based targets:
+#### x86_64 Targets
 
 1. Set the kernel configuration to match NI’s settings.
 
-    ```
+    ```bash
     export ARCH=x86_64
     export CROSS_COMPILE=/path/to/toolchain/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-
     make nati_x86_64_defconfig
@@ -91,21 +91,21 @@ For x64-based targets:
 
 2. Compile the kernel.
 
-    ```
-    make -j<number_of_parallel_jobs> bzImage modules
+    ```bash
+    make -j$(nproc) bzImage modules
     make modules_install INSTALL_MOD_PATH=<temporary_host_side_modules_location>
     ```
 
 3. (optional) Backup /boot/runmode/bzImage on the target.
 
-    ```
+    ```bash
     cd /boot/runmode/
     mv bzImage bzImage-`uname -r`
     ```
 
 4. Copy the new kernel to the target.
 
-    ```
+    ```bash
     scp arch/x86/boot/bzImage admin@<target>:/boot/runmode/
     cd <temporary_host_side_modules_location>
     tar cz lib | ssh admin@<target> tar xz -C /
@@ -117,21 +117,22 @@ not follow the symlinks.
 
 5. Reboot the target.
 
-    ```
+    ```bash
     reboot
     ```
 
 6. (optional) Check version of the updated kernel on the target.
 
-    ```
+    ```bash
     uname -a
     ```
 
-For ARM-based targets:
+
+#### ARM32 Targets
 
 1. Set the kernel configuration to match NI’s settings.
 
-    ```
+    ```bash
     export ARCH=arm
     export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
     make nati_zynq_defconfig
@@ -139,13 +140,13 @@ For ARM-based targets:
 
 2. Compile the kernel.
 
-    ```
+    ```bash
     make ni-pkg
     ```
 
 3. Copy the new kernel to the target.
 
-    ```
+    ```bash
     scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@<target>:/boot/linux_runmode.itb
     cd ni-install/arm/lib/modules/
     tar cz lib | ssh admin@<target> tar xz -C /
@@ -157,13 +158,13 @@ not follow the symlinks.
 
 5. Reboot the target.
 
-    ```
+    ```bash
     reboot
     ```
 
 6. (optional) Check version of the updated kernel on the target.
 
-    ```
+    ```bash
     uname -a
     ```
 
@@ -180,13 +181,13 @@ the host build machine.
 
 1. Start the sshd daemon on the host.
 
-    ```
+    ```bash
     sudo systemctl start sshd
     ```
 
 2. Install sshfs on the target.
 
-    ```
+    ```bash
     opkg update
     opkg install sshfs-fuse
     modprobe fuse
@@ -194,14 +195,14 @@ the host build machine.
 
 3. Mount the kernel source on the target.
 
-    ```
+    ```bash
     mkdir /usr/src/linux
     sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
     ```
 
 4. Fix dangling build and source symlinks.
 
-    ```
+    ```bash
     cd /lib/modules/`uname -r`/
     rm build source
     ln -s /usr/src/linux source
@@ -210,7 +211,7 @@ the host build machine.
 
 5. Prepare the tools needed for dkms.
 
-    ```
+    ```bash
     cd /lib/modules/`uname -r`/build
     make prepare
     make modules_prepare
@@ -220,7 +221,7 @@ the host build machine.
 
 6. Re-version the NI modules.
 
-    ```
+    ```bash
     dkms autoinstall
     ```
 
@@ -231,11 +232,12 @@ with the gcc version on the target. Check the output logs under:
 
 7. (optional) Check dkms status.
 
-    ```
+    ```bash
     dkms status
     ```
 
 8. Reboot the target.
+
 
 **HELP! MY TARGET DOESN'T BOOT!**
 
