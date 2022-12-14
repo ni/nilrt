@@ -11,11 +11,35 @@ provided by National Instruments may not have the same performance,
 determinism, features, or basic functionality.
 
 
-### Requirements
+### Build Host Requirements
 
 A Linux machine to build the kernel with:
-- GNU Make installed
-- u-boot-tools package installed (for ARM)
+- the [`git`](https://git-scm.com/) source control tool.
+- the [GNU make](https://www.gnu.org/software/make/) build tool.
+- the [GNU Compiler Collection](https://gcc.gnu.org/) (gcc).
+- the GNU `bc` tool.
+- the [flex](https://github.com/westes/flex) tool.
+- the [bison](https://www.gnu.org/software/bison/) parser.
+- the `depmod` kernel module tool.
+- (ARM only) the u-boot-tools (`mkimage`, `dumpimage`, et c.)
+- headers for: `libelf` and `libssl`
+
+On Debian/Ubuntu, you can satisfy the above dependencies like:
+
+```bash
+apt-get update && apt-get install -y \
+	bc \
+	bison \
+	flex \
+	gcc \
+	git \
+	kmod \
+	libelf-dev \
+	libssl-dev \
+	make \
+	u-boot-tools \
+""
+```
 
 
 ## Downloading the Source
