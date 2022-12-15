@@ -51,6 +51,7 @@ if [ -z "$NILRT_codename" ]; then
 	echo "ERROR: could not parse NILRT_codename from the meta-nilrt layer." >&2
 	exit 1
 else
+	NILRT_codename="academic-${NILRT_codename}"
 	echo "INFO: using NILRT_codename=${NILRT_codename}"
 fi
 
