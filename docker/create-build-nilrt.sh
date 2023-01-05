@@ -9,26 +9,38 @@ IMAGE_NAME=build-nilrt
 
 usage() {
 	cat >&2 <<EOF
-$(basename) [TAG_BRANCH] [TAG_CODENAME]
+$(basename) [-c TAG_CODENAME] [TAG_BRANCH]
 Creates a new build-nilrt container based on the garmin/pyrex containers, and
 tags it with the current nilrt.git repo shorthash, as 'latest', and
 (optionally) with the current OE branch name.
+
+Arguments:
+-c, --codename  The codename (e.g. 'hardknott') of the meta-nilrt.git repo. If
+                not set, the codename will be parsed from meta-nilrt's
+                layer.conf.
 
 Positionals:
 TAG_BRANCH  The 'branch' name of the current nilrt.git repo (eg. 'dunfell'). If
             not set, the docker container will not be tagged with the branch
             name.
-TAG_CODENAME  The codename (e.g. 'hardknott') of the meta-nilrt.git repo. If not
-              set, the codename will be parsed from meta-nilrt's layer.conf.
 EOF
 	exit ${1:-2}
 }
 
+tag_codename=""
 positionals=()
 while [ $# -ge 1 ]; do case "$1" in
 	-h|--help)
 		usage 0
 		;;
+        -c|--codename)
+            shift
+            if [ $# -lt 1 -o ! -z "$tag_codename" ]; then
+                usage
+            fi
+            tag_codename="$1"
+            shift
+            ;;
 	*)
 		positionals+=($1)
 		shift
@@ -40,7 +52,6 @@ set -x
 
 # consume positionals
 tag_branch=${positionals[0]:-}
-tag_codename=${positionals[1]:-}
 
 
 # parse out the short git hash, to tag this image with the current commit
