@@ -10,11 +10,62 @@ The evergreen, canonical changelog for *all NILRT branches* can be [found here](
 
 To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
 
-## [Unreleased]
-Branch: `nilrt/master/hardknott`
 
 ----
+## 9.2
+Branch: `nilrt/23.0/hardknott`
 
+
+### nilrt
+- The cross-compile toolchain build target - which was previously exported manually to the [ni.com support section](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-x64.html#338442) - can now be built directly from OE using the `:scripts/pipeline/build.toolchain.sh` script.
+
+
+#### Added
+- [Added](https://github.com/ni/nilrt/pull/197) a new pipeline script to build the NILRT toolchain *for linux* (`meta-toolchain` target).
+- [Added](https://github.com/ni/nilrt/pull/199) a new pipeline script to build the NILRT toolchain *for Windows*.
+- [Re-added](https://github.com/ni/nilrt/pull/198) the `meta-mingw` layer, since it is once again needed to build the meta-toolchain target.
+
+
+#### Deprecated
+- [Removed](https://github.com/ni/nilrt/pull/180) deprecated dist-feed creation scripts.
+
+
+### meta-nilrt
+- Meta-nilrt now supports building the `meta-toolchain` target.
+
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/463) the `ni-configpersistentlogs` package, which will force system logs to persist between reboots when [enabled via nirtcfg](https://nilrt-docs.ni.com/troubleshooting/logs.html#enabling-persistent-logs).
+- [Added](https://github.com/ni/meta-nilrt/pull/495) `meta-mingw` to the bblayers.
+
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/465) the `linux-nilrt-next` preview kernel to 6.0.
+- Small recipe `SRC_URI` fixes throughout this release to accommodate upstream Github branch changes.
+  - [lsb](https://github.com/ni/meta-nilrt/pull/466)
+- In preparation for Yocto "kirkstone" support, [updated](https://github.com/ni/meta-nilrt/pull/467) meta-nilrt recipes to use the new variable override syntax.
+- ptest changes
+  - [Generally improved](https://github.com/ni/meta-nilrt/pull/476) the accuracy of the `test_kernel_security` ptest in `kernel-tests`.
+  - i915 ptests are now [skipped](https://github.com/ni/meta-nilrt/pull/479) on devices without an i915 video adapter.
+  - [Added](https://github.com/ni/meta-nilrt/pull/478) new ptest to `kernel-tests` which validates serial port numbers.
+  - Added several new ptests and changed some performance ptest workflows to upload their results to NI-domain test aggregation services. In non-NI environments, these tests should gracefully avoid sending out this data.
+- [Moved](https://github.com/ni/meta-nilrt/pull/487/commits/ed1dae490a5ffdbe40a18b2b669a2b994cef1df5) the `ntp` package to `packagegroup-ni-desirable`.
+
+
+#### Deprecated
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/474) the NI-specific `Packages.filelist` feed file, because it was unused.
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/486) ARM- and `nilrt-nxg`-specific recipe logic in several recipes.
+
+
+#### Fixed
+- [Removed](https://github.com/ni/meta-nilrt/pull/475) a non-existent dependency which blocked installation of the `util-linux-nilrt-ptest` package.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/517) a bug in opkg GPG key validation where package indexes fail to validate if the system clock time is too far in the past.
+
+
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/481) unused and unsupported recipes: `opencv`, `ptest-runner`, `nisdbootconfig`, and `expand-disk`.
+
+----
 ## 9.1
 Branch: `nilrt/22.8/hardknott`
 
@@ -107,7 +158,17 @@ Branch: `nilrt/22.5/hardknott`
 
 
 ----
+## 8.14
+Branch: `nilrt/23.0/sumo`
 
+
+### meta-nilrt
+
+#### Deprecated
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/488) the NI-specific `Packages.filelist` feed file, because it was unused.
+
+
+----
 ## 8.13
 
 Branch: `nilrt/22.8/sumo`
