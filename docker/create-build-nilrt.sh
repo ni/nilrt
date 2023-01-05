@@ -9,7 +9,7 @@ IMAGE_NAME=build-nilrt
 
 usage() {
 	cat >&2 <<EOF
-$(basename) [TAG_BRANCH]
+$(basename) [TAG_BRANCH] [TAG_CODENAME]
 Creates a new build-nilrt container based on the garmin/pyrex containers, and
 tags it with the current nilrt.git repo shorthash, as 'latest', and
 (optionally) with the current OE branch name.
@@ -18,6 +18,8 @@ Positionals:
 TAG_BRANCH  The 'branch' name of the current nilrt.git repo (eg. 'dunfell'). If
             not set, the docker container will not be tagged with the branch
             name.
+TAG_CODENAME  The codename (e.g. 'hardknott') of the meta-nilrt.git repo. If not
+              set, the codename will be parsed from meta-nilrt's layer.conf.
 EOF
 	exit ${1:-2}
 }
@@ -38,6 +40,7 @@ set -x
 
 # consume positionals
 tag_branch=${positionals[0]:-}
+tag_codename=${positionals[1]:-}
 
 
 # parse out the short git hash, to tag this image with the current commit
@@ -45,14 +48,16 @@ pushd "${SCRIPT_ROOT}"
 short_hash=$(git rev-parse --short HEAD)
 popd
 
-# parse the NIRLT codename from the meta-nilrt:layer.conf
-NILRT_codename=$(grep -e '^LAYERSERIES_COMPAT_meta-nilrt' "${SCRIPT_ROOT}/../sources/meta-nilrt/conf/layer.conf" | cut -d'"' -f2)
-if [ -z "$NILRT_codename" ]; then
-	echo "ERROR: could not parse NILRT_codename from the meta-nilrt layer." >&2
-	exit 1
-else
-	NILRT_codename="academic-${NILRT_codename}"
-	echo "INFO: using NILRT_codename=${NILRT_codename}"
+# optionally parse the NIRLT codename from the meta-nilrt:layer.conf
+if [ -z "${tag_codename}" ]; then
+	NILRT_codename=$(grep -e '^LAYERSERIES_COMPAT_meta-nilrt' "${SCRIPT_ROOT}/../sources/meta-nilrt/conf/layer.conf" | cut -d'"' -f2)
+	if [ -z "$NILRT_codename" ]; then
+		echo "ERROR: could not parse NILRT_codename from the meta-nilrt layer." >&2
+		exit 1
+	else
+		NILRT_codename="academic-${NILRT_codename}"
+		echo "INFO: using NILRT_codename=${NILRT_codename}"
+	fi
 fi
 
 
