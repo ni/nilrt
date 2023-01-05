@@ -27,7 +27,7 @@ EOF
 	exit ${1:-2}
 }
 
-tag_codename=""
+NILRT_codename=""
 positionals=()
 while [ $# -ge 1 ]; do case "$1" in
 	-h|--help)
@@ -35,10 +35,10 @@ while [ $# -ge 1 ]; do case "$1" in
 		;;
         -c|--codename)
             shift
-            if [ $# -lt 1 -o ! -z "$tag_codename" ]; then
+            if [ $# -lt 1 -o ! -z "$NILRT_codename" ]; then
                 usage
             fi
-            tag_codename="$1"
+            NILRT_codename="$1"
             shift
             ;;
 	*)
@@ -60,7 +60,7 @@ short_hash=$(git rev-parse --short HEAD)
 popd
 
 # optionally parse the NIRLT codename from the meta-nilrt:layer.conf
-if [ -z "${tag_codename}" ]; then
+if [ -z "${NILRT_codename}" ]; then
 	NILRT_codename=$(grep -e '^LAYERSERIES_COMPAT_meta-nilrt' "${SCRIPT_ROOT}/../sources/meta-nilrt/conf/layer.conf" | cut -d'"' -f2)
 	if [ -z "$NILRT_codename" ]; then
 		echo "ERROR: could not parse NILRT_codename from the meta-nilrt layer." >&2
