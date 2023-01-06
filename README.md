@@ -17,6 +17,16 @@ RT devices - including custom Linux kernels and kernel modules.
 
 Additional community documentation can be found at https://nilrt-docs.ni.com.
 
+
+### Mainlines
+
+This project currently has four concurrent development mainlines (sorry). They are, in short:
+* `nilrt/master/hardknott` - the current **x64** dev HEAD
+* `nilrt/master/kirkstone` - the next-major **x64** rebase HEAD
+* `nilrt/master/sumo` - the current **arm32** dev HEAD
+* `nilrt-academic/master/sumo` - a forked **arm32** HEAD for [FIRST Robotics Competition](https://www.firstinspires.org/robotics/frc)
+
+
 ## Entering the Bitbake Build Environment
 
 This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transparently provide most of the toolchain requirements needed to run bitbake. However, there are are still a few setup steps.
