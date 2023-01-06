@@ -11,7 +11,7 @@ The OE-layers used by the project are also available under the [github.com/ni](h
 
 Current Project Maintainers:
 * Alex Stewart <[alex.stewart@ni.com](mailto:alex.stewart@ni.com)> [[Github](https://github.com/amstewart)]
-* Shruthi Ravichandran <[shruthi.ravichandran@ni.com](mailto:shruthi.ravichandran@ni.com)> [[Github](https://github.com/shruthi-ravi)]
+* Chaitanya Vadrevu <[chaitanya.vadrevu@ni.com](mailto:chaitanya.vadrevu@ni.com)> [[Github](https://github.com/chaitu236)]
 * The NI RTOS Team <[RTOS@ni.com](mailto:RTOS@ni.com)>
 
 
