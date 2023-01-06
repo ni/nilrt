@@ -21,6 +21,8 @@ To support rolling product development, NILRT frequently maintains multiple main
 
 NILRT follows a mainline-branch model. Near a release, the project maintainers create a product branch for stable production builds. The branches are named `nilrt/${ni_release}/${oe_stable}` like `nilrt/20.6/sumo`, and are only open to necessary bug fixes and security backports relevant to the product release.
 
+See the [project README](../README.md) for list of the currently active mainline refs.
+
 
 ### Contributing Patches
 
