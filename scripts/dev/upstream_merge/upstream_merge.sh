@@ -4,7 +4,11 @@
 # repos described in repos.conf
 #
 # For each local repo, it does following
-# 1. Check if local_base_branch specified in repos.conf exists
+# 1. [Skippable] Check if local_base_branch specified in repos.conf exists
+#    a. When trying to merge with upstream on a branch that's not the default, one first needs to
+#    run checkout in each submodule. We already run a checkout but typically do a sanity check
+#    first. In the case you aren't on the default release, you can add -f to go ahead and force the
+#    checkout, skipping the sanity check
 # 2. Checkout local_base_branch and run git pull
 # 3. Add a 'remote' named 'automerge_upstream'
 #    a. If the remote already exists, remove it first
@@ -19,6 +23,7 @@ CONF_FILE="$DIR/repos.conf"
 
 REMOTE_REPO_NAME="automerge_upstream"
 LOCAL_BRANCH_NAME="dev/automerge/ni"
+FORCE_CHECKOUT=""
 
 usage() {
    echo "Usage: $0 [-c <conf file>][-h] " 1>&2
@@ -27,10 +32,13 @@ usage() {
 parse_args() {
    local OPTIND o
 
-   while getopts "c:h" o; do
+   while getopts "c:fh" o; do
       case "${o}" in
          c)
             CONF_FILE=${OPTARG}
+            ;;
+         f)
+            FORCE_CHECKOUT="true"
             ;;
          h)
             usage
@@ -48,7 +56,10 @@ parse_args() {
 sanity_test_repo() {
    local LOCAL_BASE_BRANCH=$1
 
-   if ! $(git rev-parse --verify $LOCAL_BASE_BRANCH &> /dev/null); then
+   if [ "$FORCE_CHECKOUT" != "" ]; then
+      echo ""
+      echo "    Force checkout enabled. Skipping sanity check."
+   elif ! $(git rev-parse --verify $LOCAL_BASE_BRANCH &> /dev/null); then
       echo ""
       echo "    Branch $LOCAL_BASE_BRANCH does not exist. Exiting"
       exit 1
