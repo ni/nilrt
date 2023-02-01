@@ -12,6 +12,7 @@ The OE-layers used by the project are also available under the [github.com/ni](h
 Current Project Maintainers:
 * Alex Stewart <[alex.stewart@ni.com](mailto:alex.stewart@ni.com)> [[Github](https://github.com/amstewart)]
 * Chaitanya Vadrevu <[chaitanya.vadrevu@ni.com](mailto:chaitanya.vadrevu@ni.com)> [[Github](https://github.com/chaitu236)]
+* Charlie Johnston <[charlie.johnston@ni.com](mailto:charlie.johnston@ni.com)> [[Github](https://github.com/SparkingSpork/)]
 * The NI RTOS Team <[RTOS@ni.com](mailto:RTOS@ni.com)>
 
 
