@@ -9,11 +9,214 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 
-## [Unreleased]
-Branch: `nilrt/master/sumo`
+----
+## 9.3
+Branch: `nilrt/23.3/hardknott`
+
+The NILRT 9.3 release is a regular quarterly release of the distribution, based on OE "hardknott". The majority of changes in this release are improvements to the NI-internal functional and performance validation test suites.
+
+
+### nilrt
+#### Changed
+- The `create-build-nilrt.sh` script [now allows](https://github.com/ni/nilrt/pull/213) the user to override the NILRT codename (image tag).
+- Opkg feed signing now [uses the 2023 signing key](https://github.com/ni/meta-nilrt/pull/535).
+
+
+### meta-nilrt
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/541) the `nvme-cli` package to the extras/ feed.
+
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/515) `dkms` recipe version to v3.0.9, to consume upstream improvements to autoinstall error handling.
+- [Moved](https://github.com/ni/meta-nilrt/pull/518) the `rwlockbomb` test to its own package, as it was not reliable-enough for inclusion in the `glibc-tests` package.
+- The RT priority of `irq_work` threads is now [set](https://github.com/ni/meta-nilrt/pull/504) to 15 in `rtctl`.
+
+
+#### Deprecated
+- [Removed](https://github.com/ni/meta-nilrt/pull/519) the `irq_test_priority.sh` ptest, as the NI-specific linux subcomponent it was testing has [been deprecated](https://github.com/ni/linux/pull/91) in the kernel.
+
+
+----
+## 9.2
+Branch: `nilrt/23.0/hardknott`
+
+
+### nilrt
+- The cross-compile toolchain build target - which was previously exported manually to the [ni.com support section](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-x64.html#338442) - can now be built directly from OE using the `:scripts/pipeline/build.toolchain.sh` script.
+
+
+#### Added
+- [Added](https://github.com/ni/nilrt/pull/197) a new pipeline script to build the NILRT toolchain *for linux* (`meta-toolchain` target).
+- [Added](https://github.com/ni/nilrt/pull/199) a new pipeline script to build the NILRT toolchain *for Windows*.
+- [Re-added](https://github.com/ni/nilrt/pull/198) the `meta-mingw` layer, since it is once again needed to build the meta-toolchain target.
+
+
+#### Deprecated
+- [Removed](https://github.com/ni/nilrt/pull/180) deprecated dist-feed creation scripts.
+
+
+### meta-nilrt
+- Meta-nilrt now supports building the `meta-toolchain` target.
+
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/463) the `ni-configpersistentlogs` package, which will force system logs to persist between reboots when [enabled via nirtcfg](https://nilrt-docs.ni.com/troubleshooting/logs.html#enabling-persistent-logs).
+- [Added](https://github.com/ni/meta-nilrt/pull/495) `meta-mingw` to the bblayers.
+
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/465) the `linux-nilrt-next` preview kernel to 6.0.
+- Small recipe `SRC_URI` fixes throughout this release to accommodate upstream Github branch changes.
+  - [lsb](https://github.com/ni/meta-nilrt/pull/466)
+- In preparation for Yocto "kirkstone" support, [updated](https://github.com/ni/meta-nilrt/pull/467) meta-nilrt recipes to use the new variable override syntax.
+- ptest changes
+  - [Generally improved](https://github.com/ni/meta-nilrt/pull/476) the accuracy of the `test_kernel_security` ptest in `kernel-tests`.
+  - i915 ptests are now [skipped](https://github.com/ni/meta-nilrt/pull/479) on devices without an i915 video adapter.
+  - [Added](https://github.com/ni/meta-nilrt/pull/478) new ptest to `kernel-tests` which validates serial port numbers.
+  - Added several new ptests and changed some performance ptest workflows to upload their results to NI-domain test aggregation services. In non-NI environments, these tests should gracefully avoid sending out this data.
+- [Moved](https://github.com/ni/meta-nilrt/pull/487/commits/ed1dae490a5ffdbe40a18b2b669a2b994cef1df5) the `ntp` package to `packagegroup-ni-desirable`.
+
+
+#### Deprecated
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/474) the NI-specific `Packages.filelist` feed file, because it was unused.
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/486) ARM- and `nilrt-nxg`-specific recipe logic in several recipes.
+
+
+#### Fixed
+- [Removed](https://github.com/ni/meta-nilrt/pull/475) a non-existent dependency which blocked installation of the `util-linux-nilrt-ptest` package.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/517) a bug in opkg GPG key validation where package indexes fail to validate if the system clock time is too far in the past.
+
+
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/481) unused and unsupported recipes: `opencv`, `ptest-runner`, `nisdbootconfig`, and `expand-disk`.
+
+----
+## 9.1
+Branch: `nilrt/22.8/hardknott`
+
+### nilrt
+
+#### Added
+- Added NILRT GRUB version 22.8 to dist feed
+- Added scripts to diff feeds between NILRT releases
+
+#### Removed
+- Moved styleguide information from CONTRIBUTING to meta-nilrt instead
+
+#### Fixed
+- [Fixed](https://github.com/ni/linux/pull/75) USB Ethernet breakage for cRIO-903x targets.
+
+### meta-nilrt
+See the [feed changelog](./docs/feed-changelog.md) for all updates to packages.
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/427) `dkms`.
+  - [Upgraded](https://github.com/ni/meta-nilrt/pull/455) to v3.0.6.
+- [Added](https://github.com/ni/meta-nilrt/pull/450) a boot-time message to display the CPLD reset source.
+
+#### Changed
+- In `packagegroup-ni-base`:
+  - [Added](https://github.com/ni/meta-nilrt/pull/419) `modutils-initscripts`.
+  - [Added](https://github.com/ni/meta-nilrt/pull/429) `efibootmgr`.
+- [Removed](https://github.com/ni/meta-nilrt/pull/422) `ni-rtlog` from the base image.
+  - [Removed](https://github.com/ni/meta-nilrt/pull/434) the now-unnecessary `ni-lv2020` feed.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/432) Linux kernel version to 5.15.
+- [Added](https://github.com/ni/meta-nilrt/pull/435) configuration file for `libpam`.
+- [Replaced](https://github.com/ni/meta-nilrt/pull/452) per-mitigation configuration options with a global toggle. If subsets of mitigations are desired, a configuration file is available.
+- [Enabled](https://github.com/ni/meta-nilrt/pull/453) unlimited core dumps for debugging use cases.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/424) `openvpn` wrapper scripts sourcing configuration from an incorrect location.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/425) `getty` running on preexisting ttys.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/430) `xfce-nilrt-settings` referring to an incorrect location, which prevented programs from showing up in right-click menus.
+
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/439) several connectivity packages.
+- [Removed](https://github.com/ni/meta-nilrt/pull/440) several devtool packages.
 
 ----
 
+## 9.0
+Branch: `nilrt/22.5/hardknott`
+
+### nilrt
+
+#### Added
+- Added [Pyrex](https://github.com/garmin/pyrex) usage for build containers to manage dependencies and versions.
+
+#### Changed
+- Rebased OE layer submodules from the OE/`sumo` release stable branches, to the OE/`hardknott` branches - where available.
+  - A full list of the upstream changes between OE/sumo (yocto 2.5) and OE/hardknott (yocto 3.3) can be found in the Yocto project documentation's [Migration Guide](https://docs.yoctoproject.org/migration-guides/index.html).
+  - glibc is [kept at 2.24](https://github.com/ni/openembedded-core/pull/56) (`sumo` version) as 2.33 (`hardknott`'s version) has a locking bug on RT applications.
+- Upgraded the bitbake submodule to bitbake `1.50.2`.
+- [Upgraded](https://github.com/ni/nilrt/pull/73) the nilrt-build dockerfile to a debian 10 base.
+  - Added a more user-friendly way to enter the docker build container using `docker-compose`.
+- [Updated](https://github.com/ni/meta-nilrt/pull/377) inode size in filesystem to support dates past year 2038.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/308) an issue where SSH sessions were not properly closed on reboot or shutdown.
+
+#### Removed
+- Removed the following OpenEmbedded Layers either because they were abandoned upstream, or because official support was dropped within NILRT.
+  - [meta-ivi](https://github.com/ni/nilrt/pull/119).
+  - [meta-java](https://github.com/ni/nilrt/pull/120).
+  - [meta-measured](https://github.com/ni/nilrt/pull/127).
+  - [meta-mingw](https://github.com/ni/nilrt/pull/124).
+  - [meta-mono](https://github.com/ni/nilrt/pull/123).
+
+### meta-nilrt
+
+#### Changed
+- `gcc` has been upgraded to version `10.2`.
+- `openssl` has been upgraded to `1.1.1k`.
+- `python2` support has been totally deprecated in favor of `python3`.
+- [Replaced](https://github.com/ni/meta-nilrt/pull/316) `packagegroup-ni-xfce` with `packagegroup-ni-graphical` which includes the former.
+- [Upgraded](https://github.com/ni/linux/pull/64) the `linux` kernel to `5.10.115-rt67`.
+- Changed the available images to build. The following images are recommended when building NI Linux Real-Time.
+  - `nilrt-base-system-image` - The base system image for runmode.
+  - `nilrt-recovery-media` - The recovery media/safemode installation iso.
+
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/277) the `restore` images and `lvcomms` images. The distributions that required these images are not supported in newer versions.
+- [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
+- [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
+
+
+----
+## 8.15
+Branch: `nilrt/23.3/sumo`
+
+### nilrt
+#### Changed
+- Opkg feed signing now [uses the 2023 signing key](https://github.com/ni/meta-nilrt/pull/537).
+
+
+----
+## 8.14
+Branch: `nilrt/23.0/sumo`
+
+
+### meta-nilrt
+
+#### Deprecated
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/488) the NI-specific `Packages.filelist` feed file, because it was unused.
+
+
+----
+## 8.13
+
+Branch: `nilrt/22.8/sumo`
+
+The 8.13 release is a regular release of the NI LinuxRT "sumo" mainline, supporting all ARM32 hardware.
+
+### nilrt
+
+#### Fixed
+- [Fixed](https://github.com/ni/nilrt/commit/979c1003) an error in the extra feed build pipeline script which referenced the wrong recipe name.
+
+
+----
 
 ## 8.12
 Branch: `nilrt/22.5/sumo`
