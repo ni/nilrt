@@ -12,6 +12,34 @@ To see changes to each individual package in the core feed, check out the [feed 
 
 
 ----
+## 9.3
+Branch: `nilrt/23.3/hardknott`
+
+The NILRT 9.3 release is a regular quarterly release of the distribution, based on OE "hardknott". The majority of changes in this release are improvements to the NI-internal functional and performance validation test suites.
+
+
+### nilrt
+#### Changed
+- The `create-build-nilrt.sh` script [now allows](https://github.com/ni/nilrt/pull/213) the user to override the NILRT codename (image tag).
+- Opkg feed signing now [uses the 2023 signing key](https://github.com/ni/meta-nilrt/pull/535).
+
+
+### meta-nilrt
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/541) the `nvme-cli` package to the extras/ feed.
+
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/515) `dkms` recipe version to v3.0.9, to consume upstream improvements to autoinstall error handling.
+- [Moved](https://github.com/ni/meta-nilrt/pull/518) the `rwlockbomb` test to its own package, as it was not reliable-enough for inclusion in the `glibc-tests` package.
+- The RT priority of `irq_work` threads is now [set](https://github.com/ni/meta-nilrt/pull/504) to 15 in `rtctl`.
+
+
+#### Deprecated
+- [Removed](https://github.com/ni/meta-nilrt/pull/519) the `irq_test_priority.sh` ptest, as the NI-specific linux subcomponent it was testing has [been deprecated](https://github.com/ni/linux/pull/91) in the kernel.
+
+
+----
 ## 9.2
 Branch: `nilrt/23.0/hardknott`
 
@@ -155,6 +183,15 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/277) the `restore` images and `lvcomms` images. The distributions that required these images are not supported in newer versions.
 - [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
+
+
+----
+## 8.15
+Branch: `nilrt/23.3/sumo`
+
+### nilrt
+#### Changed
+- Opkg feed signing now [uses the 2023 signing key](https://github.com/ni/meta-nilrt/pull/537).
 
 
 ----
