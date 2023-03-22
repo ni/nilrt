@@ -10,6 +10,7 @@
 #     4. Compare the packages to each other
 #     5. Generate JSON report
 
+import re
 import sys
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 from requests import get, Response
@@ -170,22 +171,26 @@ def get_feed_and_vers(branch_name: str) -> str:
     file: str = request.text
 
     # Get the lines in the file that have the feed info and version info
-    feed_line: str = ''
-    vers_line: str = ''
+    feed: str = None
+    vers: str = None
+    feed_re: re.Pattern = re.compile('^NILRT_FEED_NAME\s*\??=\s*"([^"]*)"$')
+    vers_re: re.Pattern = re.compile('^DISTRO_VERSION\s*\??=\s*"([^"]*)"$')
     for line in file.split('\n'):
-        if line.startswith('NILRT_FEED_NAME = '):
-            feed_line = line.strip()
-        if line.startswith('DISTRO_VERSION = '):
-            vers_line = line.strip()
-        if feed_line != '' and vers_line != '':
+        feed_match: re.Match = feed_re.match(line)
+        if feed_match is not None:
+            feed = feed_match.group(1)
+        vers_match: re.Match = feed_re.match(line)
+        if vers_match is not None:
+            vers = vers_match.group(1)
+        if feed is not None and vers is not None:
             break
 
-    if len(feed_line) < 21:
+    if feed is None:
         raise InvalidBranchFileError(branch_name, GITHUB_CONF_FNAME)
-    if len(vers_line) < 20:
+    if vers is None:
         raise InvalidBranchFileError(branch_name, GITHUB_CONF_FNAME)
 
-    return (feed_line[19:-1], vers_line[18:-1])
+    return (feed, vers)
 
 def get_packages(
     feed_url_base: str, feed_version: str, feed_name: str, sub_feed: str, branch_name: str
