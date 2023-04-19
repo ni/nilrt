@@ -144,7 +144,7 @@ cd linux
 ```
 
 
-### Using the Tools
+## Using the Tools
 
 You can use any cross-compilation toolchain of your choosing, or you can
 download the toolchains from ni.com, or build them yourself.
@@ -164,50 +164,107 @@ machines. Building the kernel is presently only supported on Linux.
 
 #### x86_64 Targets
 
-1. Set the kernel configuration to match NI’s settings.
+##### Building the kernel
 
-    ```bash
-    export ARCH=x86_64
-    export CROSS_COMPILE=/path/to/toolchain/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-
-    make nati_x86_64_defconfig
-    ```
+1. Create the configuration for the kernel.
+
+   - Make sure that the appropriate environment variables are defined
+     for cross-compilation:
+
+     ```bash
+     export ARCH=x86_64
+     export CROSS_COMPILE=/path/to/toolchain/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-
+     ```
+
+   - Start with a configuration matching NI's settings:
+
+     ```bash
+     make nati_x86_64_defconfig
+     ```
+
+   - If it is desirable to adjust the kernel configuration (this is
+     uncommon), the `menuconfig` target can be used to open a curses
+     interface:
+
+     ```bash
+     make menuconfig
+     ```
+
+     For example, to use this menu to adjust the maximum number of
+     serial ports, navigate to `Device Drivers`, then `Character
+     devices`, then `Serial drivers`, and configure the `Maximum number
+     of 8250/16550 serial ports`.
 
 2. Compile the kernel.
 
-    ```bash
-    make -j$(nproc) bzImage modules
-    make modules_install INSTALL_MOD_PATH=<temporary_host_side_modules_location>
-    ```
+   - Build the kernel and its modules:
 
-3. (optional) Backup /boot/runmode/bzImage on the target.
+     ```bash
+     make -j$(nproc) bzImage modules
+     ```
 
-    ```bash
-    cd /boot/runmode/
-    mv bzImage bzImage-`uname -r`
-    ```
+     On a 24-thread CPU, this build command completes in about 3
+     minutes.
 
-4. Copy the new kernel to the target.
+   - It will be necessary later to organize the modules similar to an
+     installation. Install them to a temporary directory on the host:
 
-    ```bash
-    scp arch/x86/boot/bzImage admin@<target>:/boot/runmode/
-    cd <temporary_host_side_modules_location>
-    tar cz lib | ssh admin@<target> tar xz -C /
-    ```
+     ```bash
+     TEMP_MODULES=$(realpath ./tmp-modules)
+     make modules_install INSTALL_MOD_PATH=$TEMP_MODULES
+     ```
+
+##### Installing the kernel
+
+In this section, these variables will be used:
+
+```bash
+TARGET=<the target's hostname or IP address>
+KERNEL_VERSION=`make -s kernelrelease`
+```
+
+1. On some old runmode images (versions 21.5 and newer do not have this
+   issue), the `/boot/runmode/bzImage` path used by the bootloader is
+   not a symbolic link, but rather the kernel itself. To avoid
+   overwriting the known-good kernel, rename it appropriately by running
+   this command on the target:
+
+   ```bash
+   test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`
+   ```
+
+2. Copy the new kernel to the target with SSH.
+
+   ```bash
+   scp arch/x86/boot/bzImage admin@$TARGET:/boot/runmode/bzImage-$KERNEL_VERSION
+   ```
+
+   On the target, rewrite the symlink used by the bootloader.
+
+   ```bash
+   ln -sf bzImage-$KERNEL_VERSION /boot/runmode/bzImage
+   ```
+
+3. Copy the kernel modules to the target.
+
+   ```bash
+   tar cz -C $TEMP_MODULES lib | ssh admin@$TARGET tar xz -C /
+   ```
 
    Note that the build and source symlinks in the modules directory do
-not need to be copied over to the target. The `tar` command above will
-not follow the symlinks.
+   not need to be copied over to the target. The `tar` command above
+   will not follow the symlinks.
 
-5. Reboot the target.
+4. Reboot the target.
 
     ```bash
     reboot
     ```
 
-6. (optional) Check version of the updated kernel on the target.
+5. (optional) Check version of the updated kernel on the target.
 
     ```bash
-    uname -a
+    uname -r
     ```
 
 
