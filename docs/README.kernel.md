@@ -341,13 +341,13 @@ the host build machine.
     ```bash
     opkg update
     opkg install sshfs-fuse
-    modprobe fuse
     ```
 
 3. Mount the kernel source on the target.
 
     ```bash
     mkdir /usr/src/linux
+    modprobe fuse
     sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
     ```
 
