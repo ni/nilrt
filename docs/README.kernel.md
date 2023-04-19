@@ -255,13 +255,24 @@ KERNEL_VERSION=`make -s kernelrelease`
    not need to be copied over to the target. The `tar` command above
    will not follow the symlinks.
 
-4. Reboot the target.
+4. If the kernel or modules are not functional, the system may become
+   inaccessible over the network. In such cases, it will be useful to
+   have a serial connection or a display and keyboard connected to the
+   target, so that it can be booted into safemode if problems
+   arise. Change the setting so that the bootloader briefly pauses and
+   provides an interactive menu to choose whether to boot into safemode:
+
+   ```bash
+   fw_setenv bootdelay 5
+   ```
+
+5. Reboot the target.
 
     ```bash
     reboot
     ```
 
-5. (optional) Check version of the updated kernel on the target.
+6. (optional) Check version of the updated kernel on the target.
 
     ```bash
     uname -r
