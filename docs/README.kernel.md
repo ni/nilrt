@@ -160,11 +160,11 @@ The README describes how to build SDKs for both Linux and Windows
 machines. Building the kernel is presently only supported on Linux.
 
 
-### Compiling and Installing the kernel
+## Compiling and Installing the kernel
 
-#### x86_64 Targets
+### x86_64 Targets
 
-##### Building the kernel
+#### Building the kernel
 
 1. Create the configuration for the kernel.
 
@@ -214,7 +214,7 @@ machines. Building the kernel is presently only supported on Linux.
      make modules_install INSTALL_MOD_PATH=$TEMP_MODULES
      ```
 
-##### Installing the kernel
+#### Installing the kernel
 
 In this section, these variables will be used:
 
@@ -268,7 +268,7 @@ KERNEL_VERSION=`make -s kernelrelease`
     ```
 
 
-#### ARM32 Targets
+### ARM32 Targets
 
 1. Set the kernel configuration to match NI’s settings.
 
@@ -308,7 +308,7 @@ not follow the symlinks.
     uname -a
     ```
 
-### Rebuilding NI out-of-tree Drivers with DKMS
+## Rebuilding NI out-of-tree Drivers with DKMS
 
 DKMS needs access to the kernel headers/config/source in order to
 re-version out-of-tree NI drivers. You can copy the full kernel
