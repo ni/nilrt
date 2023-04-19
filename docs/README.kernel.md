@@ -80,21 +80,68 @@ apt-get update && apt-get install -y \
 
 ## Downloading the Source
 
-1. Clone the source from github.com/ni/linux.
 
-    ```bash
-    git clone https://github.com/ni/linux.git
-    cd linux
-    ```
+### Choosing the Branch
 
-2. Checkout the branch that corresponds to the release you are using.
+NI's linux repository has various branches of the form
+`nilrt/$NI_VERSION/$KERNEL_VERSION`, where `$NI_VERSION` is something
+like `master` or `23.3`, and `$KERNEL_VERSION` is the major and minor
+portions of the upstream kernel version that the branch is based upon.
 
-    ```bash
-    git checkout nilrt/<release>/4.14
-    ```
-
-   Note that only kernel versions 4.14 and below support ARM targets at
+Note that only kernel versions 4.14 and below support ARM targets at
 this time.
+
+The authoritative source for corresponding NI release versions to kernel
+versions is in the recipe for the package on the appropriate branch,
+such as the one for the [default kernel][default-kernel-recipe].
+
+To see which versions correspond with the current state of a target, run
+these commands on the target while it is in runmode:
+
+```bash
+cat /etc/os-release
+uname -r
+```
+
+For example, if these commands produce these outputs:
+
+```
+ID=nilrt
+NAME="NI Linux Real-Time"
+VERSION="9.3 (hardknott)"
+VERSION_ID=9.3
+PRETTY_NAME="NI Linux Real-Time 9.3 (hardknott)"
+DISTRO_CODENAME="hardknott"
+BUILD_ID="23.3.0f139-x64"
+VERSION_CODENAME="hardknott"
+```
+
+```
+5.15.96-rt61
+```
+
+The corresponding branch in the linux repository would be `nilrt/23.3/5.15`.
+
+[default-kernel-recipe]: <https://github.com/ni/meta-nilrt/blob/HEAD/recipes-kernel/linux/linux-nilrt_git.bb>
+
+
+### Cloning the Repository
+
+If it will be necessary to perform kernel builds for several versions,
+it may be desirable to retrive the full history:
+
+```bash
+git clone -b $BRANCH https://github.com/ni/linux.git
+cd linux
+```
+
+If a full history is unnecessary, the `--depth` argument can be used to
+reduce the download size:
+
+```bash
+git clone -b $BRANCH --depth 1 https://github.com/ni/linux
+cd linux
+```
 
 
 ### Using the Tools
