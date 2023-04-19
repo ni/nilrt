@@ -11,6 +11,42 @@ provided by National Instruments may not have the same performance,
 determinism, features, or basic functionality.
 
 
+### Is it necessary to build the kernel?
+
+Some configurations of the kernel are already available via the package
+manager. If one is suitable, this is the simplest option to start using
+a modified kernel. Some of the kernels available are:
+
+ - The "nohz" kernel: a kernel configured to reduce scheduling ticks
+   (configured with `CONFIG_NO_HZ_FULL=y`). This is useful for realtime
+   use cases in certain situations; see the [documentation][nohz-doc]
+   for a thorough description of the altered behavior and its
+   consequences, as well as the NI-provided [README][nohz-readme] that
+   is installed with this kernel.  
+   The packagegroup to install is `packagegroup-ni-nohz-kernel`.
+ - The "debug" kernel: a kernel with debugging information built in.  
+   The packagegroup to install is `packagegroup-ni-debug-kernel`.
+ - The "next" kernel: a kernel based on a newer upstream version, with a
+   version bump.  
+   The packagegroup to install is `packagegroup-ni-next-kernel`.
+
+To install any of these kernels, SSH into the target and issue the
+appropriate `opkg` commands (replacing `$KERNEL_PACKAGEGROUP` with the
+package name given above):
+
+```bash
+# Update package lists from repositories
+opkg update
+# Install the kernel and supporting packages
+opkg install $KERNEL_PACKAGEGROUP
+```
+
+then reboot the target to start using the new kernel.
+
+[nohz-doc]: <https://www.kernel.org/doc/html/latest/timers/no_hz.html>
+[nohz-readme]: <https://github.com/ni/meta-nilrt/blob/HEAD/recipes-kernel/linux/nilrt-nohz/README.nohz>
+
+
 ### Build Host Requirements
 
 A Linux machine to build the kernel with:
