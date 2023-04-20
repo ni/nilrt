@@ -28,6 +28,9 @@ a modified kernel. Some of the kernels available are:
    The packagegroup to install is `packagegroup-ni-debug-kernel`.
  - The "next" kernel: a kernel based on a newer upstream version, with a
    version bump.  
+   Note that this kernel is experimental and not recommended for
+   production use cases. There are no guarantees that this kernel will
+   be functional, tested, or eventually released.  
    The packagegroup to install is `packagegroup-ni-next-kernel`.
 
 To install any of these kernels, SSH into the target and issue the
