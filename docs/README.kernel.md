@@ -316,7 +316,7 @@ not follow the symlinks.
 6. (optional) Check version of the updated kernel on the target.
 
     ```bash
-    uname -a
+    uname -r
     ```
 
 ## Rebuilding NI out-of-tree Drivers with DKMS
