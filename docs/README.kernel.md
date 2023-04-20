@@ -210,7 +210,7 @@ machines. Building the kernel is presently only supported on Linux.
      installation. Install them to a temporary directory on the host:
 
      ```bash
-     TEMP_MODULES=$(realpath ./tmp-modules)
+     TEMP_MODULES=./tmp-modules
      make modules_install INSTALL_MOD_PATH=$TEMP_MODULES
      ```
 
@@ -321,14 +321,16 @@ not follow the symlinks.
 
 ## Rebuilding NI out-of-tree Drivers with DKMS
 
-DKMS needs access to the kernel headers/config/source in order to
-re-version out-of-tree NI drivers. You can copy the full kernel
-source to the target and create the appropriate symlinks in
-/lib/modules. But, this will not work very well on RT targets that
-have limited disk space.
+### Transferring the Kernel Source to the Target
 
-An alternative is to network mount the kernel source directory from
-the host build machine.
+DKMS needs access to the kernel headers/config/source in order to
+re-version out-of-tree NI drivers.
+
+#### With `sshfs`
+
+If the build host is running an SSH daemon (or is able to start one) and
+is accessible over the network, the target can mount the build directory
+over the network, saving limited disk space resources.
 
 1. Start the sshd daemon on the host.
 
@@ -351,7 +353,19 @@ the host build machine.
     sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
     ```
 
-4. Fix dangling build and source symlinks.
+#### With `scp` and `tar`
+
+If the target has sufficient disk space, the source can be copied to the
+target, as was done earlier when copying the modules to the target.
+
+```bash
+ssh admin@$TARGET mkdir /usr/src/linux
+tar cz --exclude=./.git --exclude=$TEMP_MODULES . | ssh admin@$TARGET tar xz --no-same-owner -C /usr/src/linux
+```
+
+### Using the Source with DKMS
+
+1. Fix dangling build and source symlinks.
 
     ```bash
     cd /lib/modules/`uname -r`/
@@ -360,7 +374,7 @@ the host build machine.
     ln -s source build
     ```
 
-5. Prepare the tools needed for dkms.
+2. Prepare the tools needed for dkms.
 
     ```bash
     cd /lib/modules/`uname -r`/build
@@ -370,7 +384,7 @@ the host build machine.
 
    Note that you may need to install the bc package on ARM targets.
 
-6. Re-version the NI modules.
+3. Re-version the NI modules.
 
     ```bash
     dkms autoinstall
