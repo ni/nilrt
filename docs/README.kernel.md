@@ -268,56 +268,56 @@ KERNEL_VERSION=`make -s kernelrelease`
 
 5. Reboot the target.
 
-    ```bash
-    reboot
-    ```
+   ```bash
+   reboot
+   ```
 
 6. (optional) Check version of the updated kernel on the target.
 
-    ```bash
-    uname -r
-    ```
+   ```bash
+   uname -r
+   ```
 
 
 ### ARM32 Targets
 
 1. Set the kernel configuration to match NI’s settings.
 
-    ```bash
-    export ARCH=arm
-    export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
-    make nati_zynq_defconfig
-    ```
+   ```bash
+   export ARCH=arm
+   export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
+   make nati_zynq_defconfig
+   ```
 
 2. Compile the kernel.
 
-    ```bash
-    make ni-pkg
-    ```
+   ```bash
+   make ni-pkg
+   ```
 
 3. Copy the new kernel to the target.
 
-    ```bash
-    scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@<target>:/boot/linux_runmode.itb
-    cd ni-install/arm/lib/modules/
-    tar cz lib | ssh admin@<target> tar xz -C /
-    ```
+   ```bash
+   scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@<target>:/boot/linux_runmode.itb
+   cd ni-install/arm/lib/modules/
+   tar cz lib | ssh admin@<target> tar xz -C /
+   ```
 
    Note that the build and source symlinks in the modules directory do
-not need to be copied over to the target. The `tar` command above will
-not follow the symlinks.
+   not need to be copied over to the target. The `tar` command above
+   will not follow the symlinks.
 
 5. Reboot the target.
 
-    ```bash
-    reboot
-    ```
+   ```bash
+   reboot
+   ```
 
 6. (optional) Check version of the updated kernel on the target.
 
-    ```bash
-    uname -r
-    ```
+   ```bash
+   uname -r
+   ```
 
 ## Rebuilding NI out-of-tree Drivers with DKMS
 
@@ -334,24 +334,24 @@ over the network, saving limited disk space resources.
 
 1. Start the sshd daemon on the host.
 
-    ```bash
-    sudo systemctl start sshd
-    ```
+   ```bash
+   sudo systemctl start sshd
+   ```
 
 2. Install sshfs on the target.
 
-    ```bash
-    opkg update
-    opkg install sshfs-fuse
-    ```
+   ```bash
+   opkg update
+   opkg install sshfs-fuse
+   ```
 
 3. Mount the kernel source on the target.
 
-    ```bash
-    mkdir /usr/src/linux
-    modprobe fuse
-    sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
-    ```
+   ```bash
+   mkdir /usr/src/linux
+   modprobe fuse
+   sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
+   ```
 
 #### With `scp` and `tar`
 
@@ -367,39 +367,39 @@ tar cz --exclude=./.git --exclude=$TEMP_MODULES . | ssh admin@$TARGET tar xz --n
 
 1. Fix dangling build and source symlinks.
 
-    ```bash
-    cd /lib/modules/`uname -r`/
-    rm build source
-    ln -s /usr/src/linux source
-    ln -s source build
-    ```
+   ```bash
+   cd /lib/modules/`uname -r`/
+   rm build source
+   ln -s /usr/src/linux source
+   ln -s source build
+   ```
 
 2. Prepare the tools needed for dkms.
 
-    ```bash
-    cd /lib/modules/`uname -r`/build
-    make prepare
-    make modules_prepare
-    ```
+   ```bash
+   cd /lib/modules/`uname -r`/build
+   make prepare
+   make modules_prepare
+   ```
 
    Note that you may need to install the bc package on ARM targets.
 
 3. Re-version the NI modules.
 
-    ```bash
-    dkms autoinstall
-    ```
+   ```bash
+   dkms autoinstall
+   ```
 
    If you get strange gcc errors during this step, ensure that the gcc
-version used to build the kernel on the host machine is compatible
-with the gcc version on the target. Check the output logs under:
-/var/lib/dkms/<ni_module>/<version>/build/make.log.
+   version used to build the kernel on the host machine is compatible
+   with the gcc version on the target. Check the output logs under:
+   /var/lib/dkms/<ni_module>/<version>/build/make.log.
 
 7. (optional) Check dkms status.
 
-    ```bash
-    dkms status
-    ```
+   ```bash
+   dkms status
+   ```
 
 8. Reboot the target.
 
