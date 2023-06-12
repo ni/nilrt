@@ -152,6 +152,16 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     During the build, a script is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like `oecore-x86_64-core2-64-toolchain-9.2.sh`. The script is a self-extracting archive, and can be copied to and executed on an appropriate host system to install the toolchain.
 
+    To build the toolchain for an x86_64 Windows host, there is a different script that can be used.
+    
+    ```bash
+    bash ../scripts/pipelines/build.cross-toolchain.sh
+    ```
+
+    During the build, an archive is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like
+    `oecore-x86_64-core2-64-toolchain.tar.xz`. This archive can be extracted on a Windows system to
+    to access the toolchain.
+
 ---
 
     Enjoy, and happy hacking!
