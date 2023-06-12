@@ -100,15 +100,6 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     These scripts are also a good source for understanding the steps to build a package feed manually. Note that if you are building package feeds *manually*, you must bitbake the special `package-index` target before using the feed.
 
-    * ##### Building the cross-compile toolchain
-        One of these pipelines can build the cross-compile toolchain. By default, it builds for x86_64 Linux hosts.
-
-        ```bash
-        bash ../scripts/pipelines/build.toolchain.sh
-        ```
-
-        During the build, a script is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like `oecore-x86_64-core2-64-toolchain-9.2.sh`. The script is a self-extracting archive, and can be copied to and executed on an appropriate host system to install the toolchain.
-
 7. #### Building various images
 
     **NOTE** You must build packagefeed-ni-core and package-index first to build images.
@@ -149,6 +140,17 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
         Boot your NI Linux Real-Time compatible hardware from the recovery media and follow on-screen instructions to perform a factory reset.
 
     **NOTE** By default, National Instruments software is pulled from a feed hosted on ni.com. You can redirect to a mirror by setting IPK_NI_SUBFEED_URI to any URI supported by opkg in your org.conf,site.conf, or auto.conf.
+
+8. #### Building the cross-compile toolchain
+
+    In order to compile custom packages for NI Linux Real-Time on a host system, a cross-compile toolchain is necessary. This can be built directly
+    from one of the scripts in the [`:scripts/pipelines/`](https://github.com/ni/nilrt/tree/HEAD/scripts/pipelines) directory. By default, it builds for x86_64 Linux hosts.
+
+    ```bash
+    bash ../scripts/pipelines/build.toolchain.sh
+    ```
+
+    During the build, a script is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like `oecore-x86_64-core2-64-toolchain-9.2.sh`. The script is a self-extracting archive, and can be copied to and executed on an appropriate host system to install the toolchain.
 
 ---
 
