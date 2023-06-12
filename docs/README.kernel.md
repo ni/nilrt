@@ -153,11 +153,12 @@ You can use any cross-compilation toolchain of your choosing, or you can
 download the toolchains from ni.com, or build them yourself.
 
 The toolchains are available for download:
- - x86_64: http://www.ni.com/download/labview-real-time-module-2014/4959/en/
- - armv7-a: http://www.ni.com/download/labview-real-time-module-2014/4957/en/
+ - [GNU C & C++ Compile Tools x64](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-x64.html)
+ - [GNU C & C++ Compile Tools for ARMv7](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-for-armv7.html)
 
-Refer to the README to get started with building OpenEmbedded
-components, and build the NILRT SDK containing a GCC toolchain.
+Refer to the [README](../README.md) to get started with building
+OpenEmbedded components and [building the NILRT SDK](../README.md#building-the-cross-compile-toolchain)
+containing a GCC toolchain.
 
 The README describes how to build SDKs for both Linux and Windows
 machines. Building the kernel is presently only supported on Linux.
