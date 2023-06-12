@@ -408,13 +408,12 @@ tar cz --exclude=./.git --exclude=$TEMP_MODULES . | ssh admin@$TARGET tar xz --n
 8. Reboot the target.
 
 
-**HELP! MY TARGET DOESN'T BOOT!**
+## Target Doesn't Boot the Kernel
 
-If, after building and putting a new kernel on the target, you are unable
+If after building and putting a new kernel on the target you are unable
 to boot successfully, refer to your controller's documentation on forcing
 the controller to boot into safe mode and format from MAX.
 
-*** NOTE ***
-Changes to the kernel running on the target will be lost in certain operations
-from MAX, including formatting the target and uninstalling all components.
-
+> **Note**
+> Changes to the kernel running on the target will be lost in certain operations
+> from MAX, including formatting the target and uninstalling all components.
