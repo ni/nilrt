@@ -231,10 +231,10 @@ KERNEL_VERSION=`make -s kernelrelease`
    issue), the `/boot/runmode/bzImage` path used by the bootloader is
    not a symbolic link, but rather the kernel itself. To avoid
    overwriting the known-good kernel, rename it appropriately by running
-   this command on the target:
+   this command:
 
    ```bash
-   test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`
+   ssh admin@$TARGET "test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`"
    ```
 
 2. Copy the new kernel to the target with SSH.
@@ -243,10 +243,10 @@ KERNEL_VERSION=`make -s kernelrelease`
    scp arch/x86/boot/bzImage admin@$TARGET:/boot/runmode/bzImage-$KERNEL_VERSION
    ```
 
-   On the target, rewrite the symlink used by the bootloader.
+   Rewrite the symlink used by the bootloader.
 
    ```bash
-   ln -sf bzImage-$KERNEL_VERSION /boot/runmode/bzImage
+   ssh admin@$TARGET ln -sf bzImage-$KERNEL_VERSION /boot/runmode/bzImage
    ```
 
 3. Copy the kernel modules to the target.
@@ -267,19 +267,19 @@ KERNEL_VERSION=`make -s kernelrelease`
    provides an interactive menu to choose whether to boot into safemode:
 
    ```bash
-   fw_setenv bootdelay 5
+   ssh admin@$TARGET fw_setenv bootdelay 5
    ```
 
 5. Reboot the target.
 
    ```bash
-   reboot
+   ssh admin@$TARGET reboot
    ```
 
 6. (optional) Check version of the updated kernel on the target.
 
    ```bash
-   uname -r
+   ssh admin@$TARGET uname -r
    ```
 
 
