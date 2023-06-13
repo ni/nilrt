@@ -325,6 +325,12 @@ KERNEL_VERSION=`make -s kernelrelease`
 
 ## Rebuilding NI out-of-tree Drivers with DKMS
 
+In this section, these variables will be used:
+
+```bash
+TARGET=<the target's hostname or IP address>
+```
+
 ### Transferring the Kernel Source to the Target
 
 DKMS needs access to the kernel headers/config/source in order to
@@ -342,19 +348,19 @@ over the network, saving limited disk space resources.
    sudo systemctl start sshd
    ```
 
-2. Install sshfs on the target.
+2. Install sshfs on the target and load the module for fuse.
 
    ```bash
-   opkg update
-   opkg install sshfs-fuse
+   ssh admin@$TARGET "opkg update && opkg install sshfs-fuse"
+   ssh admin@$TARGET modprobe fuse
    ```
 
-3. Mount the kernel source on the target.
+3. Mount the kernel source on the target. Note that user and host
+   in this case are the values for the host build machine.
 
    ```bash
-   mkdir /usr/src/linux
-   modprobe fuse
-   sshfs <user>@<host>:<path_to_kernel_source> /usr/src/linux
+   ssh admin@$TARGET mkdir /usr/src/linux
+   ssh admin@$TARGET sshfs <user>@<host>:<path_to_linux_source> /usr/src/linux
    ```
 
 #### With `scp` and `tar`
@@ -368,6 +374,13 @@ tar cz --exclude=./.git --exclude=$TEMP_MODULES . | ssh admin@$TARGET tar xz --n
 ```
 
 ### Using the Source with DKMS
+
+The following steps are all run on the target. This can be done either by
+opening an ssh session as below or through a serial connection.
+
+```bash
+ssh admin@$TARGET
+```
 
 1. Fix dangling build and source symlinks.
 
