@@ -285,13 +285,29 @@ KERNEL_VERSION=`make -s kernelrelease`
 
 ### ARM32 Targets
 
-1. Set the kernel configuration to match NI’s settings.
+#### Building the kernel 
 
-   ```bash
-   export ARCH=arm
-   export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
-   make nati_zynq_defconfig
-   ```
+1. Create the configuration for the kernel.
+
+   - Make sure the appropriate environment variables are set for cross compilation:
+
+     ```bash
+     export ARCH=arm
+     export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
+     ```
+
+   - Start with a configuration matching NI's settings:
+
+     ```bash
+     make nati_zynq_defconfig
+     ```
+
+   - If it is desirable to adjust the kernel configuration (this is uncommon),
+     the menuconfig target can be used to open a curses interface:
+
+     ```bash
+     make menuconfig
+     ```
 
 2. Compile the kernel.
 
@@ -299,28 +315,36 @@ KERNEL_VERSION=`make -s kernelrelease`
    make ni-pkg
    ```
 
-3. Copy the new kernel to the target.
+#### Installing the kernel
+
+In this section, these variables will be used:
+
+```bash
+TARGET=<the target's hostname or IP address>
+```
+
+1. Copy the new kernel to the target.
 
    ```bash
-   scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@<target>:/boot/linux_runmode.itb
+   scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@$TARGET:/boot/linux_runmode.itb
    cd ni-install/arm/lib/modules/
-   tar cz lib | ssh admin@<target> tar xz -C /
+   tar cz lib | ssh admin@$TARGET tar xz -C /
    ```
 
    Note that the build and source symlinks in the modules directory do
    not need to be copied over to the target. The `tar` command above
    will not follow the symlinks.
 
-5. Reboot the target.
+2. Reboot the target.
 
    ```bash
-   reboot
+   ssh admin@$TARGET reboot
    ```
 
-6. (optional) Check version of the updated kernel on the target.
+3. (optional) Check version of the updated kernel on the target.
 
    ```bash
-   uname -r
+   ssh admin@$TARGET uname -r
    ```
 
 ## Rebuilding NI out-of-tree Drivers with DKMS
