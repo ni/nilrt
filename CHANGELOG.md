@@ -10,6 +10,16 @@ The evergreen, canonical changelog for *all NILRT branches* can be [found here](
 
 To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
 
+----
+## 9.4
+Branch: `nilrt/23.5/hardknott`
+
+### meta-nilrt
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/569) `dkms` to version 3.0.10, to resolve spurious warnings when compiling unversioned kernel modules.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/570) the preview kernel (`kernel-next`) to version 6.1.
+
 
 ----
 ## 9.3
@@ -183,6 +193,15 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/277) the `restore` images and `lvcomms` images. The distributions that required these images are not supported in newer versions.
 - [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
+
+
+----
+## 8.16
+Branch: `nilrt/23.5/sumo`
+
+### nilrt
+#### Changed
+- [Upgraded](https://github.com/ni/meta-openembedded/pull/34) `syslog-ng` from 3.8.1 to 3.31.2, to consume upstream fixes to a slow memory leak on SIGHUP.
 
 
 ----
