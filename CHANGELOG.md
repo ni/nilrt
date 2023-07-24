@@ -10,6 +10,75 @@ The evergreen, canonical changelog for *all NILRT branches* can be [found here](
 
 To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
 
+## Latest Updates
+* nilrt: 245
+* meta-nilrt: 616
+
+
+----
+## 10.0
+Branch: `nilrt/23.X/kirkstone`
+
+Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
+
+
+### nilrt
+
+#### Changed
+- [Upgraded](https://github.com/ni/openembedded-core/pull/102) `pango` to 1.50.8, to pull some testing changes from upstream.
+
+#### Deprecated
+ - OpenSSH has been upgraded to a version which by default disables the use of insecure SHA1 signatures (referred to as `ssh-rsa`). See [their release notes](http://openssh.com/txt/release-8.8) for more information, including how to re-enable it.
+
+#### Security
+- [Upgraded](https://github.com/ni/meta-openembedded/pull/37) `lldpd` to fix [`CVE-2021-43612`](https://nvd.nist.gov/vuln/detail/CVE-2021-43612).
+- [Upgraded](https://github.com/ni/openembedded-core/pull/103) `ncurses` to 6.4 to fix [`CVE-2023-29491`](https://nvd.nist.gov/vuln/detail/CVE-2023-29491).
+- [Upgraded](https://github.com/ni/meta-openembedded/pull/39) `c-ares` to 1.19.1 to fix CVE [`CVE-2023-32067`](https://nvd.nist.gov/vuln/detail/CVE-2023-32067).
+- [Backported](https://github.com/ni/meta-qt5/pull/9) a patch to `qtbase` to fix [`CVE-2023-24607`](https://github.com/advisories/GHSA-gfrv-8477-wf9f).
+- [Backported](https://github.com/ni/openembedded-core/pull/110) a patch to `libpcre2` to fix [`CVE-2022-41409`](https://nvd.nist.gov/vuln/detail/CVE-2022-41409).
+
+
+### meta-nilrt
+- meta-nilrt is now compatible with the OE "kirkstone" release.
+- Where experimental RAUC content conflicted with NILRT 10 development, it [has been dropped](https://github.com/ni/meta-nilrt/pull/513). Do not expect any remaining RAUC content to be functional.
+- NILRT builds will [now generate](https://github.com/ni/meta-nilrt/pull/567) SPDX SBOM files for packages and images.
+
+
+#### Added
+- Migrated some recipes to meta-nilrt, which were dropped from upstream meta-OE, as of kirkstone.
+    - [python-nose](https://github.com/ni/meta-nilrt/commit/365f8514)
+    - [python3-configparser](https://github.com/ni/meta-nilrt/commit/abb5b21f8d1f494446f93dcbc9b802700a514b16)
+- [Added](https://github.com/ni/meta-nilrt/commit/bacb71b1) a uid/gid pair for `ossec`, to support installation of the `ossec-hids` package.
+- [Added](https://github.com/ni/meta-nilrt/pull/605) the `bolt` package to provide a user-space application to manage Thunderbolt connections.
+
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/499) the `syslog-ng` recipe to support syslog-ng v3.36.1.
+- Converted several legacy python recipes to use the `setuptools3_legacy` compatibility bbclass from upstream yocto.
+- The `util-linux` packages [now depend](https://github.com/ni/meta-nilrt/pull/505) on `busybox`, because we use initscripts from the latter.
+- [Set](https://github.com/ni/meta-nilrt/pull/591) the meta-layer priority of meta-nilrt to `25`, to get it higher than the distro's subordinate layers.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/589) `linux-nilrt-debug` and `linux-nilrt-nohz` kernels to base on Linux 6.1.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/601) the `linux-nilrt` kernel to base on Linux 6.1.
+
+
+#### Deprecated
+- [Dropped](https://github.com/ni/meta-nilrt/commit/d1e98a5331ba34866c1eb41537bf9267c6a7178a) the meta-nilrt `apr` bbappend, since it broke recipe `do_compile` and didn't seem to have a purpose.
+- [Dropped](https://github.com/ni/meta-nilrt/commit/c8809128) the `ni-refpolicy` SELinux security reference policy, because it wasn't maintainable and didn't have a clear owner.
+- Dropped ([1](https://github.com/ni/meta-nilrt/commit/037f9e09), [2](https://github.com/ni/meta-nilrt/commit/82dbf99d)) .patches from the `wpa-supplicant` recipe which conflicted with kirkstone and don't add apparent value.
+- [Replaced](https://github.com/ni/meta-nilrt/pull/592) the obsolete and unmaintained `pycrypto` library, with the `pycryptodome` alternative.
+- [Removed](https://github.com/ni/meta-nilrt/pull/600) the `python3-pysnmp` package, because it has poor support and is unneeded.
+- [Removed](https://github.com/ni/meta-nilrt/pull/605) the `tbtadm` package, in favor of `bolt`.
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/616) the `dsa` host-key from being used in the default `openssh` server configuration, due to its relative insecurity.
+
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/500) a sporadic `glibc:do_package` error, caused by the `stashed-locale` directory dropping out of the recipe-build workspace.
+- [Fixed](https://github.com/ni/meta-nilrt/commit/625e1c3d) a bug in the `linux-kernel-debug:do_install` where the recipe sourced kernel debug symbols from the wrong path.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/562) some salt incompatibilities with the python3.10 runtime, which broke software installation workflows using sysapi and SystemLink.
+- [Increased](https://github.com/ni/meta-nilrt/pull/611) the `RCVBUF` buffer size for busybox's ifplugd implementation, to fix a possible configuration failure on systems with very large numbers of network interfaces.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/614) an incompatibility between LabVIEW and the `status_led` binary in `ni-utils`, which prevented the status LED from blinking when an LVRT startup app crashes.
+
+
 ----
 ## 9.4
 Branch: `nilrt/23.5/hardknott`
@@ -194,6 +263,14 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
 
+
+
+## 8.17
+Branch: `nilrt/23.8/sumo`
+
+### meta-nilrt
+#### Changed
+- Socketcan interfaces will [no longer](https://github.com/ni/meta-nilrt/pull/587) be started with ifplugd.
 
 ----
 ## 8.16
