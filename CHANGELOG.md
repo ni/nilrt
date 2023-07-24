@@ -260,6 +260,14 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
 
 
+
+## 8.17
+Branch: `nilrt/23.8/sumo`
+
+### meta-nilrt
+#### Changed
+- Socketcan interfaces will [no longer](https://github.com/ni/meta-nilrt/pull/587) be started with ifplugd.
+
 ----
 ## 8.17
 Branch: `nilrt/23.8/sumo`
