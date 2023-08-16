@@ -234,7 +234,7 @@ KERNEL_VERSION=`make -s kernelrelease`
    this command:
 
    ```bash
-   ssh admin@$TARGET "test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`"
+   ssh admin@$TARGET 'test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`'
    ```
 
 2. Copy the new kernel to the target with SSH.
