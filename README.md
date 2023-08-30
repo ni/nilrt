@@ -20,9 +20,8 @@ Additional community documentation can be found at https://nilrt-docs.ni.com.
 
 ### Mainlines
 
-This project currently has four concurrent development mainlines (sorry). They are, in short:
-* `nilrt/master/hardknott` - the current **x64** dev HEAD
-* `nilrt/master/kirkstone` - the next-major **x64** rebase HEAD
+This project currently has three concurrent development mainlines (sorry). They are, in short:
+* `nilrt/master/kirkstone` - the current **x64** dev HEAD
 * `nilrt/master/sumo` - the current **arm32** dev HEAD
 * `nilrt-academic/master/sumo` - a forked **arm32** HEAD for [FIRST Robotics Competition](https://www.firstinspires.org/robotics/frc)
 
