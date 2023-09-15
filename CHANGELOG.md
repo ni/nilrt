@@ -17,7 +17,7 @@ To see changes to each individual package in the core feed, check out the [feed 
 
 ----
 ## 10.0
-Branch: `nilrt/23.X/kirkstone`
+Branch: `nilrt/23.8/kirkstone`
 
 Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
 
