@@ -43,14 +43,12 @@ Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
 - Where experimental RAUC content conflicted with NILRT 10 development, it [has been dropped](https://github.com/ni/meta-nilrt/pull/513). Do not expect any remaining RAUC content to be functional.
 - NILRT builds will [now generate](https://github.com/ni/meta-nilrt/pull/567) SPDX SBOM files for packages and images.
 
-
 #### Added
 - Migrated some recipes to meta-nilrt, which were dropped from upstream meta-OE, as of kirkstone.
     - [python-nose](https://github.com/ni/meta-nilrt/commit/365f8514)
     - [python3-configparser](https://github.com/ni/meta-nilrt/commit/abb5b21f8d1f494446f93dcbc9b802700a514b16)
 - [Added](https://github.com/ni/meta-nilrt/commit/bacb71b1) a uid/gid pair for `ossec`, to support installation of the `ossec-hids` package.
 - [Added](https://github.com/ni/meta-nilrt/pull/605) the `bolt` package to provide a user-space application to manage Thunderbolt connections.
-
 
 #### Changed
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/499) the `syslog-ng` recipe to support syslog-ng v3.36.1.
@@ -60,7 +58,6 @@ Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/589) `linux-nilrt-debug` and `linux-nilrt-nohz` kernels to base on Linux 6.1.
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/601) the `linux-nilrt` kernel to base on Linux 6.1.
 
-
 #### Deprecated
 - [Dropped](https://github.com/ni/meta-nilrt/commit/d1e98a5331ba34866c1eb41537bf9267c6a7178a) the meta-nilrt `apr` bbappend, since it broke recipe `do_compile` and didn't seem to have a purpose.
 - [Dropped](https://github.com/ni/meta-nilrt/commit/c8809128) the `ni-refpolicy` SELinux security reference policy, because it wasn't maintainable and didn't have a clear owner.
@@ -69,7 +66,6 @@ Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
 - [Removed](https://github.com/ni/meta-nilrt/pull/600) the `python3-pysnmp` package, because it has poor support and is unneeded.
 - [Removed](https://github.com/ni/meta-nilrt/pull/605) the `tbtadm` package, in favor of `bolt`.
 - [Deprecated](https://github.com/ni/meta-nilrt/pull/616) the `dsa` host-key from being used in the default `openssh` server configuration, due to its relative insecurity.
-
 
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/500) a sporadic `glibc:do_package` error, caused by the `stashed-locale` directory dropping out of the recipe-build workspace.
@@ -264,13 +260,14 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
 
 
-
+----
 ## 8.17
 Branch: `nilrt/23.8/sumo`
 
 ### meta-nilrt
 #### Changed
 - Socketcan interfaces will [no longer](https://github.com/ni/meta-nilrt/pull/587) be started with ifplugd.
+
 
 ----
 ## 8.16
