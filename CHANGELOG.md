@@ -12,7 +12,7 @@ To see changes to each individual package in the core feed, check out the [feed 
 
 ## Latest Updates
 * nilrt: 245
-* meta-nilrt: 616
+* meta-nilrt: 621
 
 
 ----
@@ -55,7 +55,7 @@ Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
 - Converted several legacy python recipes to use the `setuptools3_legacy` compatibility bbclass from upstream yocto.
 - The `util-linux` packages [now depend](https://github.com/ni/meta-nilrt/pull/505) on `busybox`, because we use initscripts from the latter.
 - [Set](https://github.com/ni/meta-nilrt/pull/591) the meta-layer priority of meta-nilrt to `25`, to get it higher than the distro's subordinate layers.
-- [Upgraded](https://github.com/ni/meta-nilrt/pull/589) `linux-nilrt-debug` and `linux-nilrt-nohz` kernels to base on Linux 6.1.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/589) the `linux-nilrt-debug` kernel to base on Linux 6.1. `linux-nilrt-nohz` [will remain](https://github.com/ni/meta-nilrt/pull/621) on 5.15 until its performance can be improved.
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/601) the `linux-nilrt` kernel to base on Linux 6.1.
 
 #### Deprecated
