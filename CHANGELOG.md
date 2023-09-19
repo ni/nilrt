@@ -49,6 +49,7 @@ Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
     - [python3-configparser](https://github.com/ni/meta-nilrt/commit/abb5b21f8d1f494446f93dcbc9b802700a514b16)
 - [Added](https://github.com/ni/meta-nilrt/commit/bacb71b1) a uid/gid pair for `ossec`, to support installation of the `ossec-hids` package.
 - [Added](https://github.com/ni/meta-nilrt/pull/605) the `bolt` package to provide a user-space application to manage Thunderbolt connections.
+- [Added](https://github.com/ni/meta-nilrt/pull/612) the ability to set the `LVRT_CGROUP_VERSION` via the `/etc/default/lvrt-cgroup` init setting.
 
 #### Changed
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/499) the `syslog-ng` recipe to support syslog-ng v3.36.1.
