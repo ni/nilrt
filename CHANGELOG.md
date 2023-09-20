@@ -29,7 +29,7 @@ Beginning with this release, NILRT has been rebased to Yocto 4.0 "kirkstone".
 
 #### Deprecated
  - OpenSSH has been upgraded to a version which by default disables the use of insecure SHA1 signatures (referred to as `ssh-rsa`). See [their release notes](http://openssh.com/txt/release-8.8) for more information, including how to re-enable it.
-  - This change is known to break compatibility with NI MAX versions prior to 22.5. Prior MAX releases used `libssh2` version 1.8, which relies upon SSH-RSA, causing MAX to throw a "Miscellaneous operation failure" when attempting to connect to a NILRT 10 system image. To work around, either: upgrade your NI MAX installation to 22.5 or later (recommended), or modify the NILRT target's `sshd_config` to re-enable `ssh-rsa` (see above link).
+    - This change is known to break compatibility with NI MAX versions prior to 22.5. Prior MAX releases used `libssh2` version 1.8, which relies upon SSH-RSA, causing MAX to throw a "Miscellaneous operation failure" when attempting to connect to a NILRT 10 system image. To work around, either: upgrade your NI MAX installation to 22.5 or later (recommended), or modify the NILRT target's `sshd_config` to re-enable `ssh-rsa` (see above link).
 
 #### Security
 - [Upgraded](https://github.com/ni/meta-openembedded/pull/37) `lldpd` to fix [`CVE-2021-43612`](https://nvd.nist.gov/vuln/detail/CVE-2021-43612).
