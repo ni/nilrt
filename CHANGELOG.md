@@ -12,7 +12,7 @@ To see changes to each individual package in the core feed, check out the [feed 
 
 ## Latest Updates
 * nilrt: 245
-* meta-nilrt: 622
+* meta-nilrt: 623
 
 ----
 ## 10.1
@@ -25,6 +25,7 @@ Branch: `nilrt/master/kirkstone`
 
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/622) a package-installation error with `cryptsetup`, where opkg could not satisfy the `lvm2-udevrules` dependency.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/623) a bug in the `linux-nilrt` recipes, which would stamp the kernel uname string with the incorrect build datetime.
 
 
 ----
