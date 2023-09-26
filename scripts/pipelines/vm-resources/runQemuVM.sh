@@ -96,7 +96,7 @@ fi
 SCRIPT_DIR="`dirname "$BASH_SOURCE[0]"`"
 set -x
 qemu-system-x86_64 \
-	${enableKVM:-} -cpu qemu64 -smp cpus=${cpu_count:-1} \
+	${enableKVM:-} -cpu qemu64 -smp cpus=${cpu_count:-1} -machine vmport=off \
 	-m "${mem_mbs:-${VM_MEM_SIZE_MB}}" \
 	-nographic \
 	-drive if=pflash,format=raw,readonly,file="$SCRIPT_DIR/OVMF/OVMF_CODE.fd" \
