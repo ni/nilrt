@@ -14,11 +14,12 @@ generate_random_mac() {
 usage() {
 	cat <<EOF
 $(basename "$0") [-h] \\
-    [-a mac_address] [-b bridge] [-c cpu_count] [-m memory] [-s] \\
+    [-a mac_address] [-b bridge] [-c cpu_count] [-m memory] [-s] [-g] \\
     [-- qemu_args [qemu_args]]
 
 Opts:
     -h    : Display this help and exit.
+    -g    : Start VM with arguments appropriate for graphical usage
     -s    : Start VM in snapshot mode (changes not saved to disk)
 
 Args:
@@ -32,7 +33,7 @@ EOF
 }
 
 
-while getopts ":a:b:c:hm:s-" opt; do
+while getopts ":a:b:c:ghm:s-" opt; do
 	case ${opt} in
 		a)
 			macaddr=$OPTARG
@@ -42,6 +43,9 @@ while getopts ":a:b:c:hm:s-" opt; do
 			;;
 		c)
 			cpu_count=$OPTARG
+			;;
+		g)
+			graphical=true
 			;;
 		h)
 			usage
@@ -75,6 +79,14 @@ qemu_args=${@:-}
 if [ "$snapshot" = true ] ; then
 	qemu_args="-snapshot ${qemu_args}"
 fi
+if [ "$graphical" = true ] ; then
+	# provide pointer device with absolute coordinates
+	qemu_args="-usb -device usb-tablet ${qemu_args}"
+	# add a serial device similar to what -nographic provides
+	qemu_args="-chardev stdio,id=gserial,mux=on,signal=off -serial chardev:gserial ${qemu_args}"
+else
+	qemu_args="-nographic ${qemu_args}"
+fi
 
 # determine the VM's primary mac address
 [ -n "${macaddr}" ] || generate_random_mac
@@ -98,7 +110,6 @@ set -x
 qemu-system-x86_64 \
 	${enableKVM:-} -cpu qemu64 -smp cpus=${cpu_count:-1} -machine vmport=off \
 	-m "${mem_mbs:-${VM_MEM_SIZE_MB}}" \
-	-nographic \
 	-drive if=pflash,format=raw,readonly,file="$SCRIPT_DIR/OVMF/OVMF_CODE.fd" \
 	-drive if=pflash,format=raw,file="$SCRIPT_DIR/OVMF/OVMF_VARS.fd" \
 	-drive file="$SCRIPT_DIR/${PRIMARY_DISK}",index=0,media=disk \
