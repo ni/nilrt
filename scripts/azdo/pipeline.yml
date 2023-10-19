@@ -1,0 +1,11 @@
+jobs:
+- job: Build_OpenEmbedded
+  timeoutInMinutes: 3600
+  pool:
+    name: Drivers-NIBuildFarm-RFMIBUILD
+    demands:
+      - Agent.OS -equals Linux
+  steps:
+  - script: |
+      echo "Hello World!"
+      echo "prbuild 2.1"
