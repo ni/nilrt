@@ -43,6 +43,8 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 2. #### Install docker
    [Install the docker engine](https://docs.docker.com/engine/install/) on your build host. If you can successfully run `docker run hello-world`, then you have everything you should need.
 
+    **Do not use** the Docker Desktop product as your docker installation. Docker Desktop uses virtual machine indirection that will interfere with this project's docker scripting. Other users have [had success](https://github.com/ni/nilrt/issues/249) switching to the bare docker engine instead.
+
 3. #### Set up pyrex
    Build (or pull) the `build-nilrt` pyrex container image.
     ```bash
@@ -53,7 +55,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     ```
 
 4. #### Set up build environment
-   Enter the NILRT build environment. Sourcing the init script the first time will automatically setup your pyrex container shim.
+   Source the `ni-oe-init-build-env` script, using the `.` (or `source`) command in your shell. This will automatically setup your OpenEmbedded build environment, and the pyrex container shim that will transparently wrap your bitbake commands.
     ```bash
     . ./ni-oe-init-build-env [--org]
 
