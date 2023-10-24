@@ -279,6 +279,8 @@ Branch: `nilrt/22.5/hardknott`
 ## 8.17
 Branch: `nilrt/23.8/sumo`
 
+**Note**: this version was not propagated to the 23.8 system image installers. Running the 23.8 installer will install the 8.16/23.5 ARM base system image.
+
 ### meta-nilrt
 #### Changed
 - Socketcan interfaces will [no longer](https://github.com/ni/meta-nilrt/pull/587) be started with ifplugd.
