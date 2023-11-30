@@ -106,7 +106,7 @@ echo "BB_NUMBER_THREADS=${BB_NUMBER_THREADS}"
 
 # define the location of bitbake configuration files, which will be copied
 # into the build workspace, if one needs to be created.
-export TEMPLATECONF=${TEMPLATECONF:-${NILRT_ROOT}/sources/meta-nilrt/conf}
+export TEMPLATECONF=${TEMPLATECONF:-${NILRT_ROOT}/sources/meta-nilrt/conf/templates/default}
 
 export SSTATE_MIRRORS="${SSTATE_MIRRORS:-} ${sstate_mirrors[@]/%/ \\n}"
 
