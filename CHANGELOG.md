@@ -11,8 +11,8 @@ The evergreen, canonical changelog for *all NILRT branches* can be [found here](
 To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
 
 ## Latest Updates
-* nilrt: 245
-* meta-nilrt: 623
+* nilrt: 254
+* meta-nilrt: 641
 
 ----
 ## 10.1
@@ -23,9 +23,16 @@ Branch: `nilrt/master/kirkstone`
 
 ### meta-nilrt
 
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/628) libglu to core feed.
+
+#### Changed
+- [Moved](https://github.com/ni/meta-nilrt/pull/626) docker package from extras feed to core feed.
+
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/622) a package-installation error with `cryptsetup`, where opkg could not satisfy the `lvm2-udevrules` dependency.
 - [Fixed](https://github.com/ni/meta-nilrt/pull/623) a bug in the `linux-nilrt` recipes, which would stamp the kernel uname string with the incorrect build datetime.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/640) an issue where dkms drivers would not rebuild when multiple kernels are installed.
 
 
 ----
