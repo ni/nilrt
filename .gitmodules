@@ -1,56 +1,56 @@
 [submodule "sources/bitbake"]
 	path = sources/bitbake
 	url = ../bitbake.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-cloud-services"]
 	path = sources/meta-cloud-services
 	url = ../meta-cloud-services.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-openembedded"]
 	path = sources/meta-openembedded
 	url = ../meta-openembedded.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-nilrt"]
 	path = sources/meta-nilrt
 	url = ../meta-nilrt.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-selinux"]
 	path = sources/meta-selinux
 	url = ../meta-selinux.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/openembedded-core"]
 	path = sources/openembedded-core
 	url = ../openembedded-core.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-mingw"]
 	path = sources/meta-mingw
 	url = ../meta-mingw.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-virtualization"]
 	path = sources/meta-virtualization
 	url = ../meta-virtualization.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-security"]
 	path = sources/meta-security
 	url = ../meta-security.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-sdr"]
 	path = sources/meta-sdr
 	url = ../meta-sdr.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-qt5"]
 	path = sources/meta-qt5
 	url = ../meta-qt5.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-qt5-extra"]
 	path = sources/meta-qt5-extra
 	url = ../meta-qt5-extra.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/meta-rauc"]
 	path = sources/meta-rauc
 	url = ../meta-rauc.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
 [submodule "sources/pyrex"]
 	path = sources/pyrex
 	url = ../pyrex.git
-	branch = nilrt/master/kirkstone
+	branch = nilrt/master/next
