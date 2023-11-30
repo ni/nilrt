@@ -7,5 +7,3 @@ RUN apt-get update && apt-get install --assume-yes \
 	qemu-system-x86 \
 	qemu-utils \
 ""
-
-# this Dockerfile layer contains nothing yet.
