@@ -134,7 +134,7 @@ export PYREX_CONFIG_BIND="${NILRT_ROOT}"
 export PYREX_OEINIT="${NILRT_ROOT}/sources/openembedded-core/oe-init-build-env"
 export PYREX_ROOT="${NILRT_ROOT}/sources/pyrex"
 
-nilrt_codename=$(grep -e '^LAYERSERIES_COMPAT_meta-nilrt' "${TEMPLATECONF}/layer.conf" | cut -d'"' -f2)
+nilrt_codename=$(grep -e '^LAYERSERIES_COMPAT_meta-nilrt' "${GIT_REPODIR}/meta-nilrt/conf/layer.conf" | cut -d'"' -f2)
 export PYREX_BUILD_NILRT_IMAGE="${PYREX_BUILD_NILRT_IMAGE:-build-nilrt:${nilrt_codename}}"
 echo "INFO: Using pyrex image: ${PYREX_BUILD_NILRT_IMAGE}"
 
