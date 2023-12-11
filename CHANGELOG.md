@@ -12,7 +12,7 @@ To see changes to each individual package in the core feed, check out the [feed 
 
 ## Latest Updates
 * nilrt: 254
-* meta-nilrt: 641
+* meta-nilrt: 644
 
 ----
 ## 10.1
@@ -33,6 +33,7 @@ Branch: `nilrt/master/kirkstone`
 - [Fixed](https://github.com/ni/meta-nilrt/pull/622) a package-installation error with `cryptsetup`, where opkg could not satisfy the `lvm2-udevrules` dependency.
 - [Fixed](https://github.com/ni/meta-nilrt/pull/623) a bug in the `linux-nilrt` recipes, which would stamp the kernel uname string with the incorrect build datetime.
 - [Fixed](https://github.com/ni/meta-nilrt/pull/640) an issue where dkms drivers would not rebuild when multiple kernels are installed.
+- The `ni-rtfeatures` initscript will now log the `poweron` reset_source string as a valid state, instead of [throwing an error](https://github.com/ni/meta-nilrt/pull/644).
 
 
 ----
