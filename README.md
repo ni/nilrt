@@ -160,7 +160,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     ```bash
     bash ../scripts/pipelines/build.cross-toolchain.sh
     ```
-
+9. #### Make a change for testing
     During the build, an archive is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like
     `oecore-x86_64-core2-64-toolchain.tar.xz`. This archive can be extracted on a Windows system to
     to access the toolchain.
