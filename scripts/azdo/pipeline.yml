@@ -8,4 +8,4 @@ jobs:
   steps:
   - script: |
       echo "Hello World!"
-      echo "prbuild 2.1"
+      echo "prbuild 5.0"
