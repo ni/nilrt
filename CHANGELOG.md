@@ -14,7 +14,7 @@ The evergreen, canonical changelog for *all NILRT branches* can be [found here](
 
 ----
 ## 10.1
-Branch: `nilrt/master/kirkstone`
+Branch: `nilrt/24.0/kirkstone`
 
 ### nilrt
 
