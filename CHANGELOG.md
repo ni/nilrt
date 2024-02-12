@@ -16,7 +16,7 @@ To see changes to each individual package in the core feed, check out the [feed 
 
 ----
 ## 10.1
-Branch: `nilrt/master/kirkstone`
+Branch: `nilrt/24.0/kirkstone`
 
 ### nilrt
 
