@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: BSD-3-Clause
+
+"""Host an OE IPK deploy tree on an HTTP server."""
+
+from argparse import ArgumentParser, Namespace
+from glob import glob
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+import logging
+from pathlib import Path
+import os
+import re
+from socket import getfqdn
+import sys
+from tempfile import TemporaryDirectory
+import urllib.parse
+
+__author__ = "Alex Stewart <astewart.49c6@gmail.com>"
+__version__ = "1"
+SCRIPT_NAME = "host_deploy_ipks"  # value intentionally not computed at runtime
+
+logger = logging.getLogger(SCRIPT_NAME)
+
+HTTP_DEFAULT_HOST = "0.0.0.0"
+HTTP_DEFAULT_PORT = 8080
+
+
+class IPKFeedServer(HTTPServer):
+    """An http.server.HTTPServer, specialized to host IPK feeds. It operates
+    similarly to the default "test" server started when calling the http.server
+    module as a script.
+    """
+
+    def __init__(
+        self,
+        root: str | os.PathLike,
+        bind_address: str=HTTP_DEFAULT_HOST,
+        host_port: int=HTTP_DEFAULT_PORT,
+    ):
+        """Creates a new IPKFeedServer instance.
+
+        Args:
+            root: The base directory to host on this HTTP server.
+            bind_address: The socket address that this server will bind to.
+            host_post: The socket port to use for service.
+        """
+        self._root = root
+        super().__init__(
+            (bind_address, host_port),
+            RequestHandlerClass=SimpleHTTPRequestHandler,
+        )
+
+    def serve_forever(self, poll_interval: float = 0.5) -> None:
+        return super().serve_forever(poll_interval)
+
+    def finish_request(self, request, client_address):
+        self.RequestHandlerClass(request, client_address, self, directory=self._root)
+
+
+class IPKFeedDirectory(TemporaryDirectory):
+    """A tempdir.TemporaryDirectory, specialized to build and host IPK package
+    feeds.
+    """
+
+    PREFIX = SCRIPT_NAME + "."
+
+    def __init__(self, ipk_directories: list[Path], dir: (None | os.PathLike)=None):
+        """Initialize a new IPKFeedDirectory, and create a symlink farm pointing
+        to the directories that will be hosted on the server.
+        
+        Args:
+            ipk_directories: A list of a ipk_directory paths to host.
+            dir: If None, create the temporary directory in the TMPDIR location;
+                else, create it in the location specified by dir.
+        """
+        super().__init__(
+            prefix=self.PREFIX,
+            dir=dir,
+        )
+        logger.info(f"Created temporary feed directory: {self.name}")
+
+        # create symlink tree of IPK directories
+        for ipk_dir in ipk_directories:
+            dir_name = urllib.parse.quote(ipk_dir.name)
+            suffix = ".1"
+            while dir_name + suffix in self.feed_names:
+                suffix += 1
+            dir_name = dir_name + suffix if suffix != ".1" else dir_name
+            link_path = Path(self.name) / dir_name
+
+            logger.debug(f"Creating IPK dir symlink: {dir_name} -> {ipk_dir}")
+            os.symlink(ipk_dir, link_path, target_is_directory=True)
+
+    @property
+    def feed_names(self):
+        """Returns: a list of all the feed links within this directory."""
+        return os.listdir(self.name)
+
+    def print_opkg_conf(self, port: (int | str)):
+        """Print an example shell script snippet that writes an opkg conf file for
+        this service's feed directory.
+
+        Args:
+            port: The port number to encode within the feed URI.
+        """
+        fqdn = getfqdn()
+        print("=== Copy+Paste to setup opkg config ===")
+        print("cat >/etc/opkg/dev.conf <<-EOF")
+        for feed_name in self.feed_names:
+            print(f"src  {feed_name}  http://{fqdn}:{port}/{feed_name}  [trusted=yes]")
+        print("EOF")
+        print("===")
+
+
+def find_ipk_feeds(search_root: os.PathLike=os.getcwd(), skip_empty: bool=False) -> list[Path]:
+    """Search a path (`search_root`) for 'Package' index files, optionally
+    filter out those which are empty, and return the results as a list.
+
+    Args:
+        search_root: The base path from which to start the search.
+        skip_empty: If True, do not include indexes which contain no 'Package:'
+            entries in the search results.
+
+    Returns:
+        A list of paths to the found indexes, relative to the `search_root`.
+    """
+    logger.info(f"Searching {search_root} for IPK feeds.")
+    ipk_feeds = []
+    for index in glob("**/Packages", root_dir=search_root, recursive=True):
+        index_full_path = Path(search_root) / index
+        feed_path = index_full_path.parent
+        logger.info(f"Found IPK feed: {feed_path}")
+
+        if skip_empty:
+            with open(index_full_path, "r") as fp_index:
+                if not re.search(r"^Package: ", fp_index.read(), flags=re.MULTILINE):
+                    logger.warning(f"Skipping empty index: {index_full_path}")
+                    continue
+
+        ipk_feeds.append(feed_path)
+    return ipk_feeds
+
+def parse_args(argv: list[str]) -> Namespace:
+    """Parse a CLI argument sequence and set namespace variables relevant to
+    this module's `main()` method.
+    
+    Args:
+        argv: The CLI argument sequence to parse.
+
+    Returns: A populated namespace of arguments, for use by the main() method.
+    """
+    parser = ArgumentParser(description=__doc__, allow_abbrev=False)
+    parser.add_argument("--verbose", "-v", action="count", default=0,
+        help="Increase the verbosity of script output. Specify once for verbose output, specify twice for debug.")
+    parser.add_argument("--version", "-V", action="store_true",
+        help="Print his script's version information and exit.")
+    
+    parser.add_argument("-b", "--bind", nargs="?", default=HTTP_DEFAULT_HOST,
+        help="The host address to which the feed server should bind. (Default=%(default)s)")
+    parser.add_argument("-e", "--host-empty", action="store_true",
+        help="If asserted, host IPK feeds that contain no packages.")
+    parser.add_argument("-p", "--port", type=int, nargs="?", default=HTTP_DEFAULT_PORT,
+        help="The port number over which the feed server will host. (Default=%(default)s)")
+    parser.add_argument("--suppress-opkg-conf", action="store_true",
+        help="If enabled, do not print an opkg conf script.")
+    
+    parser.add_argument("root", type=Path, nargs="?", default=os.getcwd(),
+        help="The root path for the feed server. (Default=${PWD})")
+
+    return parser.parse_args(argv)
+
+def print_version():
+    """https://www.gnu.org/prep/standards/html_node/_002d_002dversion.html
+    """
+    print(f"{SCRIPT_NAME} {__version__}")
+    print(f"Copyright © 2024 Emerson")
+    print(f"License BSD-3-Clause <https://opensource.org/license/BSD-3-clause/>")
+
+def main(argv: list[str]=sys.argv[1:]) -> int:
+    """Host a directory containing the deployed IPKs from an OE build, as an
+    HTTP server and optionally print a config snippet to configure an opkg
+    client to use the hosted feeds.
+
+    Args:
+        argv: A CLI argument sequence.
+
+    Returns: An integer return code, indicating success (`0`) or an error code.
+    """
+    args = parse_args(argv)
+
+    # setup logging
+    if args.verbose >= 2:
+        logging.basicConfig(level=logging.DEBUG)
+        logger.debug(args)
+    elif args.verbose >= 1:
+        logging.basicConfig(level=logging.INFO)
+
+    # handle --verson
+    if args.version:
+        print_version()
+        return os.EX_OK
+
+    ipk_feeds = find_ipk_feeds(args.root, skip_empty=(not args.host_empty))
+    if len(ipk_feeds) == 0:
+        logger.error("Found no valid IPK feeds at root. Exiting.")
+        return 1
+
+    try:
+        tmpdir = IPKFeedDirectory(ipk_feeds)
+
+        # emit opkg conf
+        if not args.suppress_opkg_conf:
+            tmpdir.print_opkg_conf(args.port)
+
+        # start server
+        print((f"Serving IPKs on {args.bind}:{args.port} ..."))
+        server = IPKFeedServer(
+            root=tmpdir.name,
+            bind_address=args.bind,
+            host_port=args.port
+        )
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt as e:
+            print(f"\nCaught keyboard interrupt. Shutting down.")
+    except Exception as e:
+        tmpdir.cleanup()
+        raise e
+    finally:
+        tmpdir.cleanup()
+
+    return os.EX_OK
+
+
+if __name__ == "__main__":
+    sys.exit(main())
