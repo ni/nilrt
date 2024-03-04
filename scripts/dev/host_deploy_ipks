@@ -130,7 +130,7 @@ def find_ipk_feeds(
     ipk_feeds = []
     for index in glob("**/Packages", root_dir=search_root, recursive=True):
         index_full_path = Path(search_root) / index
-        feed_path = index_full_path.parent
+        feed_path = index_full_path.parent.absolute()
         logger.info(f"Found IPK feed: {feed_path}")
 
         if skip_empty:
