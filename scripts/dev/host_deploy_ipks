@@ -34,8 +34,8 @@ class IPKFeedServer(HTTPServer):
     def __init__(
         self,
         root: str | os.PathLike,
-        bind_address: str=HTTP_DEFAULT_HOST,
-        host_port: int=HTTP_DEFAULT_PORT,
+        bind_address: str = HTTP_DEFAULT_HOST,
+        host_port: int = HTTP_DEFAULT_PORT,
     ):
         """Creates a new IPKFeedServer instance.
 
@@ -64,10 +64,10 @@ class IPKFeedDirectory(TemporaryDirectory):
 
     PREFIX = SCRIPT_NAME + "."
 
-    def __init__(self, ipk_directories: list[Path], dir: (None | os.PathLike)=None):
+    def __init__(self, ipk_directories: list[Path], dir: None | os.PathLike = None):
         """Initialize a new IPKFeedDirectory, and create a symlink farm pointing
         to the directories that will be hosted on the server.
-        
+
         Args:
             ipk_directories: A list of a ipk_directory paths to host.
             dir: If None, create the temporary directory in the TMPDIR location;
@@ -96,7 +96,7 @@ class IPKFeedDirectory(TemporaryDirectory):
         """Returns: a list of all the feed links within this directory."""
         return os.listdir(self.name)
 
-    def print_opkg_conf(self, port: (int | str)):
+    def print_opkg_conf(self, port: int | str):
         """Print an example shell script snippet that writes an opkg conf file for
         this service's feed directory.
 
@@ -112,7 +112,9 @@ class IPKFeedDirectory(TemporaryDirectory):
         print("===")
 
 
-def find_ipk_feeds(search_root: os.PathLike=os.getcwd(), skip_empty: bool=False) -> list[Path]:
+def find_ipk_feeds(
+    search_root: os.PathLike = os.getcwd(), skip_empty: bool = False
+) -> list[Path]:
     """Search a path (`search_root`) for 'Package' index files, optionally
     filter out those which are empty, and return the results as a list.
 
@@ -140,43 +142,77 @@ def find_ipk_feeds(search_root: os.PathLike=os.getcwd(), skip_empty: bool=False)
         ipk_feeds.append(feed_path)
     return ipk_feeds
 
+
 def parse_args(argv: list[str]) -> Namespace:
     """Parse a CLI argument sequence and set namespace variables relevant to
     this module's `main()` method.
-    
+
     Args:
         argv: The CLI argument sequence to parse.
 
     Returns: A populated namespace of arguments, for use by the main() method.
     """
     parser = ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument("--verbose", "-v", action="count", default=0,
-        help="Increase the verbosity of script output. Specify once for verbose output, specify twice for debug.")
-    parser.add_argument("--version", "-V", action="store_true",
-        help="Print his script's version information and exit.")
-    
-    parser.add_argument("-b", "--bind", nargs="?", default=HTTP_DEFAULT_HOST,
-        help="The host address to which the feed server should bind. (Default=%(default)s)")
-    parser.add_argument("-e", "--host-empty", action="store_true",
-        help="If asserted, host IPK feeds that contain no packages.")
-    parser.add_argument("-p", "--port", type=int, nargs="?", default=HTTP_DEFAULT_PORT,
-        help="The port number over which the feed server will host. (Default=%(default)s)")
-    parser.add_argument("--suppress-opkg-conf", action="store_true",
-        help="If enabled, do not print an opkg conf script.")
-    
-    parser.add_argument("root", type=Path, nargs="?", default=os.getcwd(),
-        help="The root path for the feed server. (Default=${PWD})")
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        action="count",
+        default=0,
+        help="Increase the verbosity of script output. Specify once for verbose output, specify twice for debug.",
+    )
+    parser.add_argument(
+        "--version",
+        "-V",
+        action="store_true",
+        help="Print his script's version information and exit.",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--bind",
+        nargs="?",
+        default=HTTP_DEFAULT_HOST,
+        help="The host address to which the feed server should bind. (Default=%(default)s)",
+    )
+    parser.add_argument(
+        "-e",
+        "--host-empty",
+        action="store_true",
+        help="If asserted, host IPK feeds that contain no packages.",
+    )
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        nargs="?",
+        default=HTTP_DEFAULT_PORT,
+        help="The port number over which the feed server will host. (Default=%(default)s)",
+    )
+    parser.add_argument(
+        "--suppress-opkg-conf",
+        action="store_true",
+        help="If enabled, do not print an opkg conf script.",
+    )
+
+    parser.add_argument(
+        "root",
+        type=Path,
+        nargs="?",
+        default=os.getcwd(),
+        help="The root path for the feed server. (Default=${PWD})",
+    )
 
     return parser.parse_args(argv)
 
+
 def print_version():
-    """https://www.gnu.org/prep/standards/html_node/_002d_002dversion.html
-    """
+    """https://www.gnu.org/prep/standards/html_node/_002d_002dversion.html"""
     print(f"{SCRIPT_NAME} {__version__}")
     print(f"Copyright © 2024 Emerson")
     print(f"License BSD-3-Clause <https://opensource.org/license/BSD-3-clause/>")
 
-def main(argv: list[str]=sys.argv[1:]) -> int:
+
+def main(argv: list[str] = sys.argv[1:]) -> int:
     """Host a directory containing the deployed IPKs from an OE build, as an
     HTTP server and optionally print a config snippet to configure an opkg
     client to use the hosted feeds.
@@ -215,9 +251,7 @@ def main(argv: list[str]=sys.argv[1:]) -> int:
         # start server
         print((f"Serving IPKs on {args.bind}:{args.port} ..."))
         server = IPKFeedServer(
-            root=tmpdir.name,
-            bind_address=args.bind,
-            host_port=args.port
+            root=tmpdir.name, bind_address=args.bind, host_port=args.port
         )
         try:
             server.serve_forever()
