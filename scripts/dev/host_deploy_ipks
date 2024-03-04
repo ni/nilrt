@@ -7,15 +7,15 @@ from argparse import ArgumentParser, Namespace
 from glob import glob
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import logging
-from pathlib import Path
 import os
+from pathlib import Path
 import re
 from socket import getfqdn
 import sys
 from tempfile import TemporaryDirectory
 import urllib.parse
 
-__author__ = "Alex Stewart <astewart.49c6@gmail.com>"
+__author__ = "Alex Stewart <alex.stewart@ni.com>"
 __version__ = "1"
 SCRIPT_NAME = "host_deploy_ipks"  # value intentionally not computed at runtime
 
