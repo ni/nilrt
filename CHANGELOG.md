@@ -11,8 +11,46 @@ The evergreen, canonical changelog for *all NILRT branches* can be [found here](
 To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
 
 ## Latest Updates
-* nilrt: 254
-* meta-nilrt: 644
+* nilrt: 267
+* meta-nilrt: 679
+
+
+----
+## 11.0
+Branch: `nilrt/master/next`
+### meta-nilrt
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/663) `python3-schema` to the core packagefeed.
+- [Added](https://github.com/ni/meta-nilrt/pull/663) the `utf8cpp` project to the meta-nilrt layer.
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/663) ni-grpc-device to `2.4.0`.
+- [Changed](https://github.com/ni/meta-nilrt/pull/674) `egrep` calls in recovery media files to `grep -E`, as the former is deprecated.
+
+#### Deprecated
+- [Deprecated](https://github.com/ni/meta-nilrt/pull/663) the `ntpdate` package, since it has been dropped by upstream.
+- [Removed](https://github.com/ni/meta-nilrt/pull/673/commits/01ac041e848b67553001cee00336637eefb9384a) NIcurl-specific functions from curl, since these sources are no longer used by NIcurl.
+- [Removed](https://github.com/ni/meta-nilrt/pull/675) the unused `efifix` scripts.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/676) a parsing error in the recovery media provisioning scripts.
+
+
+----
+## 10.2
+Branch: `nilrt/24.3/kirkstone`
+
+### nilrt
+#### Added
+- [Added](https://github.com/ni/nilrt/pull/267) a `host_deply_ipks` script, to help developers host deploy IPK directories as opkg feeds.
+
+### meta-nilrt
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/652) `linux-nilrt-next` to `6.6`.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/667) `linux-nilrt-nohz` to `6.1`.
+- [Changed](https://github.com/ni/meta-nilrt/pull/657) `fw_printenv` behavior, so that it no longer prints duplicate variable values.
+- [Changed](https://github.com/ni/meta-nilrt/pull/677) `cifs-utils` to now RDEPEND on `keyutils`, which is a generally-required package for mounting cifs shares.
+
 
 ----
 ## 10.1
@@ -281,6 +319,20 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/277) the `restore` images and `lvcomms` images. The distributions that required these images are not supported in newer versions.
 - [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
+
+
+----
+## 8.19
+Branch: `nilrt/24.3/sumo`
+
+No changes.
+
+
+----
+## 8.18
+Branch: `nilrt/24.0/sumo`
+
+No changes.
 
 
 ----
