@@ -75,6 +75,7 @@ apt-get update && apt-get install -y \
 	kmod \
 	libelf-dev \
 	libssl-dev \
+	libncurses-dev \
 	make \
 	u-boot-tools \
 ""
