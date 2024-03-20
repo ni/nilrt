@@ -18,6 +18,7 @@ To see changes to each individual package in the core feed, check out the [feed 
 ----
 ## 11.0
 Branch: `nilrt/master/next`
+
 ### meta-nilrt
 #### Added
 - [Added](https://github.com/ni/meta-nilrt/pull/663) `python3-schema` to the core packagefeed.
@@ -43,6 +44,9 @@ Branch: `nilrt/24.3/kirkstone`
 ### nilrt
 #### Added
 - [Added](https://github.com/ni/nilrt/pull/267) a `host_deply_ipks` script, to help developers host deploy IPK directories as opkg feeds.
+
+#### Security
+- [Fixed](https://github.com/ni/meta-virtualization/pull/19) `runc` CVE-2024-21626​.
 
 ### meta-nilrt
 #### Changed
