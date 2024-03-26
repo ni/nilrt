@@ -150,7 +150,7 @@ build_qemu_vm() {
 
 	echo "Provisioning NILRT on QEMU VM..."
 	$PYREX_RUN qemu-system-x86_64 \
-		${enableKVM:-} -cpu qemu64 -smp cpus=1 \
+		${enableKVM:-} -cpu Nehalem,check=false -smp cpus=1 \
 		-m "$memory_mb" \
 		-nographic \
 		-drive if=pflash,format=raw,readonly=on,file="./OVMF/OVMF_CODE.fd" \
