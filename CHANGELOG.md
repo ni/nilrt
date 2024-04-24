@@ -8,8 +8,6 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
-To see changes to each individual package in the core feed, check out the [feed changelog](/docs/feed-changelog.md)
-
 ## Latest Updates
 * nilrt: 267
 * meta-nilrt: 679
