@@ -125,11 +125,11 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
         The resulting root file system images for the NILRT runmode image is located at the following paths:
 
-            tmp-glibc/deploy/images/x64/nilrt-base-system-image-x64.tar.gz
+            tmp-glibc/deploy/images/x64/nilrt-base-system-image-x64.tar
 
         You can install this on target by copying the file over to the target while the target is in safe mode and running the following commands:
 
-            tar xf nilrt-base-system-image-x64.tar.gz
+            tar xf nilrt-base-system-image-x64.tar
             tar xf data.tar.gz -C /mnt/userfs && ./postinst
 
     * Build a bootable recovery media by running the following command:
