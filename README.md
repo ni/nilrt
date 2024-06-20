@@ -76,7 +76,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 5. #### Build package or packagegroups
    For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
 
-        bitbake python ruby apache2
+        bitbake python3 ruby apache2
 
     To build all supported OpenEmbedded packages in NI's feed, run the following commands to build these packagegroups:
 
