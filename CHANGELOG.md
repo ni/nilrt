@@ -9,8 +9,8 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 267
-* meta-nilrt: 679
+* nilrt: 276
+* meta-nilrt: 706
 
 
 ----
@@ -33,6 +33,19 @@ Branch: `nilrt/master/next`
 
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/676) a parsing error in the recovery media provisioning scripts.
+
+
+----
+## 10.3
+Branch: `nilrt/24.5/kirkstone`
+
+### nilrt
+#### Removed
+- [Removed](https://github.com/ni/nilrt/pull/274) feed-changelogs, since we don't yet have a good usecase for their inclusion, and they have not proven to be useful.
+
+### meta-nilrt
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/694) a workflow to the provisioning tool to make and apply whole system images.
 
 
 ----
