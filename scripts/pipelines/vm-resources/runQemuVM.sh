@@ -14,7 +14,7 @@ generate_random_mac() {
 usage() {
 	cat <<EOF
 $(basename "$0") [-h] \\
-    [-a mac_address] [-b bridge] [-c cpu_count] [-m memory] [-s] [-g] \\
+    [-a mac_address] [-b bridge] [-c cpu_count] [-f port] [-m memory] [-s] [-g] \\
     [-- qemu_args [qemu_args]]
 
 Opts:
@@ -27,13 +27,14 @@ Args:
                      one which is randomly generated.
     -b bridge      : Add the VM as a member to this network bridge device.
     -c cpu_count   : the number of CPUs which will be available to the VM
+    -f port        : Forward the given QEMU host port to the guest's SSH port (22).
     -m memory      : the amount (in MB) of memory for the VM
     -- qemu_args   : optional arguments to append to the qemu-system-x86_64 call
 EOF
 }
 
 
-while getopts ":a:b:c:ghm:s-" opt; do
+while getopts ":a:b:c:f:ghm:s-" opt; do
 	case ${opt} in
 		a)
 			macaddr=$OPTARG
@@ -43,6 +44,9 @@ while getopts ":a:b:c:ghm:s-" opt; do
 			;;
 		c)
 			cpu_count=$OPTARG
+			;;
+		f)
+			forward_port=$OPTARG
 			;;
 		g)
 			graphical=true
@@ -95,6 +99,11 @@ if [ -n "${if_bridge}" ]; then
 	nilrt_net0_args="tap,ifname=\"$if_bridge\",id=nilrt_net0"
 else
 	nilrt_net0_args="user,id=nilrt_net0"
+fi
+
+# optionally forward a host port to the guest SSH port
+if [ -n "${forward_port}" ]; then
+	nilrt_net0_args="${nilrt_net0_args},hostfwd=tcp::${forward_port}-:22"
 fi
 
 # Enable the KVM hypervisor layer, if it seems like it is supported.
