@@ -6,4 +6,6 @@ RUN apt-get update && apt-get install --assume-yes \
 	genisoimage \
 	qemu-system-x86 \
 	qemu-utils \
+	libtinfo5 \
+	openssh-client \
 ""
