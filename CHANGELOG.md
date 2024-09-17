@@ -9,8 +9,9 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 276
-* meta-nilrt: 706
+* nilrt: 285
+* meta-nilrt: 733
+* linux: 175
 
 
 ----
@@ -21,10 +22,14 @@ Branch: `nilrt/master/next`
 #### Added
 - [Added](https://github.com/ni/meta-nilrt/pull/663) `python3-schema` to the core packagefeed.
 - [Added](https://github.com/ni/meta-nilrt/pull/663) the `utf8cpp` project to the meta-nilrt layer.
+- [Added](https://github.com/ni/meta-nilrt/pull/717) `libpwquality` to the core packagefeed.
+- [Added](https://github.com/ni/meta-nilrt/pull/726) `nftables` to runmode.
+- [Added](https://github.com/ni/meta-nilrt/pull/729) `nilrt-snac` recipe to put system into SNAC configuration.
 
 #### Changed
 - [Upgraded](https://github.com/ni/meta-nilrt/pull/663) ni-grpc-device to `2.4.0`.
 - [Changed](https://github.com/ni/meta-nilrt/pull/674) `egrep` calls in recovery media files to `grep -E`, as the former is deprecated.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/727) `libfmi` to `v3.0a4`
 
 #### Deprecated
 - [Deprecated](https://github.com/ni/meta-nilrt/pull/663) the `ntpdate` package, since it has been dropped by upstream.
@@ -33,6 +38,31 @@ Branch: `nilrt/master/next`
 
 #### Fixed
 - [Fixed](https://github.com/ni/meta-nilrt/pull/676) a parsing error in the recovery media provisioning scripts.
+
+
+----
+## 10.4
+Branch: `nilrt/24.8/kirkstone`
+
+### nilrt
+#### Added
+- [Added](https://github.com/ni/linux/pull/170) nftables support to 6.1 and 6.6 kernels.
+
+#### Security
+- [Upgraded](https://github.com/ni/meta-openembedded/pull/65) `apache2` to 2.4.62 to fix CVE-2024-38476, CVE-2024-40725.
+
+### Fixed
+- [Fixed](https://github.com/ni/openembedded-core/pull/132) 2038 bug in `grub2`.
+
+### meta-nilrt
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/715) `patool` dependencies to the core packagefeed.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/709) a bug that could prevent system replication tool from working across versions.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/710) ktimers priority to improve nohz performance.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/721) system replication tool to work with image sizes larger than 4GB.
+- [Fixed](https://github.com/ni/meta-nilrt/pull/722) ksoftirqd and rcu priority to address a priority inversion deadlock.
 
 
 ----
