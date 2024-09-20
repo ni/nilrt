@@ -65,6 +65,8 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     If you are building on a virtual machine and do not have nested virtualization enabled on the host, you will need to locally remove the `--device /dev/kvm` entry in the args assignment in the top-level pyrex.ini file.
 
+    If you are building on a host with an older version of libseccomp, you may need to add `--security-opt seccomp=unconfined` entry in the args assignment in the top-level pyrex.ini file to work around build errors, as described [here](https://github.com/moby/moby/issues/43595).
+
     **NI builders** who are connected to the NI corporate network should specify `-org` in their init script args, to provoke the script into adding the `ni-org.conf` snippet to your bitbake directory. External builders *should not* use `--org`.
 
    If you are building on a `nilrt/master/*` branch ref (rather than a release branch) **and** if you are building outside of the NI corporate network, you will need to set the version of the `ni-main` opkg feed to one which has already been published to `download.ni.com`. Do this by setting the `NILRT_MAIN_FEED_VERSION` bitbake variable to the latest published release. eg.
