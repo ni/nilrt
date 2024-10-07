@@ -83,13 +83,12 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     To build all supported OpenEmbedded packages in NI's feed, run the following commands to build these packagegroups:
 
         bitbake packagefeed-ni-core
-        bitbake --continue packagefeed-ni-extra
 
-    **NOTE** If a package within a package group is updated, rebuilding the package group will automatically rebuild that package and all package depending on that package.
+    **NOTE.** If a package within a package group is updated, rebuilding the package group will automatically rebuild that package and all of its dependencies.
 
-    **NOTE** The configuration files (build/conf/*.conf) can optionally be changed to reflect the desired build settings instead of setting environment variables.
+    **NOTE.** The configuration files (build/conf/*.conf) can optionally be changed to reflect the desired build settings instead of setting environment variables.
 
-    **NOTE** Building packages through OpenEmbedded can use significant disk space, on the order of 100s of gigabytes. If you are preparing a virtual machine to build images, make sure to allocate sufficient disk space.
+    **NOTE.** Building packages through OpenEmbedded can use significant disk space, on the order of 100s of gigabytes. If you are preparing a virtual machine to build images, make sure to allocate sufficient disk space.
 
     The resulting ipk files that can be installed through opkg exist at the following directory:
 
