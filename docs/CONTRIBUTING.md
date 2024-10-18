@@ -10,9 +10,9 @@ The canonical upstream for this project is: [github.com/ni/nilrt](https://github
 The OE-layers used by the project are also available under the [github.com/ni](https://github.com/ni/) group. The [meta-nilrt](https://github.com/ni/meta-nilrt) layer is owned by NI, and the information in this CONTRIBUTING file applies to it as well.
 
 Current Project Maintainers:
-* Alex Stewart <[alex.stewart@ni.com](mailto:alex.stewart@ni.com)> [[Github](https://github.com/amstewart)]
-* Chaitanya Vadrevu <[chaitanya.vadrevu@ni.com](mailto:chaitanya.vadrevu@ni.com)> [[Github](https://github.com/chaitu236)]
-* The NI RTOS Team <[RTOS@ni.com](mailto:RTOS@ni.com)>
+* Alex Stewart <[alex.stewart@emerson.com](mailto:alex.stewart@emerson.com)> [[Github](https://github.com/amstewart)]
+* Chaitanya Vadrevu <[chaitanya.vadrevu@emerson.com](mailto:chaitanya.vadrevu@emerson.com)> [[Github](https://github.com/chaitu236)]
+* The NI RTOS Team <[RTOS@emerson.com](mailto:RTOS@emerson.com)>
 
 
 ### Branches
@@ -37,7 +37,7 @@ Github PRs should be preferred in all cases. If it is not possible for you to us
 
 **Runtime issues and help** using your Linux RT distribution are best filed on the [NI RT discussion forum](https://forums.ni.com/t5/NI-Linux-Real-Time-Discussions/bd-p/7111?profile.language=en), which is regularly monitored by NI support engineers and knowledgeable members of the community.
 
-**Security concerns** are best filed with the [NI security team](https://www.ni.com/en-us/support/security.html) via the group email: <[security@ni.com](mailto:security@ni.com)>.
+**Security concerns** are best filed with the [NI security team](https://www.ni.com/en-us/support/security.html) via the group email: <[ni-psirt@emerson.com](mailto:ni-psirt@emerson.com)>.
 
 
 ## Developer Certificate of Origin (DCO)
