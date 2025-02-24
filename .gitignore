@@ -1,3 +1,4 @@
 build
 !build/conf/bblayers.conf
 downloads
+.vscode/
