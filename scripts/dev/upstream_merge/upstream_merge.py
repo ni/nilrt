@@ -49,6 +49,8 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
             elif response.startswith("c"):
                 print("Exiting")
                 sys.exit(0)
+            else:
+                print("    Please answer d/s/c")
 
     create_branch(LOCAL_BRANCH_NAME, local_base_branch)
 
@@ -59,7 +61,6 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         print(" ... OK (no changes)")
     elif check_diff():
         print(" ... OK")
-        #print(check_diff())
     else:
         print(" ... ERRORS")
 
