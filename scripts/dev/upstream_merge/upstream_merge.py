@@ -16,7 +16,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Automated repository merging script")
     parser.add_argument("-c", type=str, help="Path to configuration file", default="repos.conf")
     parser.add_argument("-f", action="store_true", help="Force checkout, skipping sanity check")
-    parser.add_argument("-h", action="help", help="Show this help message and exit")
     args = parser.parse_args()
 
     CONF_FILE = args.c
@@ -103,6 +102,7 @@ def merge_upstream_branch(upstream_branch):
         print(" ... ERRORS")
 
 def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
+    temp = os.getcwd()
     os.chdir(local_repo)
     print(local_repo, end="")
 
@@ -114,6 +114,7 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         print(" ... SKIPPED")
     else:
         merge_upstream_branch(upstream_branch)
+    os.chdir(temp)
 
 def main():
     with open(CONF_FILE, "r") as file:
