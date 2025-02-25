@@ -56,7 +56,7 @@ def branch_exists(branch_name):
 
 def check_diff():
     """Check if there are differences in the last merge."""
-    return "diff" in run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1]
+    return "diff" in run_git_command(["git", "diff", "HEAD~1", "HEAD","|","grep","diff"], capture_output=True)[1]
 
 def pull_latest():
     """Pull latest changes from the current branch's remote tracking branch."""

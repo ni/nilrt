@@ -59,6 +59,7 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         print(" ... OK (no changes)")
     elif check_diff():
         print(" ... OK")
+        #print(check_diff())
     else:
         print(" ... ERRORS")
 
