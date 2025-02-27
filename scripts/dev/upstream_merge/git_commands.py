@@ -56,7 +56,8 @@ def branch_exists(branch_name):
 
 def check_diff():
     """Check if there are differences in the last merge."""
-    return "diff" in run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1]
+    diff_output = run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1]
+    return bool(diff_output)
 
 def print_diff():
     """Check if there are differences in the last merge."""
