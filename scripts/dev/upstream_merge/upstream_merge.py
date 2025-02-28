@@ -64,6 +64,8 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         print_diff()
     else:
         print(" ... ERRORS")
+        print_diff()
+
 
     os.chdir(temp)
 
