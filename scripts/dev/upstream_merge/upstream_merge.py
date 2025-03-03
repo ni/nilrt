@@ -65,14 +65,11 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
     commit_before_merge = get_current_commit()
     merge_result = merge_branch(REMOTE_REPO_NAME, upstream_branch)
 
-    if merge_result == (0,None):
-        if get_current_commit() == commit_before_merge:
+    if merge_result[0] == 0:
+        if (get_current_commit() == commit_before_merge) or check_diff() == 0:
             print(" ... OK (no changes)")
-        elif check_diff():
-            print(" ... OK")
         else:
-            print(" ... ERRORS")
-            print_diff()
+            print(" ... OK")
     else:
         print(" ... ERRORS")
         print(merge_result)

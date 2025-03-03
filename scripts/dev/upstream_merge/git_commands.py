@@ -39,11 +39,11 @@ def fetch_branch(remote_name, branch_name):
 
 def merge_branch(remote_name, branch_name, message="Merge latest upstream"):
     """Merge a remote branch into the current branch."""
-    return run_git_command(["git", "merge", f"{remote_name}/{branch_name}", "--signoff", "-m", message])
+    return run_git_command(["git", "merge", f"{remote_name}/{branch_name}", "--signoff", "-m", message], capture_output=True)
 
 def add_remote(remote_name, remote_url):
     """Add a new remote."""
-    run_git_command(["git", "remote", "remove", remote_name])  # Remove if exists
+    run_git_command(["git", "remote", "remove", remote_name])
     return run_git_command(["git", "remote", "add", remote_name, remote_url])
 
 def get_current_commit():
