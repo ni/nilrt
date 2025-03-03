@@ -70,6 +70,7 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
             print(" ... OK (no changes)")
         else:
             print(" ... OK")
+            print_diff()
     else:
         print(" ... ERRORS")
         print(merge_result)
