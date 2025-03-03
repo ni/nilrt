@@ -55,16 +55,20 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
     create_branch(LOCAL_BRANCH_NAME, local_base_branch)
 
     commit_before_merge = get_current_commit()
-    merge_branch(REMOTE_REPO_NAME, upstream_branch)
+    merge_result = merge_branch(REMOTE_REPO_NAME, upstream_branch)
 
-    if get_current_commit() == commit_before_merge:
-        print(" ... OK (no changes)")
-    elif check_diff():
-        print(" ... OK")
-        print_diff()
+    if merge_result == 0:
+        if get_current_commit() == commit_before_merge:
+            print(" ... OK (no changes)")
+        elif check_diff():
+            print(" ... OK")
+        else:
+            print(" ... ERRORS")
+            print_diff()
     else:
         print(" ... ERRORS")
-        print_diff()
+        print("idk")
+
 
 
     os.chdir(temp)
