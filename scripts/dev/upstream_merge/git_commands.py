@@ -66,3 +66,8 @@ def print_diff():
 def pull_latest():
     """Pull latest changes from the current branch's remote tracking branch."""
     return run_git_command(["git", "pull"])
+
+def send_email(to, file):
+    """ Send Mail """
+    return run_git_command(["git", "send-email", "--to", to, file])
+

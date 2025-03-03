@@ -7,6 +7,7 @@ CONF_FILE = None
 REMOTE_REPO_NAME = "automerge_upstream"
 LOCAL_BRANCH_NAME = "dev/automerge/ni"
 FORCE_CHECKOUT = False
+LOG_FILE = "merge_log.txt"
 
 def usage():
     print("Usage: script.py [-c <conf file>] [-f] [-h]")
@@ -33,10 +34,13 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
     if checkout_branch(local_base_branch) != (0,None):
         print(f"\n    Error switching to branch {local_base_branch}. Exiting")
         sys.exit(1)
+
     if pull_latest() != (0,None):
         print(f"\n    Error pulling latest on {local_base_branch}. Exiting")
         sys.exit(1)
-    add_remote(REMOTE_REPO_NAME, upstream_repo) 
+
+    add_remote(REMOTE_REPO_NAME, upstream_repo)
+
     if fetch_branch(REMOTE_REPO_NAME, upstream_branch) != (0,None):
         print(f"\n    Error fetching {upstream_branch} from {REMOTE_REPO_NAME}. Exiting")
         sys.exit(1)
@@ -75,18 +79,27 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         print(" ... ERRORS")
         print(merge_result)
 
-
-
     os.chdir(temp)
 
 def main():
-    with open(CONF_FILE, "r") as file:
-        for line in file:
-            if line.startswith("#"):
-                continue
-            parts = line.split()
-            local_repo, upstream_repo, upstream_branch, local_base_branch = parts
-            handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch)
+    with open(LOG_FILE, "w") as log:
+        sys.stdout = log  # Redirect stdout to log file
+        sys.stderr = log  # Redirect stderr to log file
+        
+        with open(CONF_FILE, "r") as file:
+            for line in file:
+                if line.startswith("#"):
+                    continue
+                parts = line.split()
+                local_repo, upstream_repo, upstream_branch, local_base_branch = parts
+                handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch)
+        
+        sys.stdout = sys.__stdout__  # Reset stdout
+        sys.stderr = sys.__stderr__  # Reset stderr
+
+    # Send the log file via email
+    send_email("shreejit.c@emerson.com", LOG_FILE)
+
 
 if __name__ == "__main__":
     parse_args()
