@@ -61,7 +61,7 @@ def check_diff():
 
 def print_diff():
     """Check if there are differences in the last merge."""
-    return run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1]
+    print( run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1])
 
 def pull_latest():
     """Pull latest changes from the current branch's remote tracking branch."""
