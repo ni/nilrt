@@ -30,10 +30,16 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         print(f"\n    Branch {local_base_branch} does not exist. Exiting")
         sys.exit(1)
 
-    checkout_branch(local_base_branch)
-    pull_latest()
-    add_remote(REMOTE_REPO_NAME, upstream_repo)
-    fetch_branch(REMOTE_REPO_NAME, upstream_branch)
+    if checkout_branch(local_base_branch) != (0,None):
+        print(f"\n    Error switching to branch {local_base_branch}. Exiting")
+        sys.exit(1)
+    if pull_latest() != (0,None):
+        print(f"\n    Error pulling latest on {local_base_branch}. Exiting")
+        sys.exit(1)
+    add_remote(REMOTE_REPO_NAME, upstream_repo) 
+    if fetch_branch(REMOTE_REPO_NAME, upstream_branch) != (0,None):
+        print(f"\n    Error fetching {upstream_branch} from {REMOTE_REPO_NAME}. Exiting")
+        sys.exit(1)
 
     if branch_exists(LOCAL_BRANCH_NAME):
         while True:
@@ -52,12 +58,14 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
             else:
                 print("    Please answer d/s/c")
 
-    create_branch(LOCAL_BRANCH_NAME, local_base_branch)
+    if create_branch(LOCAL_BRANCH_NAME, local_base_branch) != (0,None):
+        print(f"\n    Error creating {LOCAL_BRANCH_NAME}. Exiting")
+        sys.exit(1)
 
     commit_before_merge = get_current_commit()
     merge_result = merge_branch(REMOTE_REPO_NAME, upstream_branch)
 
-    if merge_result == 0:
+    if merge_result == (0,None):
         if get_current_commit() == commit_before_merge:
             print(" ... OK (no changes)")
         elif check_diff():
