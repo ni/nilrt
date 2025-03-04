@@ -54,14 +54,9 @@ def branch_exists(branch_name):
     """Check if a branch exists locally."""
     return run_git_command(["git", "rev-parse", "--verify", branch_name])[0] == 0
 
-def check_diff():
+def diff():
     """Check if there are differences in the last merge."""
-    diff_output = run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1]
-    return bool(diff_output)
-
-def print_diff():
-    """Check if there are differences in the last merge."""
-    print( run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)[1])
+    return run_git_command(["git", "diff", "HEAD~1", "HEAD"], capture_output=True)
 
 def pull_latest():
     """Pull latest changes from the current branch's remote tracking branch."""
@@ -69,5 +64,6 @@ def pull_latest():
 
 def send_email(to, file):
     """ Send Mail """
-    return run_git_command(["git", "send-email", "--to", to, file])
+    return run_git_command(["git", "send-email", "--to", to, "--subject", "Merge Details", file])
+
 
