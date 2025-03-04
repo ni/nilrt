@@ -47,21 +47,8 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
         sys.exit(1)
 
     if branch_exists(LOCAL_BRANCH_NAME):
-        while True:
-            response = input(f"\n    Branch {LOCAL_BRANCH_NAME} already exists\n"
-                             "    Delete Branch(d)/Skip Repo(s)/Cancel Merge(c)? ").lower()
-            if response.startswith("d"):
-                checkout_branch(local_base_branch)
-                delete_branch(LOCAL_BRANCH_NAME)
-                break
-            elif response.startswith("s"):
-                os.chdir(temp)
-                return
-            elif response.startswith("c"):
-                print("Exiting")
-                sys.exit(0)
-            else:
-                print("    Please answer d/s/c")
+        checkout_branch(local_base_branch)
+        delete_branch(LOCAL_BRANCH_NAME)
 
     if create_branch(LOCAL_BRANCH_NAME, local_base_branch) != (0,None):
         print(f"\n    Error creating {LOCAL_BRANCH_NAME}. Exiting")
@@ -88,8 +75,8 @@ def main():
         log.write(f"From: {EMAIL_FROM}\n")
         log.write(f"To: {EMAIL_TO}\n")
         log.write("Subject: Merge Details\n\n")
-        sys.stdout = log  # Redirect stdout to log file
-        sys.stderr = log  # Redirect stderr to log file
+        sys.stdout = log
+        sys.stderr = log
         
         with open(CONF_FILE, "r") as file:
             for line in file:
@@ -99,8 +86,8 @@ def main():
                 local_repo, upstream_repo, upstream_branch, local_base_branch = parts
                 handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch)
         
-        sys.stdout = sys.__stdout__  # Reset stdout
-        sys.stderr = sys.__stderr__  # Reset stderr
+        sys.stdout = sys.__stdout__ 
+        sys.stderr = sys.__stderr__ 
 
 if __name__ == "__main__":
     parse_args()
