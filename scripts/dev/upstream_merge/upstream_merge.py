@@ -79,7 +79,7 @@ def handle_repo(local_repo, upstream_repo, upstream_branch, local_base_branch):
             print(diff_output[1])
     else:
         print(" ... ERRORS")
-        print(merge_result)
+        print(merge_result[1])
 
     os.chdir(temp)
 
