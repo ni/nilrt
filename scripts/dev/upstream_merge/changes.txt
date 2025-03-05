@@ -1,0 +1,15 @@
+
+
+Instead of globals in the parse_args() function, parse the args and send them to main.
+
+Make handle_repo return a dictionary or some similar structure, and then parse that into the log file. Dictionary can have key as the submodule repo name, and the value as the return code+return string as the value.
+
+Create a class for handling all git operations.
+
+When parsing the repos.conf file, just create git_repo objects, and invoke the pull/merge/push methods from the object itself instead of passing parameters all around the place.
+
+Pull out run_command() into a different python module, it should be callable by any module, not just the git commands module.
+
+The methods of git_commands should not know about the internals of the run_command() function, and the run_command() function should not be making any assumptions about the values it gets as input parameters.
+
+Move send_email() also to main()
