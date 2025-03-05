@@ -23,7 +23,7 @@ def parse_args():
 
 def handle_repo(git_obj,FORCE_CHECKOUT):
     os.chdir(git_obj.local_repo)
-
+    
     if not FORCE_CHECKOUT and not git_obj.branch_exists(git_obj.local_base_branch):
         return (1,f"\n    Branch {git_obj.local_base_branch} does not exist. Exiting")
 
@@ -34,8 +34,8 @@ def handle_repo(git_obj,FORCE_CHECKOUT):
         return (1,f"\n    Error pulling latest on {git_obj.local_base_branch}. Exiting")
 
     git_obj.add_remote()
-
-    if git_obj.fetch_branch(git_obj.upstream_branch) != (0,None):
+    
+    if git_obj.fetch_branch() != (0,None):
         return (1,f"\n    Error fetching {git_obj.upstream_branch} from {REMOTE_REPO_NAME}. Exiting")
 
     if git_obj.branch_exists(LOCAL_BRANCH_NAME):
@@ -47,7 +47,7 @@ def handle_repo(git_obj,FORCE_CHECKOUT):
 
     commit_before_merge = git_obj.get_current_commit()
     
-    merge_result = git_obj.merge_branch(f"{REMOTE_REPO_NAME} {git_obj.upstream_branch}")
+    merge_result = git_obj.merge_branch(f"{REMOTE_REPO_NAME}/{git_obj.upstream_branch}")
 
     if merge_result[0] == 0:
         diff_output=git_obj.diff()
@@ -60,25 +60,26 @@ def handle_repo(git_obj,FORCE_CHECKOUT):
     
 def send_email(to, file):
     """ Send Mail """
-    return run_command(["git", "send-email", "--to", to, "--subject", "Merge Details", file])
+    return run_command(f"git send-email --to {to} --subject 'Merge Details' {file}")
 
 def format_email(output_report):
     with open(LOG_FILE, "w") as log:
         log.write(f"From: {EMAIL_FROM}\n")
         log.write(f"To: {EMAIL_TO}\n")
         log.write("Subject: Merge Details\n\n")
-
-        for local_repo,output in output_report:
+    
+        for local_repo, (status, message) in output_report.items():
             log.write(f"{local_repo}\n")
-            if output[0]==1:
+            if status==1:
                 log.write(" ... ERRORS\n")
-                log.write(f"{output[1]}\n")
+                log.write(f"{message}\n")
             else:
-                if output[1] == None:
+                if message == None:
                     log.write(" ... OK (no changes)\n")
                 else:
                     log.write(" ... OK\n")
-                    log.write(f"{output[1]}\n")
+                    log.write(f"{message}\n")
+        
 
 
 def main(CONF_FILE,FORCE_CHECKOUT):

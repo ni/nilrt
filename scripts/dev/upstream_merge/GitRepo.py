@@ -20,11 +20,11 @@ class GitRepo:
         """Delete a local branch."""
         return run_command(f"git branch -D {branch_name}")
 
-    def fetch_branch(self, branch_name):
+    def fetch_branch(self):
         """Fetch a remote branch."""
-        return run_command(f"git fetch {self.remote_repo_name} {branch_name}")
+        return run_command(f"git fetch {self.remote_repo_name} {self.upstream_branch}")
 
-    def merge_branch(self, branch_name, message = "Merge latest upstream"):
+    def merge_branch(self, branch_name, message = "Merge_latest_upstream"):
         """Merge a remote branch into the current branch."""
         return run_command(f"git merge {branch_name} --signoff -m {message}", capture_output=True)
 
@@ -48,4 +48,7 @@ class GitRepo:
     def pull_latest(self):
         """Pull latest changes from the current branch's remote tracking branch."""
         return run_command("git pull")
+    
+    def print_remote(self):
+        print(run_command("git remote -v",capture_output=True))
     
