@@ -9,9 +9,29 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 293
-* meta-nilrt: 794
-* linux: 184
+* nilrt: 301
+* meta-nilrt: 812
+* linux: 215
+
+
+----
+## 11.1
+Branch: `nilrt/25.3/scarthgap`
+
+### nilrt
+No changes.
+
+### meta-nilrt
+
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/798) `linux-nilrt`, `linux-nilrt-debug` and `linux-nilrt-nohz` kernels to `6.6`.
+
+#### Deprecated
+- [Removed](https://github.com/ni/meta-nilrt/pull/800) `linux-nilrt-module-versioning-headers` that are no longer needed for re-versioning now that DKMS is used.
+
+#### Fixed
+- [Fixed](https://github.com/ni/meta-nilrt/pull/808) xfce panel launcher icons.
 
 
 ----
@@ -373,6 +393,12 @@ Branch: `nilrt/22.5/hardknott`
 - [Removed](https://github.com/ni/meta-nilrt/pull/355) boot attestation based on now dead upstream code.
 - [Removed](https://github.com/ni/meta-nilrt/pull/290) packages dropped from upstream.
 
+
+----
+## 8.23
+Branch: `nilrt/25.3/sumo`
+
+No changes.
 
 ----
 ## 8.22
