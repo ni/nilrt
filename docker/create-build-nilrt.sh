@@ -3,7 +3,7 @@ set -u
 
 SCRIPT_ROOT=$(realpath $(dirname ${BASH_SOURCE}))
 PYREX_ROOT=$(realpath "${SCRIPT_ROOT}/../sources/pyrex")
-PYREX_BASE=ubuntu-22.04-oe
+PYREX_BASE=ubuntu-24.04-oe
 
 IMAGE_NAME=build-nilrt
 
