@@ -1,0 +1,16 @@
+{
+    "nilrt_branch":"nilrt/master/scarthgap",
+    "meta_nilrt_branch":"nilrt/master/scarthgap",
+    "conf_file_path": "scripts/dev/upstream_merge/repos.conf",
+    "force_checkout": false,
+    "upstream_repo_name": "automerge_upstream",
+    "merge_branch_name": "dev/automerge/ni",
+    "username": "CommitSentience",
+    "fork_name": "myfork",
+    "email_from": "shreejit.c@emerson.com",
+    "email_to": "pratheeksha.s.n@emerson.com",
+    "email_log_level": 1,
+    "log_level": 10,
+    "vm_name": "NILRTAgain",
+    "snapshot_name": "Clean_SSHEnabled"
+}

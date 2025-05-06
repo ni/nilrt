@@ -1,0 +1,69 @@
+name: Manual workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      work_item_id:
+        description: 'This is the work item that the created pull requests (PRs) will be linked to.'
+        default: 'None'
+        required: true
+        type: string
+
+      skip_merge:
+        description: 'Set this option to True when a merge conflict has occurred and you have resolved it manually.
+                      This option is used to skip the automated upstream merge step in the pipeline, allowing the build and test stages to proceed with your manually resolved state.'
+        default: 'False'
+        required: false
+        type: choice
+        options:
+          - 'True'
+          - 'False'
+
+      skip_push_and_pr:
+        description: 'Set this option to True when you want to skip pushing and creating PRs.'
+        default: 'False'
+        required: false
+        type: choice
+        options:
+          - 'True'
+          - 'False'
+
+jobs:
+  Run_upstream_merge_and_test_script:
+    runs-on: self-hosted
+    timeout-minutes: 7200
+    steps:
+      - name: Checkout current branch
+        if: ${{ inputs.skip_merge == 'False' }}
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+          submodules: recursive
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set Git pull behavior
+        run: git config pull.rebase false
+
+      - name: Run Python upstream merge script
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ "${{ inputs.skip_merge }}" = "True" ]; then
+            echo "Skipping checkout, using pre-cloned repo"
+            cd $GITHUB_WORKSPACE
+            SKIP_MERGE_FLAG="-s"
+          else
+            SKIP_MERGE_FLAG=""
+          fi
+
+          if [ "${{ inputs.skip_push_and_pr }}" = "True" ]; then
+            SKIP_PUSH_AND_PR_FLAG="-skip_push_and_pr"
+          else
+            SKIP_PUSH_AND_PR_FLAG=""
+          fi
+
+          echo "Running script: scripts/dev/upstream_merge/upstream_merge_and_test.py"
+          python3 scripts/dev/upstream_merge/upstream_merge_and_test.py \
+          -w "${{ inputs.work_item_id }}" $SKIP_MERGE_FLAG $SKIP_PUSH_AND_PR_FLAG
+          echo "Script completed"
