@@ -1,0 +1,5 @@
+# For safety, the CODEOWNERS file shoudld be protected by the primary maintainers directly.
+/.github/CODEOWNERS  @amstewart @chaitu236
+
+# By default, the maintainers group should be a reviewer on all PRs.
+*  @ni/openembedded-maintainers
