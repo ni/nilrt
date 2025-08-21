@@ -49,6 +49,29 @@ then reboot the target to start using the new kernel.
 [nohz-doc]: <https://www.kernel.org/doc/html/latest/timers/no_hz.html>
 [nohz-readme]: <https://github.com/ni/meta-nilrt/blob/HEAD/recipes-kernel/linux/nilrt-nohz/README.nohz>
 
+### Installing Additional Kernel Modules
+
+Many kernel modules are available via packages. This allows you
+to enable extra functionality without rebuilding the kernel.
+
+The full list of available kernel module packages can be found in the NI feeds:
+`https://download.ni.com/#ni-linux-rt/feeds/<release>/x64/main/x64/`
+where `<release>` corresponds to the current release cycle (for example, `2025Q3`).
+
+To install and load a module:
+
+```bash
+opkg install kernel-module-<module>
+modprobe <module>
+```
+
+Example: to enable USB serial device support:
+
+```bash
+opkg install kernel-module-usbserial
+modprobe usbserial
+```
+
 
 ### Build Host Requirements
 
