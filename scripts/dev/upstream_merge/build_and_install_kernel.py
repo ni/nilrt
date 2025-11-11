@@ -265,7 +265,7 @@ def main():
     global config
     args = parse_args()
     try:
-        config = JsonConfig(automation_conf_path=args.config, work_item_id=None)
+        config = JsonConfig(config_path=args.config, work_item_id=None)
         print(f"[INFO] Loaded configuration from: {args.config}")
         if args.work_dir:
             work_dir = os.path.expandvars(os.path.expanduser(args.work_dir))

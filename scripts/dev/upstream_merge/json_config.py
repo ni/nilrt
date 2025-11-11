@@ -9,8 +9,8 @@ class JsonConfig:
     """Handles loading and validating the automation_conf.json
         configuration file."""
 
-    def __init__(self, automation_conf_path, work_item_id):
-        with open(automation_conf_path, "r", encoding="utf-8") as file:
+    def __init__(self, config_path, work_item_id):
+        with open(config_path, "r", encoding="utf-8") as file:
             config = json.load(file)
         self.work_item_id = work_item_id
         self.nilrt_branch = config.get("nilrt_branch")
