@@ -211,6 +211,8 @@ def git_diff(
     target="HEAD",
     compare_with=None,
     staged=False,
+    name_only=False,
+    diff_filter=None,
     capture_output=True
 ):
     """
@@ -218,12 +220,23 @@ def git_diff(
     :param target: Target commit or branch (default: "HEAD").
     :param compare_with: Commit or branch to compare with (optional).
     :param staged: Whether to show staged changes.
+    :param name_only: Show only file names.
+    :param diff_filter: Filter types (e.g., 'U' for unmerged).
     :param capture_output: Whether to capture the command output.
     """
+    command = "git diff"
+    if staged:
+        command += " --staged"
+    if name_only:
+        command += " --name-only"
+    if diff_filter:
+        command += f" --diff-filter={diff_filter}"
+    
     if compare_with:
-        command = f"git diff {target} {compare_with}"
-    else:
-        command = "git diff --staged" if staged else "git diff"
+        command += f" {target} {compare_with}"
+    elif target != "HEAD" and not staged:
+        command += f" {target}"
+    
     return run_command(command, capture_output)
 
 
@@ -259,6 +272,104 @@ def git_pull_request(
             f'gh pr create --repo {repo} --title "{title}" --body "{body}" '
             f'--base {base_branch} --head {head_branch}'
         )
+    return run_command(command, capture_output)
+
+
+def git_reset(
+    target="HEAD",
+    hard=False,
+    soft=False,
+    capture_output=True
+):
+    """
+    Reset the repository to a specific commit.
+    :param target: Target commit/branch to reset to (default: "HEAD").
+    :param hard: Whether to do a hard reset (discard all changes).
+    :param soft: Whether to do a soft reset (keep changes staged).
+    :param capture_output: Whether to capture the command output.
+    """
+    command = f"git reset"
+    if hard:
+        command += " --hard"
+    elif soft:
+        command += " --soft"
+    command += f" {target}"
+    return run_command(command, capture_output)
+
+
+def git_clean(
+    force=False,
+    directories=False,
+    ignored_files=False,
+    capture_output=True
+):
+    """
+    Remove untracked files from the working tree.
+    :param force: Force removal of files.
+    :param directories: Remove untracked directories.
+    :param ignored_files: Remove ignored files as well.
+    :param capture_output: Whether to capture the command output.
+    """
+    command = "git clean"
+    if force:
+        command += " -f"
+    if directories:
+        command += " -d"
+    if ignored_files:
+        command += " -x"
+    return run_command(command, capture_output)
+
+
+def git_merge_abort(
+    capture_output=True
+):
+    """
+    Abort an ongoing merge operation.
+    :param capture_output: Whether to capture the command output.
+    """
+    return run_command("git merge --abort", capture_output)
+
+
+def git_tag(
+    tag_name=None,
+    list_pattern=None,
+    delete=False,
+    capture_output=True
+):
+    """
+    Handle git tag operations: list, create, or delete tags.
+    :param tag_name: Name of the tag (for create/delete operations).
+    :param list_pattern: Pattern to filter tags when listing.
+    :param delete: Whether to delete the specified tag.
+    :param capture_output: Whether to capture the command output.
+    """
+    if list_pattern:
+        command = f"git tag -l '{list_pattern}'"
+    elif delete and tag_name:
+        command = f"git tag -d {tag_name}"
+    elif tag_name:
+        command = f"git tag {tag_name}"
+    else:
+        command = "git tag"
+    return run_command(command, capture_output)
+
+
+def git_status(
+    short=False,
+    porcelain=False,
+    capture_output=True
+):
+    """
+    Show the working tree status.
+    :param short: Give the output in the short-format.
+    :param porcelain: Give the output in an easy-to-parse format.
+    :param capture_output: Whether to capture the command output.
+    """
+    command = "git status"
+    if short:
+        command += " --short"
+    elif porcelain:
+        command += " --porcelain"
     return run_command(command, capture_output)
 
 

@@ -8,12 +8,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def run_command(command, capture_output=True):
+def run_command(command, capture_output=True, cwd=None, env=None):
     """
     Run a shell command and optionally capture the output.
 
     :param command: Shell command as a string.
     :param capture_output: Whether to capture the output.
+    :param cwd: Working directory for command execution.
+    :param env: Environment variables for command execution.
     :return: (return_code, output) - return code and
                                     output string (or None if not captured).
     """
@@ -23,7 +25,8 @@ def run_command(command, capture_output=True):
     try:
         if capture_output:
             result = subprocess.run(
-                formatted_command, capture_output=True, text=True, check=True
+                formatted_command, capture_output=True, text=True, check=True,
+                cwd=cwd, env=env
             )
             logger.info(
                 "Command output: %s",
@@ -40,6 +43,8 @@ def run_command(command, capture_output=True):
             stderr=subprocess.DEVNULL,
             text=True,
             check=True,
+            cwd=cwd,
+            env=env
         )
         logger.info(
             "Command output: %s",

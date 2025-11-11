@@ -1,0 +1,22 @@
+{
+  "email_from": "dkaushik@emerson.com",
+  "email_to": "dkaushik@emerson.com",
+  "kernel_build": {
+    "kernel_src_dir": "nilrt-kernel-build/linux",
+    "target_host": "10.152.8.54",
+    "target_user": "admin",
+    "arch": "x86_64",
+    "temp_modules_dir": "nilrt-kernel-build/linux/tmp-glibc/modules",
+    "toolchain_prefix": "/usr/local/oecore-x86_64/sysroots/x86_64-nilrtsdk-linux/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-",
+    "repo_url": "https://github.com/ni/linux.git",
+    "target_branch": "nilrt/master/6.12",
+    "stable_rt_remote": "https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git",
+    "nilrt_root": "nilrt-sdk",
+    "required_packages": [
+      "bc", "bison", "flex", "gcc", "git",
+      "kmod", "libelf-dev", "libssl-dev", "make", "u-boot-tools"
+    ],
+    "make_jobs": "$(nproc)",
+    "kernel_config": "nati_x86_64_defconfig"
+  }
+}

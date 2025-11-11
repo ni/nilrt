@@ -16,6 +16,11 @@ from .git_commands import (
     git_push,
     git_pull_request,
     git_diff,
+    git_reset,
+    git_clean,
+    git_merge_abort,
+    git_tag,
+    git_status,
 )
 
 
