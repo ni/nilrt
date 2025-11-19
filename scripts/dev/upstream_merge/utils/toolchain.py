@@ -1,4 +1,4 @@
- """Toolchain detection/build helper: auto-detect existing repo first (ancestor walk),
+"""Toolchain detection/build helper: auto-detect existing repo first (ancestor walk),
 ignore nilrt_root hint if already inside a clone; only clone when nothing usable exists."""
 import os
 from .shell_commands import run_command
