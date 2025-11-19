@@ -21,11 +21,10 @@ def run_command(command, capture_output=True, cwd=None, env=None):
     """
     print(command)
     logger.info("Running command: %s", command)
-    formatted_command = shlex.split(command)
     try:
         if capture_output:
             result = subprocess.run(
-                formatted_command, capture_output=True, text=True, check=True,
+                command, shell=True, capture_output=True, text=True, check=True,
                 cwd=cwd, env=env
             )
             logger.info(
@@ -38,7 +37,8 @@ def run_command(command, capture_output=True, cwd=None, env=None):
             )
 
         result = subprocess.run(
-            formatted_command,
+            command,
+            shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             text=True,

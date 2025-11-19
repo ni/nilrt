@@ -38,7 +38,6 @@ class JsonConfig:
         self.temp_modules_dir = self._expand_path(kernel_config.get("temp_modules_dir"))
         self.toolchain_prefix = self._expand_path(kernel_config.get("toolchain_prefix"))
         self.merge_workdir = self._expand_path(kernel_config.get("merge_workdir"))
-        self.repo_url = kernel_config.get("repo_url")
         self.target_branch = kernel_config.get("target_branch")
         self.stable_rt_remote = kernel_config.get("stable_rt_remote")
         self.nilrt_root = self._expand_path(kernel_config.get("nilrt_root"))

@@ -90,39 +90,52 @@ def check_required_packages():
 # === Step 1.5: Ensure Kernel Source Repository ===
 # Clone kernel repository if missing or not a valid git directory.
 
-def ensure_kernel_source_repository():
+def ensure_kernel_source_repository(args):
     print("[INFO] Ensuring kernel source repository exists...")
+    
+    # Use default kernel source directory if not configured
     if not config.kernel_src_dir:
         raise RuntimeError("[ERROR] No kernel_src_dir configured in kernel_build section")
-    if not config.repo_url:
-        raise RuntimeError("[ERROR] No repo_url configured for kernel repository")
+    
+    # Use NI Linux repository as default - this is the primary repo for NILRT
+    repo_url = "https://github.com/ni/linux.git"
     # Convert to absolute path to prevent issues after directory changes
     config.kernel_src_dir = os.path.abspath(config.kernel_src_dir)
     kernel_src_dir = config.kernel_src_dir
     parent_dir = os.path.dirname(kernel_src_dir)
     if not os.path.exists(parent_dir):
-        print(f"[INFO] Creating parent directory: {parent_dir}")
-        os.makedirs(parent_dir, exist_ok=True)
+        if not args.dry_run:
+            print(f"[INFO] Creating parent directory: {parent_dir}")
+            os.makedirs(parent_dir, exist_ok=True)
+        else:
+            print(f"[INFO] Would create parent directory: {parent_dir}")
     if os.path.exists(kernel_src_dir):
         if os.path.isdir(os.path.join(kernel_src_dir, '.git')):
             print(f"[INFO] Kernel source repository present: {kernel_src_dir}")
             return
-        print(f"[WARNING] {kernel_src_dir} exists but is not a git repository; replacing...")
-        shutil.rmtree(kernel_src_dir)
-    status, output = run_command(f"git clone {config.repo_url} {kernel_src_dir}")
-    if status != 0:
-        raise RuntimeError(f"[ERROR] Kernel repo clone failed: {output}")
-    print(f"[INFO] Cloned kernel repository to: {kernel_src_dir}")
+        if not args.dry_run:
+            print(f"[WARNING] {kernel_src_dir} exists but is not a git repository; replacing...")
+            shutil.rmtree(kernel_src_dir)
+        else:
+            print(f"[INFO] Would remove non-git directory: {kernel_src_dir}")
+    if not args.dry_run:
+        status, output = run_command(f"git clone {repo_url} {kernel_src_dir}")
+        if status != 0:
+            raise RuntimeError(f"[ERROR] Kernel repo clone failed: {output}")
+        print(f"[INFO] Cloned kernel repository to: {kernel_src_dir}")
+    else:
+        print(f"[INFO] Would clone kernel repository from {repo_url} to: {kernel_src_dir}")
 
 # === Step 2: Robust Upstream Merge with Conflict Handling ===
-def run_upstream_merge_script():
+def run_upstream_merge_script(args):
     print("[INFO] Running upstream merge script...")
-    ensure_kernel_source_repository()
-    if not os.path.exists(config.kernel_src_dir):
+    ensure_kernel_source_repository(args)
+    if not args.dry_run and not os.path.exists(config.kernel_src_dir):
         raise RuntimeError(f"[ERROR] Kernel source directory {config.kernel_src_dir} missing after clone")
     original_cwd = os.getcwd()
-    kernel_parent_dir = os.path.dirname(config.kernel_src_dir)
-    os.chdir(kernel_parent_dir)
+    if not args.dry_run:
+        kernel_parent_dir = os.path.dirname(config.kernel_src_dir)
+        os.chdir(kernel_parent_dir)
     try:
         kernel_version = config.target_branch.split('/')[-1] if config.target_branch else "6.12"
         git_obj = GitRepo(
@@ -132,50 +145,58 @@ def run_upstream_merge_script():
             local_base_branch=config.target_branch,
             upstream_repo_name="stable-rt",
             fork_name="origin",
-            fork_url=config.repo_url
+            fork_url="https://github.com/ni/linux.git"
         )
-        os.chdir(config.kernel_src_dir)
-        try:
-            git_merge_abort()
-        except:
-            pass
-        git_reset(hard=True)
-        git_clean(force=True, directories=True, ignored_files=True)
-        status, _ = git_fetch()
-        if status != 0:
-            raise RuntimeError("Failed to fetch remotes")
-        status, _ = run_command(f"git checkout -B {config.target_branch} origin/{config.target_branch}")
-        if status != 0:
-            raise RuntimeError("Failed to checkout target branch")
-        status, remotes = git_remote()
-        if status == 0 and "stable-rt" not in remotes:
-            git_obj.add_remote("stable-rt", config.stable_rt_remote)
-        git_fetch("stable-rt", "--tags")
-        status, tags = git_tag(list_pattern=f"v{kernel_version}.*-rt*")
-        if status != 0 or not tags:
-            print(f"[WARNING] No v{kernel_version}-rt tags; skipping merge")
-            return
-        clean_tags = [t for t in tags.splitlines() if re.match(rf'^v{re.escape(kernel_version)}\.\d+(?:\.\d+)?-rt\d+$', t)]
-        if not clean_tags:
-            print(f"[WARNING] No clean v{kernel_version}-rt release tags; skipping merge")
-            return
-        latest_tag = sorted(clean_tags, key=lambda t: list(map(int, re.findall(r'\d+', t))))[-1]
-        print(f"[INFO] Latest RT tag: {latest_tag}")
-        merge_result = git_obj.merge_branch(latest_tag, f"Merge latest upstream {latest_tag}")
-        if merge_result[0] != 0:
-            status, conflicts = git_diff(name_only=True, diff_filter="U")
-            if status == 0 and conflicts:
-                status, git_status_output = git_status()
-                concise_body = _format_conflict_email(latest_tag, conflicts, git_status_output, config.target_branch)
-                send_email_report(
-                    f"Merge conflict report: {config.target_branch}",
-                    concise_body
-                )
-                raise RuntimeError("[ERROR] Merge conflicts detected; email sent")
+        if not args.dry_run:
+            os.chdir(config.kernel_src_dir)
+        if not args.dry_run:
+            try:
+                git_merge_abort()
+            except:
+                pass
+            git_reset(hard=True)
+            git_clean(force=True, directories=True, ignored_files=True)
+            status, _ = git_fetch()
+            if status != 0:
+                raise RuntimeError("Failed to fetch remotes")
+            status, _ = run_command(f"git checkout -B {config.target_branch} origin/{config.target_branch}")
+            if status != 0:
+                raise RuntimeError("Failed to checkout target branch")
+            status, remotes = git_remote()
+            if status == 0 and "stable-rt" not in remotes:
+                git_obj.add_remote("stable-rt", config.stable_rt_remote)
+            git_fetch("stable-rt", "--tags")
         else:
-            print("[INFO] Merge successful")
+            print("[INFO] Would reset repository and fetch latest changes")
+        if not args.dry_run:
+            status, tags = git_tag(list_pattern=f"v{kernel_version}.*-rt*")
+            if status != 0 or not tags:
+                print(f"[WARNING] No v{kernel_version}-rt tags; skipping merge")
+                return
+            clean_tags = [t for t in tags.splitlines() if re.match(rf'^v{re.escape(kernel_version)}\.\d+(?:\.\d+)?-rt\d+$', t)]
+            if not clean_tags:
+                print(f"[WARNING] No clean v{kernel_version}-rt release tags; skipping merge")
+                return
+            latest_tag = sorted(clean_tags, key=lambda t: list(map(int, re.findall(r'\d+', t))))[-1]
+            print(f"[INFO] Latest RT tag: {latest_tag}")
+            merge_result = git_obj.merge_branch(latest_tag, f"Merge latest upstream {latest_tag}")
+            if merge_result[0] != 0:
+                status, conflicts = git_diff(name_only=True, diff_filter="U")
+                if status == 0 and conflicts:
+                    status, git_status_output = git_status()
+                    concise_body = _format_conflict_email(latest_tag, conflicts, git_status_output, config.target_branch)
+                    send_email_report(
+                        f"Merge conflict report: {config.target_branch}",
+                        concise_body
+                    )
+                    raise RuntimeError("[ERROR] Merge conflicts detected; email sent")
+            else:
+                print("[INFO] Merge successful")
+        else:
+            print(f"[INFO] Would fetch and merge latest RT tag for kernel version {kernel_version}")
     finally:
-        os.chdir(original_cwd)
+        if not args.dry_run:
+            os.chdir(original_cwd)
 
 # === Step 3: Build and Deploy Kernel ===
 def build_and_deploy_kernel(args):
@@ -188,9 +209,9 @@ def build_and_deploy_kernel(args):
             env["ARCH"] = config.arch
         env["CROSS_COMPILE"] = CROSS_COMPILE
         if not args.skip_merge:
-            run_upstream_merge_script()
+            run_upstream_merge_script(args)
         else:
-            ensure_kernel_source_repository()
+            ensure_kernel_source_repository(args)
         kernel_src_dir = config.kernel_src_dir
         print("[INFO] Cleaning previous builds...")
         if not args.dry_run:

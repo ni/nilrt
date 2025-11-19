@@ -7,7 +7,6 @@
     "target_user": "admin",
     "arch": "x86_64",
     "temp_modules_dir": "nilrt-kernel-build/linux/tmp-glibc/modules",
-    "repo_url": "https://github.com/ni/linux.git",
     "target_branch": "nilrt/master/6.12",
     "stable_rt_remote": "https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git",
     "nilrt_root": "nilrt-sdk",

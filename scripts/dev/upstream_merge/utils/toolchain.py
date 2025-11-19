@@ -1,4 +1,4 @@
-"""Toolchain detection/build helper: auto-detect existing repo first (ancestor walk),
+ """Toolchain detection/build helper: auto-detect existing repo first (ancestor walk),
 ignore nilrt_root hint if already inside a clone; only clone when nothing usable exists."""
 import os
 from .shell_commands import run_command
@@ -80,4 +80,4 @@ def detect_or_build_cross_compile(config, script_dir):
     if gcc_binary and os.path.isfile(gcc_binary):
         print(f"[INFO] Successfully built CROSS_COMPILE: {config.toolchain_prefix}")
         return config.toolchain_prefix
-    raise RuntimeError('[ERROR] Toolchain build completed, but compiler still missing.')
+    raise RuntimeError(f'[ERROR] Toolchain build completed, but compiler still missing at expected path: {gcc_binary}')
