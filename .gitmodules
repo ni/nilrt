@@ -6,6 +6,10 @@
 	path = sources/meta-cloud-services
 	url = ../meta-cloud-services.git
 	branch = nilrt/master/next
+[submodule "sources/meta-erlang"]
+	path = sources/meta-erlang
+	url = ../meta-erlang.git
+	branch = nilrt/master/next
 [submodule "sources/meta-openembedded"]
 	path = sources/meta-openembedded
 	url = ../meta-openembedded.git
