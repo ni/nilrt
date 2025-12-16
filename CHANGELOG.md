@@ -9,9 +9,29 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 320
-* meta-nilrt: 869
-* linux: 254
+* nilrt: 331
+* meta-nilrt: 912
+* linux: 262
+
+----
+## 11.4
+Branch: `nilrt/26.0/scarthgap`
+
+### nilrt
+No changes.
+
+### meta-nilrt
+
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/890) support for cgroups v2.
+- [Added](https://github.com/ni/meta-nilrt/pull/897) `xorgxrdp`, `xrdp` to extras feed.
+- [Added](https://github.com/ni/meta-nilrt/pull/904) memory-aware `clamav` wrapper.
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/906) `salt` to `3006.13`.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/910) `nilrt-snac` to `v3.1.0`.
+
 
 ----
 ## 11.3
