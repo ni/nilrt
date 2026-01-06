@@ -44,7 +44,7 @@ EOF
 RECOVERY_IMAGE_RECIPE_NAME=nilrt-recovery-media
 PYREX_RUN=pyrex-run
 
-DEFAULT_IMAGES_DIR="./tmp-glibc/deploy/images/x64"
+DEFAULT_IMAGES_DIR="./tmp/deploy/images/x64"
 
 answers_file="${SCRIPT_RESOURCE_DIR}/ni_provisioning.answers"
 disk_size_mb=4096

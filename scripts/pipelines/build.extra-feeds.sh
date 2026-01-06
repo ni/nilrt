@@ -83,7 +83,7 @@ if [ -n "${core_feed_path}" ]; then
 	echo "Pruning all packages from the extras feed which are already in core."
 	$DELETE_DUPLICATE_IPKS \
 		"${core_feed_path}" \
-		"./tmp-glibc/deploy/ipk"
+		"./tmp/deploy/ipk"
 fi
 
 # Package index generation must happen after we have deduped IPKs.

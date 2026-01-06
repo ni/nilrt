@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-IMAGE_FILE="../build/tmp-glibc/deploy/images/x64/nilrt-base-bundle-image-x64.tar.bz2"
+IMAGE_FILE="../build/tmp/deploy/images/x64/nilrt-base-bundle-image-x64.tar.bz2"
 DISK_CONFIG="../sources/meta-nilrt/recipes-core/initrdscripts/files/disk_config_x64"
 ASK_FIRST=true
 

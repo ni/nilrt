@@ -5,7 +5,7 @@ import time
 
 from .shell_commands import execute_and_stream_cmd_output
 
-BUILD_DIR = "/build/tmp-glibc/deploy/images/x64/"
+BUILD_DIR = "/build/tmp/deploy/images/x64/"
 SAFEMODE_IMAGE = "nilrt-safemode-rootfs-x64.tar.gz"
 RUNMODE_IMAGE = "nilrt-base-system-image-x64.tar"
 

@@ -92,7 +92,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     The resulting ipk files that can be installed through opkg exist at the following directory:
 
-        tmp-glibc/deploy/ipk/...
+        tmp/deploy/ipk/...
 
 6. #### Building package feeds
     The NILRT repo has scripting in the [`:scripts/pipelines/`](https://github.com/ni/nilrt/tree/HEAD/scripts/pipelines) directory, which can be used to automate the process of building package feeds. The NI build pipelines use these scripts directly - so they are canonical.
@@ -114,7 +114,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
         The resulting root file system images for the NILRT safemode image is located at the following paths:
 
-            tmp-glibc/deploy/images/x64/nilrt-safemode-rootfs-x64.tar.gz
+            tmp/deploy/images/x64/nilrt-safemode-rootfs-x64.tar.gz
 
         You can install this on target by copying the file over to the target and running the following command:
 
@@ -126,7 +126,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
         The resulting root file system images for the NILRT runmode image is located at the following paths:
 
-            tmp-glibc/deploy/images/x64/nilrt-base-system-image-x64.tar
+            tmp/deploy/images/x64/nilrt-base-system-image-x64.tar
 
         You can install this on target by copying the file over to the target while the target is in safe mode and running the following commands:
 
@@ -139,7 +139,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
         The bootable recovery media, which you can install onto a USB memory stick or burn to a CD, is located at the following path:
 
-            tmp-glibc/deploy/images/x64/nilrt-recovery-media-x64.iso
+            tmp/deploy/images/x64/nilrt-recovery-media-x64.iso
 
         Boot your NI Linux Real-Time compatible hardware from the recovery media and follow on-screen instructions to perform a factory reset.
 
@@ -154,7 +154,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     bash ../scripts/pipelines/build.toolchain.sh
     ```
 
-    During the build, a script is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like `oecore-x86_64-core2-64-toolchain-9.2.sh`. The script is a self-extracting archive, and can be copied to and executed on an appropriate host system to install the toolchain.
+    During the build, a script is generated at `$BUILDDIR/tmp/deploy/sdk`, with a name like `oecore-x86_64-core2-64-toolchain-9.2.sh`. The script is a self-extracting archive, and can be copied to and executed on an appropriate host system to install the toolchain.
 
     To build the toolchain for an x86_64 Windows host, there is a different script that can be used.
     
@@ -162,7 +162,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
     bash ../scripts/pipelines/build.cross-toolchain.sh
     ```
 
-    During the build, an archive is generated at `$BUILDDIR/tmp-glibc/deploy/sdk`, with a name like
+    During the build, an archive is generated at `$BUILDDIR/tmp/deploy/sdk`, with a name like
     `oecore-x86_64-core2-64-toolchain.tar.xz`. This archive can be extracted on a Windows system to
     to access the toolchain.
 
