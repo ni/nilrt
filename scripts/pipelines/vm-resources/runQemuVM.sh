@@ -119,7 +119,7 @@ set -x
 qemu-system-x86_64 \
 	${enableKVM:-} -cpu Nehalem,check=false -smp cpus=${cpu_count:-1} -machine vmport=off \
 	-m "${mem_mbs:-${VM_MEM_SIZE_MB}}" \
-	-drive if=pflash,format=raw,readonly,file="$SCRIPT_DIR/OVMF/OVMF_CODE.fd" \
+	-drive if=pflash,format=raw,readonly=on,file="$SCRIPT_DIR/OVMF/OVMF_CODE.fd" \
 	-drive if=pflash,format=raw,file="$SCRIPT_DIR/OVMF/OVMF_VARS.fd" \
 	-drive file="$SCRIPT_DIR/${PRIMARY_DISK}",index=0,media=disk \
 	-device e1000,netdev=nilrt_net0,mac=$macaddr \
