@@ -21,6 +21,7 @@ Opts:
     -h    : Display this help and exit.
     -g    : Start VM with arguments appropriate for graphical usage
     -s    : Start VM in snapshot mode (changes not saved to disk)
+    -t    : Give the VM an emulated TPM2 device. Requires swtpm to be installed.
 
 Args:
     -a mac_address : Use this static MAC address for the primary NIC, instead of
@@ -34,7 +35,7 @@ EOF
 }
 
 
-while getopts ":a:b:c:f:ghm:s-" opt; do
+while getopts ":a:b:c:f:ghm:s-t" opt; do
 	case ${opt} in
 		a)
 			macaddr=$OPTARG
@@ -60,6 +61,9 @@ while getopts ":a:b:c:f:ghm:s-" opt; do
 			;;
 		s)
 			snapshot=true
+			;;
+		t)
+			tpm=true
 			;;
 		-)
 			break
@@ -101,10 +105,20 @@ else
 	nilrt_net0_args="user,id=nilrt_net0"
 fi
 
+
+# ==============================================================================
+# Setup SSH
+# ==============================================================================
+
 # optionally forward a host port to the guest SSH port
 if [ -n "${forward_port}" ]; then
 	nilrt_net0_args="${nilrt_net0_args},hostfwd=tcp::${forward_port}-:22"
 fi
+
+
+# ==============================================================================
+# Setup KVM
+# ==============================================================================
 
 # Enable the KVM hypervisor layer, if it seems like it is supported.
 if [ -w /dev/kvm ]; then
@@ -114,7 +128,54 @@ else
     echo "INFO: /dev/kvm is not writable. KVM will not be enabled."
 fi
 
-SCRIPT_DIR="`dirname "$BASH_SOURCE[0]"`"
+
+SCRIPT_DIR="$(realpath $(dirname ${BASH_SOURCE[0]}))"
+
+# ==============================================================================
+# Setup TPM
+# ==============================================================================
+
+
+if [ "$tpm" = true ] ; then
+	echo "INFO: Setting up emulated TPM2 device for VM."
+	mkdir -p "${SCRIPT_DIR}/tpm"
+
+	# Initialize TPM state if it doesn't exist
+	if [ ! -f "${SCRIPT_DIR}/tpm/tpm2-00.permall" ]; then
+		echo "INFO: Initializing TPM state..."
+		if ! swtpm_setup \
+			--tpm2 \
+			--tpmstate "${SCRIPT_DIR}/tpm" \
+			--not-overwrite \
+			--vmid test-vm \
+			--pcr-banks sha256; then
+			echo "ERROR: swtpm_setup failed. Cannot initialize TPM emulator." >&2
+			exit 1
+		fi
+	fi
+
+	swtpm socket \
+	--tpm2 \
+	--tpmstate dir="${SCRIPT_DIR}/tpm" \
+	--ctrl type=unixio,path="${SCRIPT_DIR}/tpm/swtpm-sock",mode=0600 \
+	--log level=20 \
+	--terminate \
+	--daemon
+
+	tpmargs="\
+		-chardev socket,id=chrtpm,path=${SCRIPT_DIR}/tpm/swtpm-sock \
+		-tpmdev emulator,id=tpm0,chardev=chrtpm \
+		-device tpm-tis,tpmdev=tpm0 \
+	"
+else
+	tpmargs=""
+fi
+
+
+# ==============================================================================
+# Start QEMU
+# ==============================================================================
+
 set -x
 qemu-system-x86_64 \
 	${enableKVM:-} -cpu Nehalem,check=false -smp cpus=${cpu_count:-1} -machine vmport=off \
@@ -124,4 +185,5 @@ qemu-system-x86_64 \
 	-drive file="$SCRIPT_DIR/${PRIMARY_DISK}",index=0,media=disk \
 	-device e1000,netdev=nilrt_net0,mac=$macaddr \
 	-netdev ${nilrt_net0_args} \
+	${tpmargs:-} \
 	${qemu_args:-}
