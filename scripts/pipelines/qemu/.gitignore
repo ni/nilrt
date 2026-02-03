@@ -1,0 +1,8 @@
+# Makefile objects
+nilrt-x64-qemu/
+nilrt-x64-qemu.zip
+**/*.iso
+**/*.qcow2
+**/*.img
+**/*.fd
+**/*.zip
