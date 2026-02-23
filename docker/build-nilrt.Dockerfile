@@ -1,5 +1,5 @@
-ARG PYREX_IMAGE
-FROM ${PYREX_IMAGE} as build-nilrt
+ARG PYREX_IMAGE=pyrex-oe:latest
+FROM ${PYREX_IMAGE} AS build-nilrt
 
 # ISO and QEMU utilities are needed by the build.vm.sh pipeline scriptlet.
 RUN apt-get update && apt-get install --assume-yes \
