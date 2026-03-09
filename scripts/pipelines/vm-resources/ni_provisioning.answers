@@ -7,3 +7,6 @@ PROVISION_REBOOT_METHOD="poweroff"
 
 # Install auto discoverable ESPs to support all hypervisors
 PROVISION_BOOT_SCHEME="efi-auto"
+
+# Set an empty root password
+PROVISION_ROOT_PASSWORD=""
