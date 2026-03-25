@@ -21,8 +21,8 @@ Additional community documentation can be found at https://nilrt-docs.ni.com.
 ### Mainlines
 
 This project currently has three concurrent development mainlines (sorry). They are, in short:
-* `nilrt/master/scarthgap` - the current **x64** dev HEAD
-* `nilrt/master/sumo` - the current **arm32** dev HEAD
+* `nilrt/master/scarthgap` - the current **x64** dev HEAD and **arm32** dev HEAD for Base System Image
+* `nilrt/master/sumo` - the current **arm32** dev HEAD for safemode
 * `nilrt-academic/master/sumo` - a forked **arm32** HEAD for [FIRST Robotics Competition](https://www.firstinspires.org/robotics/frc)
 
 
@@ -69,11 +69,28 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     **NI builders** who are connected to the NI corporate network should specify `-org` in their init script args, to provoke the script into adding the `ni-org.conf` snippet to your bitbake directory. External builders *should not* use `--org`.
 
-   If you are building on a `nilrt/master/*` branch ref (rather than a release branch) **and** if you are building outside of the NI corporate network, you will need to set the version of the `ni-main` opkg feed to one which has already been published to `download.ni.com`. Do this by setting the `NILRT_MAIN_FEED_VERSION` bitbake variable to the latest published release. eg.
+    If you are building on a `nilrt/master/*` branch ref (rather than a release branch) **and** if you are building outside of the NI corporate network, you will need to set the version of the `ni-main` opkg feed to one which has already been published to `download.ni.com`. Do this by setting the `NILRT_MAIN_FEED_VERSION` bitbake variable to the latest published release. eg.
 
-   ```
-   echo 'NILRT_MAIN_FEED_VERSION = "2022Q3"' >> ./conf/local.conf
-   ```
+    ```bash
+    echo 'NILRT_MAIN_FEED_VERSION = "2022Q3"' >> ./conf/local.conf
+    ```
+
+    Set an appropriate MACHINE variable so that bitbake can tune builds of NILRT for your hardware.
+
+    Run the following command to configure for ARM targets:
+
+    ```bash
+    export MACHINE=xilinx-zynq
+    ```
+
+    or the following command to configure for x64 targets:
+
+    ```bash
+    export MACHINE=x64
+    ```
+
+    **NOTE** It's not recommended to run bitbake for different MACHINE's in the same workspace (build directory).
+
 
 5. #### Build package or packagegroups
    For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
@@ -108,7 +125,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     **NOTE** You must build packagefeed-ni-core and package-index first to build images.
 
-    * Build a safemode image by running the following command:
+    * **[x64 only]** Build a safemode image by running the following command:
 
             bitbake nilrt-safemode-rootfs
 
@@ -126,14 +143,14 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
         The resulting root file system images for the NILRT runmode image is located at the following paths:
 
-            tmp-glibc/deploy/images/x64/nilrt-base-system-image-x64.tar
+            tmp-glibc/deploy/images/$MACHINE/nilrt-base-system-image-$MACHINE.tar
 
         You can install this on target by copying the file over to the target while the target is in safe mode and running the following commands:
 
-            tar xf nilrt-base-system-image-x64.tar
+            tar xf nilrt-base-system-image-$MACHINE.tar
             tar xf data.tar.gz -C /mnt/userfs && ./postinst
 
-    * Build a bootable recovery media by running the following command:
+    * **[x64 only]** Build a bootable recovery media by running the following command:
 
             bitbake nilrt-recovery-media
 
