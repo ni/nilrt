@@ -9,9 +9,33 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 331
-* meta-nilrt: 912
-* linux: 262
+* nilrt: 341
+* meta-nilrt: 976
+* linux: 270
+
+----
+## 11.5
+Branch: `nilrt/26.3/scarthgap`
+
+### nilrt
+
+#### Added
+- [Added](https://github.com/ni/linux/pull/265) TPM2 modules to x64 kernel.
+- [Added](https://github.com/ni/linux/pull/268) USB serial console to ARM kernel.
+
+#### Changed
+- [Updated](https://github.com/ni/linux/pull/266) x64 kernel compression to xz.
+
+### meta-nilrt
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/917) TPM2 tools on x64.
+- [Added](https://github.com/ni/meta-nilrt/pull/963) ldd and monit tools to feeds.
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/926) ARM Base System Image to scarthgap.
+- [Reduced](https://github.com/ni/meta-nilrt/pull/936) safemode size
+- [Enabled](https://github.com/ni/meta-nilrt/pull/972) zlib compression for rootfs on ARM targets.
 
 ----
 ## 11.4
