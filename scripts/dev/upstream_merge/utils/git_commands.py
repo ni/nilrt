@@ -282,3 +282,62 @@ def send_email(
         f'--confirm=never --encoding=UTF-8 {file}'
     )
     return run_command(command)
+
+
+def git_tag(list_pattern=None):
+    """
+    List git tags, optionally filtered by a pattern.
+    """
+    command = "git tag"
+    if list_pattern:
+        command += f" -l '{list_pattern}'"
+    return run_command(command, capture_output=True)
+
+
+def git_merge_abort():
+    """
+    Abort a merge in progress.
+    """
+    return run_command("git merge --abort", capture_output=True)
+
+
+def git_status(capture_output=True):
+    """
+    Show the working tree status.
+    """
+    return run_command("git status", capture_output)
+
+
+def git_reset(hard=False, target="HEAD", capture_output=True):
+    """
+    Reset current HEAD to the specified state.
+    :param hard: Whether to do a hard reset (--hard).
+    :param target: The commit/branch to reset to (default: HEAD).
+    """
+    command = "git reset"
+    if hard:
+        command += " --hard"
+    command += f" {target}"
+    return run_command(command, capture_output)
+
+
+def git_clean(
+        force=False,
+        directories=False,
+        ignored_files=False,
+        capture_output=True
+        ):
+    """
+    Remove untracked files from the working tree.
+    :param force: Required by git to actually delete files.
+    :param directories: Remove untracked directories as well (-d).
+    :param ignored_files: Remove ignored files as well (-x).
+    """
+    command = "git clean"
+    if force:
+        command += " -f"
+    if directories:
+        command += "d"
+    if ignored_files:
+        command += "x"
+    return run_command(command, capture_output)

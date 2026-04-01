@@ -12,5 +12,16 @@
     "email_to": "",
     "username": "",
     "build_args":"",
-    "ssh_connection":""
+    "ssh_connection":"",
+
+    "kernel_build": {
+    "kernel_src_dir": "nilrt-kernel-build/linux",
+    "arch": "x86_64",
+    "temp_modules_dir": "tmp-glibc/modules",
+    "target_branch": "nilrt/master/6.12",
+    "toolchain_prefix": "/usr/local/oecore-x86_64/sysroots/x86_64-nilrtsdk-linux/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-",
+    "target_ip": "10.152.9.10",
+    "target_user": "admin",
+    "build_host_ip": "10.152.9.56"
+}
 }
