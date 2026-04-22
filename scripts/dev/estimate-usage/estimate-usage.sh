@@ -51,7 +51,7 @@ get_latest_x86_64_images() {
     local default="$EXPORTS_DIR/ni/rtos/rtos_nilinuxrt/official/export"
     local search="${EXPORT_SEARCH_PATH_X86_64-$default}"
     local latest="$(identify_latest "$1" "$search")"
-    local presuffix="targets/linuxU/x64/gcc-4.7-oe/release"
+    local presuffix="targets/linuxU/x64/gcc-13.4-oe/release"
     local run_suffix="$presuffix/nilrt-base-system-image-x64.tar"
     local safe_suffix="$presuffix/standard_x64_safemode.tar.gz"
     cp -f "$latest/$run_suffix" "$1"
