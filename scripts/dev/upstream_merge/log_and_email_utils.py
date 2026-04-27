@@ -50,17 +50,14 @@ def format_status(status, message):
     :param message: Associated message or details.
     :return: Tuple of formatted status strings for summary and detailed logs.
     """
-    error_msg = f" ... ERRORS\n    {message or ''}\n\n\n"
-    ok_no_changes = " ... OK (no changes)"
-    ok_msg = f" ... OK\n    {message}\n\n\n"
 
     if status != 0:
-        return (" ... ERRORS", error_msg)
+        return (" Merge Conflict\n", f" Merge Conflict\n    {message or ''}\n\n\n")
 
     if message is None:
-        return (ok_no_changes, f"{ok_no_changes}\n\n\n")
+        return (" Up to date (no changes)\n", " Up to date (no changes)\n\n\n")
 
-    return (" ... OK", ok_msg)
+    return (" Upstream Merge Successful\n", f"{message}\n\n\n")
 
 
 def format_merge_report(merge_report, email_log_level, skip_push_and_pr=False):
@@ -102,7 +99,7 @@ def format_merge_report(merge_report, email_log_level, skip_push_and_pr=False):
     for git_obj, (status, message) in merge_report.items():
         min_line, additional_line = format_status(status, message)
 
-        layer_name = git_obj.local_repo.split("/")[-1]
+        layer_name = git_obj.local_repo.split("/")[-1].upper()
         min_detail += f"{layer_name}\n{min_line}\n"
 
         if status != 0:
@@ -150,8 +147,8 @@ def format_merge_report(merge_report, email_log_level, skip_push_and_pr=False):
         )
 
     if email_log_level == 0:
-        return min_detail + "\n\n" + error_detail
-    return min_detail + "\n\n" + error_detail + "\n\n" + diff_detail
+        return min_detail + "\n\n\t\t\t\t\t\t\t\t\tERROR DETAILS\n\n" + error_detail
+    return min_detail + "\n\n\t\t\t\t\t\t\t\t\tERROR DETAILS\n\n" + error_detail + "\n\n\t\t\t\t\t\t\t\t\tSUMMARY\n\n" + diff_detail
 
 
 def write_log(email_file_name, contents):

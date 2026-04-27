@@ -144,7 +144,7 @@ class GitRepo:
         self
     ):
         """Check if there are differences in the last merge."""
-        return git_diff(compare_with="HEAD~1", capture_output=True)
+        return git_diff(compare_with="HEAD~1", name_only=True, capture_output=True)
 
     def pull(
         self,
