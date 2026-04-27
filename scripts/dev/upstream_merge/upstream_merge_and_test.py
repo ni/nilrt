@@ -120,12 +120,12 @@ def merge_submodules_with_upstream(
     return merge_report
 
 
-def build_and_test(clean_build, rt_target_IP, build_args):
+def build_and_test(clean_build, ssh_connection, build_args):
     """
     Build images and run tests on a VM if there are no merge errors.
 
     :param clean_build: Boolean indicating whether to perform a clean build.
-    :param rt_target_IP: The target IP address of the RT system.
+    :param ssh_connection: The SSH connection string for the RT system.
     :param build_args: To build with NI specific arguments.
     :return: A tuple (status_code, message).
             Returns (0, None) on success, or error details on failure.
@@ -133,14 +133,13 @@ def build_and_test(clean_build, rt_target_IP, build_args):
     success = setup_env_and_build_packages(build_args, clean_build)
     if success[0] != 0:
         return success
-    success = install_and_test_image(rt_target_IP)
+    success = install_and_test_image(ssh_connection)
     return success
 
 
 def push_submodules_and_create_PRs(
     merge_report,
     merge_branch_name,
-    pr_title,
     pr_description,
     username
 ):
@@ -153,11 +152,11 @@ def push_submodules_and_create_PRs(
     :param merge_report: Dictionary mapping GitRepo objects to
                         (status, message).
     :param merge_branch_name: Name of the branch to push and create PRs from.
-    :param pr_title: Title for the pull request.
     :param pr_description: Description for the pull request.
     :param username: GitHub username owning the downstream fork.
     :return: Dictionary with push and PR results for each sub-module.
     """
+    current_dir = os.getcwd()
     push_and_pr_results = {}
     for git_obj, (status, message) in list(merge_report.items()):
         if status == 0 and message is not None:
@@ -166,10 +165,11 @@ def push_submodules_and_create_PRs(
                 git_obj,
                 merge_branch_name,
                 username,
-                pr_title,
+                f"{git_obj.local_repo.split('/')[-1]}: Merge latest upstream",
                 pr_description
             )
 
+    os.chdir(current_dir)
     return push_and_pr_results
 
 
@@ -181,18 +181,20 @@ def get_pr_description(work_item_id):
     :return: A formatted string containing the PR checklist and work item.
     """
     checklist = (
+        "# Testing\n"
+        "- [x] Built pyrex container\n"
         "- [x] bitbake packagefeed-ni-core\n"
         "- [x] bitbake packagegroup-ni-desirable\n"
         "- [x] bitbake package-index && bitbake nilrt-base-system-image\n"
         "- [x] Installed BSI on a VM and verified it boots successfully"
     )
     work_item_line = (
-        f"\n\nAB#{work_item_id}\n"
+        f"\n# Justification\nAB#{work_item_id}\n"
         if work_item_id is not None else ""
     )
     return (
         f"Merge latest from upstream. No conflicts."
-        f"{work_item_line}\n\n{checklist}"
+        f"{work_item_line}\n\n{checklist}\n@ni/rtos"
     )
 
 
@@ -293,7 +295,7 @@ def main():
     else:
         build_and_test_details = build_and_test(
             clean_build=skip_merge,
-            rt_target_IP=json_config_obj.rt_target_IP,
+            ssh_connection=json_config_obj.ssh_connection,
             build_args=json_config_obj.build_args,
         )
 
@@ -301,11 +303,10 @@ def main():
             push_and_pr_results = push_submodules_and_create_PRs(
                 merge_report,
                 json_config_obj.merge_branch_name,
-                "Automated Merge PR",
                 get_pr_description(json_config_obj.work_item_id),
                 json_config_obj.username,
             )
-            merge_report["Push and pr"] = push_and_pr_results
+            merge_report["Push and PR"] = push_and_pr_results
 
     merge_report["Build and Test"] = build_and_test_details
 

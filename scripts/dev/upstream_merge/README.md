@@ -97,8 +97,9 @@ The script is user configurable and uses `automation_conf.json` to define variou
 - **`build_args`**:
   String of extra arguments to pass to the build process (e.g., `"--org"` for NI corporate network builds).
 
-- **`rt_target_IP`**:
-  The IP address or hostname of the RT target where images will be installed and tested via SSH.
+- **`ssh_connection`**:
+  The SSH connection of the RT target where images will be installed.
+  Usage example: [username]@[hostname or IP address]
 
 **`Note`**:
 - If the configuration file is `automation_conf.json`, you do not need to specify its path explicitly, as it is set as default. However, if you are using a different configuration file, you must provide its path using the `-c` argument.
@@ -223,7 +224,3 @@ If you have any questions or need assistance, feel free to contact:
 - Name: Shreejit C
   - GitHub Username: Shreejit-03
   - Email: shreejit.c@emerson.com
-
-- Name: Pratheeksha S N
-  - GitHub Username: pratheekshasn
-  - Email: pratheeksha.s.n@emerson.com

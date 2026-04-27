@@ -41,7 +41,7 @@ def setup_env_and_build_packages(args="", clean_build=False):
     print("\nCore feeds build completed.")
 
     # Step 3: Build the desirable packages
-    desirable_packages = build_desirable_packages()
+    desirable_packages = build_desirable_packages(args)
     if desirable_packages[0] != 0:
         return desirable_packages
     print("\nDesirable packages build completed.")
@@ -56,7 +56,7 @@ def setup_env_and_build_packages(args="", clean_build=False):
     return (0, "Building core feeds, safemode and runmode succeeded")
 
 
-def build_desirable_packages():
+def build_desirable_packages(args=""):
     """
     Build the desirable packages.
     This step involves running the script to build the extra package feed.
@@ -64,7 +64,7 @@ def build_desirable_packages():
     """
     print("\nBuilding extra package feed...\n")
     return execute_and_stream_cmd_output(
-        "bash scripts/pipelines/build.desirable.sh"
+        f"bash scripts/pipelines/build.desirable.sh {args}"
     )
 
 
@@ -76,7 +76,7 @@ def clean_feeds_and_images(args=""):
     """
     print("\nCleaning build feeds and images...\n")
     return execute_and_stream_cmd_output(
-        "bash scripts/pipelines/clean_build.core-feeds_and_core-images.sh "
+        "bash scripts/pipelines/clean.core-feeds_and_core-images.sh "
         f"{args}"
     )
 

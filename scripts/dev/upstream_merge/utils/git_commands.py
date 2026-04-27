@@ -211,6 +211,7 @@ def git_diff(
     target="HEAD",
     compare_with=None,
     staged=False,
+    name_only=False,
     capture_output=True
 ):
     """
@@ -218,12 +219,15 @@ def git_diff(
     :param target: Target commit or branch (default: "HEAD").
     :param compare_with: Commit or branch to compare with (optional).
     :param staged: Whether to show staged changes.
+    :param name_only: Show only changed file names.
     :param capture_output: Whether to capture the command output.
     """
     if compare_with:
         command = f"git diff {target} {compare_with}"
     else:
         command = "git diff --staged" if staged else "git diff"
+    if name_only:
+        command += " --name-only"
     return run_command(command, capture_output)
 
 
