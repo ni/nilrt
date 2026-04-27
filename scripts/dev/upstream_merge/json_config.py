@@ -26,4 +26,4 @@ class JsonConfig:
         self.email_log_level = config.get("email_log_level")
         self.log_level = config.get("log_level")
         self.build_args = config.get("build_args", "")
-        self.rt_target_IP = config.get("rt_target_IP")
+        self.ssh_connection = config.get("ssh_connection")
