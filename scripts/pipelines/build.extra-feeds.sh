@@ -2,7 +2,9 @@
 set -euo pipefail
 
 SCRIPT_ROOT=$(realpath $(dirname $BASH_SOURCE))
+SPDX_VERSION="2.2"
 DELETE_DUPLICATE_IPKS="bash ${SCRIPT_ROOT}/delete-duplicate-ipks.sh"
+DELETE_DUPLICATE_SPDX="bash ${SCRIPT_ROOT}/delete-duplicate-spdx.sh"
 
 ## ARGUMENT PARSING
 usage() {
@@ -23,6 +25,8 @@ remove any packages from the extras feed which is already in core/.
 # Positional Arguments
 CORE_FEED_PATH
   Filepath to the root of the NILRT core/ IPK feed.
+CORE_SPDX_PATH
+  Filepath to the root of the NILRT core/ SPDX feed.
 EOF
 	exit ${1:-2}
 }
@@ -30,6 +34,7 @@ EOF
 desirable_only=false
 skip_package_index=false
 core_feed_path=""
+core_spdx_path=""
 
 positionals=()
 while [ $# -ge 1 ]; do case "$1" in
@@ -61,6 +66,9 @@ esac; done
 if [ ${#positionals[@]} -gt 0 ]; then
 	core_feed_path="$(realpath ${positionals[0]})"
 fi
+if [ ${#positionals[@]} -gt 1 ]; then
+	core_spdx_path="$(realpath ${positionals[1]})"
+fi
 
 
 ## MAIN
@@ -84,6 +92,16 @@ if [ -n "${core_feed_path}" ]; then
 	$DELETE_DUPLICATE_IPKS \
 		"${core_feed_path}" \
 		"./tmp-glibc/deploy/ipk"
+fi
+
+# If the user provided a core/ spdx path, dedeupe against it.
+if [ -n "${core_spdx_path}" ]; then
+	[ -d "$core_spdx_path" ] || (echo "ERROR: core spdx path $core_spdx_path is not a directory." >&2; exit 1)
+
+	echo "Pruning all SPDX from the extras feed which are already in core."
+	$DELETE_DUPLICATE_SPDX \
+		"${core_spdx_path}/${SPDX_VERSION}" \
+		"./tmp-glibc/deploy/spdx/${SPDX_VERSION}"
 fi
 
 # Package index generation must happen after we have deduped IPKs.
