@@ -26,6 +26,7 @@ from rebuild_drivers import step1_mount_kernel_source
 from rebuild_drivers import step2_fix_symlinks
 from rebuild_drivers import step3_prepare_headers
 from rebuild_drivers import step4_dkms_autoinstall
+from utils.push_branch_and_create_pr import push_branch_and_create_pr
 # --------------------
 # Import shared utils
 # --------------------
@@ -62,15 +63,20 @@ def parse_args():
     parser.add_argument("--skip-merge", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--work-dir", default=None)
+    parser.add_argument(
+        "--skip-push-and-pr",
+        action="store_true",
+        help="Skip pushing branch and creating PR"
+    )
     return parser.parse_args()
 
 
-def wait_for_ssh(target, user, ssh_opts="", timeout=120):
-    print(f"[INFO] Waiting for SSH on {target}...")
+def wait_for_ssh(ssh_target, ssh_opts="", timeout=120):
+    print(f"[INFO] Waiting for SSH on {ssh_target}...")
 
     for _ in range(timeout // 5):
         ret = os.system(
-            f'ssh {ssh_opts} {user}@{target} "echo ok" > /dev/null 2>&1'
+            f'ssh {ssh_opts} {ssh_target} "echo ok" > /dev/null 2>&1'
         )
         if ret == 0:
             print("[INFO] SSH is available on target")
@@ -106,9 +112,63 @@ def clone_kernel_repository():
     git_clone(REPO_URL, repo)
 
 
+def regenerate_defconfig(kernel_src_dir):
+    """
+    US-4:
+    Regenerate nati_x86_64_defconfig and create a commit if it changes.
+    Returns True if a commit was created, False otherwise.
+    """
+    print("[US4] Regenerating nati_x86_64_defconfig")
+
+    original_cwd = os.getcwd()
+    os.chdir(kernel_src_dir)
+
+    cmds = [
+        "make mrproper",
+        "make nati_x86_64_defconfig",
+        "make savedefconfig",
+        "mv defconfig arch/x86/configs/nati_x86_64_defconfig",
+    ]
+
+    for cmd in cmds:
+        rc = os.system(cmd)
+        if rc != 0:
+            os.chdir(original_cwd)
+            raise RuntimeError(f"[US4][ERROR] Command failed: {cmd}")
+
+    # Check for diff
+    diff_rc = os.system(
+        "git diff --quiet arch/x86/configs/nati_x86_64_defconfig"
+    )
+
+    if diff_rc == 0:
+        print("[US4] Defconfig unchanged")
+        os.chdir(original_cwd)
+        return False
+
+    print("[US4] Defconfig changed, creating commit")
+
+    rc = os.system("git add arch/x86/configs/nati_x86_64_defconfig")
+    if rc != 0:
+        os.chdir(original_cwd)
+        raise RuntimeError("[US4][ERROR] git add failed")
+
+    rc = os.system(
+        'git commit -s -m '
+        '"nati_x86_64_defconfig: regenerate; no functional changes"'
+    )
+    if rc != 0:
+        os.chdir(original_cwd)
+        raise RuntimeError("[US4][ERROR] git commit failed")
+
+    os.chdir(original_cwd)
+    return True
+
 # --------------------
 # RT Merge
 # --------------------
+
+
 def run_upstream_merge_script(args):
     original_cwd = os.getcwd()
     print("[INFO] Running upstream RT merge")
@@ -243,6 +303,9 @@ def run_upstream_merge_script(args):
         )
         return
 
+    defconfig_changed = regenerate_defconfig(config.kernel_src_dir)
+    if defconfig_changed:
+        print("[US4] Defconfig regeneration commit created")
     # --------------------
     # Kernel build (x86_64)
     # --------------------
@@ -256,15 +319,6 @@ def run_upstream_merge_script(args):
         ),
         "Build and Test": (build_status, build_msg),
     }
-
-    os.chdir(original_cwd)
-    write_log_and_send_email(
-        email_from=config.email_from,
-        email_to=config.email_to,
-        merge_report=merge_report,
-        email_log_level=0,
-        skip_push_and_pr=True,
-    )
 
     # --------------------
     # Install kernel to target
@@ -284,8 +338,7 @@ def run_upstream_merge_script(args):
     time.sleep(20)
 
     print("[INFO] Waiting for target to come back after kernel reboot")
-
-    if wait_for_ssh(config.target_ip, config.target_user, timeout=300) != 0:
+    if wait_for_ssh(config.ssh_target, timeout=300) != 0:
         print("[ERROR] Target did not come back after kernel reboot")
         return
 
@@ -320,13 +373,43 @@ def run_upstream_merge_script(args):
     if rc != 0:
         print("[ERROR] STEP 4 failed")
         return
+    # PR creation (FINAL STEP ONLY) ----
+    if not args.skip_push_and_pr:
+        pr_title = f"[{config.work_item_id}] Merge RT {latest_tag}"
+
+        pr_description = (
+            f"AB#{config.work_item_id}\n\n"
+            f"RT tag merged: {latest_tag}\n"
+            f"Defconfig regenerated: "
+            f"{'Yes' if defconfig_changed else 'No'}\n"
+            f"Kernel build: Success\n"
+            f"Driver rebuild: Success\n"
+        )
+
+        git_obj = GitRepo(
+            local_repo=config.kernel_src_dir,
+            local_base_branch=config.pr_target_branch,
+        )
+
+        status, msg = push_branch_and_create_pr(
+            git_obj,
+            branch_name=config.target_branch,
+            username=config.pr_username,
+            pr_title=pr_title,
+            pr_description=pr_description,
+        )
+
+        if status != 0:
+            raise RuntimeError(f"Failed to create PR: {msg}")
+
+        print("[INFO] Branch pushed and PR created successfully")
     os.chdir(original_cwd)
     write_log_and_send_email(
         email_from=config.email_from,
         email_to=config.email_to,
         merge_report=merge_report,
         email_log_level=0,
-        skip_push_and_pr=True,
+        skip_push_and_pr=args.skip_push_and_pr,
     )
     return
 
@@ -379,8 +462,7 @@ def install_kernel_to_target(kernel_src_dir):
     Install x86_64 kernel and modules to an NILRT target (cRIO).
     """
 
-    target = config.target_ip
-    user = config.target_user
+    ssh_target = config.ssh_target
     ssh_opts = getattr(config, "ssh_options", "")
 
     build_root = os.path.dirname(kernel_src_dir)
@@ -409,7 +491,7 @@ def install_kernel_to_target(kernel_src_dir):
 
     # Backup existing kernel on target
     rc = os.system(
-        f"ssh {ssh_opts} {user}@{target} "
+        f"ssh {ssh_opts} {ssh_target} "
         '"test ! -h /boot/runmode/bzImage && '
         'mv /boot/runmode/bzImage /boot/runmode/bzImage-$(uname -r) || true"'
     )
@@ -419,14 +501,14 @@ def install_kernel_to_target(kernel_src_dir):
     # Copy kernel image
     rc = os.system(
         f"scp {ssh_opts} {bzimage} "
-        f"{user}@{target}:/boot/runmode/bzImage-{kernel_version}"
+        f"{ssh_target}:/boot/runmode/bzImage-{kernel_version}"
     )
     if rc != 0:
         return 1, "FAILED to copy kernel bzImage to target (ABORTING)"
 
     # VERIFY kernel image exists on target
     rc = os.system(
-        f"ssh {ssh_opts} {user}@{target} "
+        f"ssh {ssh_opts} {ssh_target} "
         f'"test -f /boot/runmode/bzImage-{kernel_version}"'
     )
     if rc != 0:
@@ -434,7 +516,7 @@ def install_kernel_to_target(kernel_src_dir):
 
     # Update boot symlink
     rc = os.system(
-        f"ssh {ssh_opts} {user}@{target} "
+        f"ssh {ssh_opts} {ssh_target} "
         f'"ln -sf bzImage-{kernel_version} /boot/runmode/bzImage"'
     )
     if rc != 0:
@@ -443,7 +525,7 @@ def install_kernel_to_target(kernel_src_dir):
     # Copy kernel modules (versioned directory)
     rc = os.system(
         f"tar cz -C {modules_root} . | "
-        f"ssh {ssh_opts} {user}@{target} "
+        f"ssh {ssh_opts} {ssh_target} "
         f'"mkdir -p /lib/modules/{kernel_version} && '
         f'tar xz -C /lib/modules/{kernel_version}"'
     )
@@ -452,7 +534,7 @@ def install_kernel_to_target(kernel_src_dir):
 
     # VERIFY modules directory exists on target
     rc = os.system(
-        f"ssh {ssh_opts} {user}@{target} "
+        f"ssh {ssh_opts} {ssh_target} "
         f'"test -d /lib/modules/{kernel_version}"'
     )
     if rc != 0:
@@ -460,14 +542,14 @@ def install_kernel_to_target(kernel_src_dir):
 
     # CRITICAL: rebuild module dependency indexes
     rc = os.system(
-        f"ssh {ssh_opts} {user}@{target} "
+        f"ssh {ssh_opts} {ssh_target} "
         f'"depmod -a {kernel_version}"'
     )
     if rc != 0:
         return 1, "depmod failed on target (ABORTING reboot)"
 
     # Reboot target ONLY after everything succeeded
-    rc = os.system(f"ssh {ssh_opts} {user}@{target} reboot")
+    rc = os.system(f"ssh {ssh_opts} {ssh_target} reboot")
     if rc != 0:
         return 1, "FAILED to reboot target after install"
 
@@ -476,10 +558,11 @@ def install_kernel_to_target(kernel_src_dir):
         f"Kernel version: {kernel_version}"
     )
 
-
 # --------------------
 # Main
 # --------------------
+
+
 def main():
     global config
 

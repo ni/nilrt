@@ -24,30 +24,29 @@ def rebuild_out_of_tree_drivers(config, run_cmd):
 
 
 def step0_install_sshfs_fuse(config, run_cmd):
-    target = config.target_ip
-    user = config.target_user
+    ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 0] Install sshfs-fuse and load fuse")
 
     # opkg update (SSH drop expected)
-    rc, out = run_cmd(f"ssh {user}@{target} 'opkg update || true'")
+    rc, out = run_cmd(f"ssh {ssh_target}'opkg update || true'")
     print(out)
 
     # opkg install
     rc, out = run_cmd(
-        f"ssh {user}@{target} 'opkg install sshfs-fuse || true'"
+        f"ssh {ssh_target} 'opkg install sshfs-fuse || true'"
     )
     print(out)
 
     # VERIFY sshfs exists
-    rc, out = run_cmd(f"ssh {user}@{target} 'which sshfs'")
+    rc, out = run_cmd(f"ssh {ssh_target} 'which sshfs'")
     print(out)
     if rc != 0:
         print("[REBUILD][ERROR] sshfs not installed")
         return 1
 
     # load fuse
-    rc, out = run_cmd(f"ssh {user}@{target} 'modprobe fuse'")
+    rc, out = run_cmd(f"ssh {ssh_target} 'modprobe fuse'")
     print(out)
     if rc != 0:
         print("[REBUILD][ERROR] modprobe fuse failed")
@@ -58,28 +57,27 @@ def step0_install_sshfs_fuse(config, run_cmd):
 
 
 def step1_mount_kernel_source(config, run_cmd):
-    target = config.target_ip
-    user = config.target_user
+    ssh_target = config.ssh_target
     kernel_src_dir = config.kernel_src_dir
     host_user = config.build_host_user
     host_ip = config.build_host_ip
 
     print("[REBUILD][STEP 1] Mount kernel source via SSHFS")
 
-    run_cmd(f'ssh {user}@{target} "mkdir -p /usr/src/linux"')
+    run_cmd(f'ssh {ssh_target} "mkdir -p /usr/src/linux"')
     run_cmd(
-        f'ssh {user}@{target}'
+        f'ssh {ssh_target}'
         f'"mount | grep /usr/src/linux && umount /usr/src/linux || true"'
     )
 
     rc, out = run_cmd(
-        f'ssh {user}@{target} '
+        f'ssh {ssh_target} '
         f'"sshfs {host_user}@{host_ip}:{kernel_src_dir} /usr/src/linux"'
     )
     print(out)
 
     rc, out = run_cmd(
-        f'ssh {user}@{target} "test -f /usr/src/linux/Makefile && echo OK"'
+        f'ssh {ssh_target} "test -f /usr/src/linux/Makefile && echo OK"'
     )
     print(out)
 
@@ -92,13 +90,12 @@ def step1_mount_kernel_source(config, run_cmd):
 
 
 def step2_fix_symlinks(config, run_cmd):
-    target = config.target_ip
-    user = config.target_user
+    ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 2] Fix build/source symlinks")
 
     rc, out = run_cmd(
-        f"ssh {user}@{target} "
+        f"ssh {ssh_target} "
         "'cd /lib/modules/$(uname -r) && "
         "rm -f build source && "
         "ln -s /usr/src/linux source && "
@@ -112,7 +109,7 @@ def step2_fix_symlinks(config, run_cmd):
 
     # Optional but good verification
     rc, out = run_cmd(
-        f"ssh {user}@{target} "
+        f"ssh {ssh_target} "
         "'ls -l /lib/modules/$(uname -r)/build "
         "/lib/modules/$(uname -r)/source'"
     )
@@ -123,13 +120,12 @@ def step2_fix_symlinks(config, run_cmd):
 
 
 def step3_prepare_headers(config, run_cmd):
-    target = config.target_ip
-    user = config.target_user
+    ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 3] Prepare kernel headers")
 
     rc, out = run_cmd(
-        f"ssh {user}@{target} "
+        f"ssh {ssh_target} "
         "'cd /lib/modules/$(uname -r)/build && "
         "make prepare && make modules_prepare'"
     )
@@ -144,19 +140,18 @@ def step3_prepare_headers(config, run_cmd):
 
 
 def step4_dkms_autoinstall(config, run_cmd):
-    target = config.target_ip
-    user = config.target_user
+    ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 4] DKMS autoinstall")
 
-    rc, out = run_cmd(f"ssh {user}@{target} 'dkms autoinstall'")
+    rc, out = run_cmd(f"ssh {ssh_target} 'dkms autoinstall'")
     print(out)
 
     if rc != 0:
         print("[REBUILD][ERROR] DKMS autoinstall failed")
         return 1
 
-    rc, out = run_cmd(f"ssh {user}@{target} 'dkms status'")
+    rc, out = run_cmd(f"ssh {ssh_target} 'dkms status'")
     print(out)
 
     print("[REBUILD][OK] DKMS rebuild complete")
