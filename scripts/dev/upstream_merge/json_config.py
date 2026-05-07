@@ -2,7 +2,6 @@
     configuration file."""
 
 import json
-from logging import config
 import os
 
 
@@ -28,17 +27,20 @@ class JsonConfig:
         self.log_level = config.get("log_level")
         self.build_args = config.get("build_args", "")
         self.ssh_connection = config.get("ssh_connection")
-        
         # Kernel build configuration (optional section)
         kernel_config = config.get("kernel_build", {})
         # Expand environment variables in paths
-        self.kernel_src_dir = self._expand_path(kernel_config.get("kernel_src_dir"))
+        self.kernel_src_dir = self._expand_path(
+            kernel_config.get("kernel_src_dir"))
         self.kernel_target_host = kernel_config.get("target_host")
         self.kernel_target_user = kernel_config.get("target_user")
         self.arch = kernel_config.get("arch")
-        self.temp_modules_dir = self._expand_path(kernel_config.get("temp_modules_dir"))
-        self.toolchain_prefix = self._expand_path(kernel_config.get("toolchain_prefix"))
-        self.merge_workdir = self._expand_path(kernel_config.get("merge_workdir"))
+        self.temp_modules_dir = self._expand_path(
+            kernel_config.get("temp_modules_dir"))
+        self.toolchain_prefix = self._expand_path(
+            kernel_config.get("toolchain_prefix"))
+        self.merge_workdir = self._expand_path(
+            kernel_config.get("merge_workdir"))
         self.target_branch = kernel_config.get("target_branch")
         self.stable_rt_remote = kernel_config.get("stable_rt_remote")
         self.nilrt_root = self._expand_path(kernel_config.get("nilrt_root"))
@@ -50,10 +52,16 @@ class JsonConfig:
         self.target_ip = kernel_config.get("target_ip")
         self.target_user = kernel_config.get("target_user", "admin")
         self.build_host_ip = kernel_config.get("build_host_ip")
-        self.ssh_options = kernel_config.get("ssh_options", "-o StrictHostKeyChecking=no")
-        self.build_host_user = kernel_config.get("build_host_user", os.getenv("USER", "builduser"))
+        self.ssh_options = kernel_config.get(
+            "ssh_options", "-o StrictHostKeyChecking=no")
+        self.build_host_user = kernel_config.get(
+            "build_host_user", os.getenv("USER", "builduser"))
+        self.pr_enabled = config.get("pr_enabled", False)
+        self.pr_target_branch = config.get(
+            "pr_target_branch", self.target_branch)
+        self.work_item_id = config.get("work_item_id", "")
+        self.ssh_target = kernel_config.get("ssh_target")
 
-    
     def _expand_path(self, path):
         """Expand environment variables and user home directory in paths."""
         if path:

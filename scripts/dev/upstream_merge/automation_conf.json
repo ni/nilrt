@@ -20,8 +20,10 @@
     "temp_modules_dir": "tmp-glibc/modules",
     "target_branch": "nilrt/master/6.12",
     "toolchain_prefix": "/usr/local/oecore-x86_64/sysroots/x86_64-nilrtsdk-linux/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-",
-    "target_ip": "10.152.9.10",
-    "target_user": "admin",
-    "build_host_ip": "10.152.9.56"
-}
+    "ssh_target": "",   
+    "build_host_ip": "",
+    "pr_enabled": false,
+    "pr_target_branch": "nilrt/master/6.12",
+    "work_item_id": ""
+    }
 }
