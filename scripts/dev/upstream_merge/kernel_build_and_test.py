@@ -5,13 +5,10 @@ import re
 import argparse
 import time
 from log_and_email_utils import setup_logging, write_log_and_send_email
+from utils import build
 from utils.git_commands import (
     git_fetch,
-    git_remote,
     git_merge,
-    git_reset,
-    git_clean,
-    git_merge_abort,
     git_tag,
     git_status,
     git_clone,
@@ -19,14 +16,17 @@ from utils.git_commands import (
 )
 from utils.git_repo import GitRepo
 from json_config import JsonConfig
-from toolchain_build import copy_toolchain_from_nirvana
-from toolchain_build import prepare_toolchain_environment
-from rebuild_drivers import step0_install_sshfs_fuse
-from rebuild_drivers import step1_mount_kernel_source
-from rebuild_drivers import step2_fix_symlinks
-from rebuild_drivers import step3_prepare_headers
-from rebuild_drivers import step4_dkms_autoinstall
+from copy_toolchain_from_server import copy_toolchain_from_nirvana
+from copy_toolchain_from_server import prepare_toolchain_environment
+from rebuild_drivers import install_sshfs_fuse
+from rebuild_drivers import mount_kernel_source
+from rebuild_drivers import fix_symlinks
+from rebuild_drivers import prepare_headers
+from rebuild_drivers import dkms_autoinstall
 from utils.push_branch_and_create_pr import push_branch_and_create_pr
+from utils.build import build_kernel_x86_64
+from utils.build import regenerate_defconfig
+
 # --------------------
 # Import shared utils
 # --------------------
@@ -39,13 +39,6 @@ REPO_URL = "https://github.com/ni/linux.git"
 STABLE_RT_REMOTE = (
     "https://git.kernel.org/pub/scm/linux/kernel/git/rt/linux-stable-rt.git"
 )
-
-
-# --------------------
-# Kernel build config (x86_64)
-# --------------------
-KERNEL_DEFCONFIG = "nati_x86_64_defconfig"
-
 
 config = None
 
@@ -105,68 +98,82 @@ def run_cmd(cmd):
 def clone_kernel_repository():
     print("[INFO] Cloning kernel repository")
 
-    repo = os.path.abspath(config.kernel_src_dir)
-    config.kernel_src_dir = repo
-
-    os.makedirs(os.path.dirname(repo), exist_ok=True)
-    git_clone(REPO_URL, repo)
-
-
-def regenerate_defconfig(kernel_src_dir):
-    """
-    US-4:
-    Regenerate nati_x86_64_defconfig and create a commit if it changes.
-    Returns True if a commit was created, False otherwise.
-    """
-    print("[US4] Regenerating nati_x86_64_defconfig")
-
-    original_cwd = os.getcwd()
-    os.chdir(kernel_src_dir)
-
-    cmds = [
-        "make mrproper",
-        "make nati_x86_64_defconfig",
-        "make savedefconfig",
-        "mv defconfig arch/x86/configs/nati_x86_64_defconfig",
-    ]
-
-    for cmd in cmds:
-        rc = os.system(cmd)
-        if rc != 0:
-            os.chdir(original_cwd)
-            raise RuntimeError(f"[US4][ERROR] Command failed: {cmd}")
-
-    # Check for diff
-    diff_rc = os.system(
-        "git diff --quiet arch/x86/configs/nati_x86_64_defconfig"
-    )
-
-    if diff_rc == 0:
-        print("[US4] Defconfig unchanged")
-        os.chdir(original_cwd)
-        return False
-
-    print("[US4] Defconfig changed, creating commit")
-
-    rc = os.system("git add arch/x86/configs/nati_x86_64_defconfig")
-    if rc != 0:
-        os.chdir(original_cwd)
-        raise RuntimeError("[US4][ERROR] git add failed")
-
-    rc = os.system(
-        'git commit -s -m '
-        '"nati_x86_64_defconfig: regenerate; no functional changes"'
-    )
-    if rc != 0:
-        os.chdir(original_cwd)
-        raise RuntimeError("[US4][ERROR] git commit failed")
-
-    os.chdir(original_cwd)
-    return True
+    os.makedirs(os.path.dirname(config.kernel_src_dir), exist_ok=True)
+    git_clone(REPO_URL, config.kernel_src_dir)
 
 # --------------------
 # RT Merge
 # --------------------
+
+
+def run_rebuild_drivers(config, run_cmd):
+    print("[INFO] Target is back online, starting rebuild drivers")
+
+    # STEP 0: Ensure sshfs is available
+    rc = install_sshfs_fuse(config, run_cmd)
+    if rc != 0:
+        print("[ERROR] STEP 0 failed")
+        return 1
+
+    # STEP 1: Mount kernel source via SSHFS
+    rc = mount_kernel_source(config, run_cmd)
+    if rc != 0:
+        print("[ERROR] STEP 1 failed")
+        return 1
+
+    # STEP 2: Fix build/source symlinks
+    rc = fix_symlinks(config, run_cmd)
+    if rc != 0:
+        print("[ERROR] STEP 2 failed")
+        return 1
+
+    # STEP 3: Prepare kernel headers
+    rc = prepare_headers(config, run_cmd)
+    if rc != 0:
+        print("[ERROR] STEP 3 failed")
+        return 1
+
+    # STEP 4: DKMS rebuild
+    rc = dkms_autoinstall(config, run_cmd)
+    if rc != 0:
+        print("[ERROR] STEP 4 failed")
+        return 1
+
+    return 0
+
+
+def create_kernel_pr(args, config, latest_tag, defconfig_changed):
+    if args.skip_push_and_pr:
+        return
+
+    pr_title = f"[{config.work_item_id}] Merge RT {latest_tag}"
+
+    pr_description = (
+        f"AB#{config.work_item_id}\n\n"
+        f"RT tag merged: {latest_tag}\n"
+        f"Defconfig regenerated: "
+        f"{'Yes' if defconfig_changed else 'No'}\n"
+        f"Kernel build: Success\n"
+        f"Driver rebuild: Success\n"
+    )
+
+    git_obj = GitRepo(
+        local_repo=config.kernel_src_dir,
+        local_base_branch=config.target_branch,
+    )
+
+    status, msg = push_branch_and_create_pr(
+        git_obj,
+        branch_name=config.target_branch,
+        username=config.username,
+        pr_title=pr_title,
+        pr_description=pr_description,
+    )
+
+    if status != 0:
+        raise RuntimeError(f"Failed to create PR: {msg}")
+
+    print("[INFO] Branch pushed and PR created successfully")
 
 
 def run_upstream_merge_script(args):
@@ -183,22 +190,13 @@ def run_upstream_merge_script(args):
 
     os.chdir(config.kernel_src_dir)
 
-    try:
-        git_merge_abort()
-    except Exception:
-        pass
-
-    git_reset(hard=True)
-    git_clean(force=True, directories=True, ignored_files=True)
-
     git_fetch("origin")
     git_checkout(config.target_branch, create=True, force_checkout=True)
-    git_reset(hard=True, target=f"origin/{config.target_branch}")
 
-    _, remotes = git_remote()
-    if "stable-rt" not in remotes:
-        git_remote("stable-rt", STABLE_RT_REMOTE)
+    # Ensure stable-rt remote exists using GitRepo abstraction
+    kernel_repo.add_remote("stable-rt", STABLE_RT_REMOTE)
 
+    # Fetch RT tags
     git_fetch("stable-rt", "--tags")
 
     kernel_version = config.target_branch.split("/")[-1]
@@ -259,7 +257,8 @@ def run_upstream_merge_script(args):
     # Copy toolchain from Nirvana
     # --------------------
     build_root = os.path.dirname(config.kernel_src_dir)
-    tc_copy_status, tc_copy_msg = copy_toolchain_from_nirvana(build_root)
+    tc_copy_status, tc_copy_msg, toolchain_dst = copy_toolchain_from_nirvana(
+        build_root)
     if tc_copy_status != 0:
         merge_report = {
             kernel_repo: (
@@ -282,7 +281,7 @@ def run_upstream_merge_script(args):
     # --------------------
     # Prepare toolchain environment
     # --------------------
-    tc_status, tc_msg = prepare_toolchain_environment(build_root)
+    tc_status, tc_msg = prepare_toolchain_environment(toolchain_dst)
     if tc_status != 0:
         merge_report = {
             kernel_repo: (
@@ -341,68 +340,37 @@ def run_upstream_merge_script(args):
     if wait_for_ssh(config.ssh_target, timeout=300) != 0:
         print("[ERROR] Target did not come back after kernel reboot")
         return
+    # --------------------
+    # VERIFY kernel version on target
+    # --------------------
+    ssh_target = config.ssh_target
+    ssh_opts = getattr(config, "ssh_options", "")
 
-    print("[INFO] Target is back online, starting rebuild drivers")
+    cmd = f'ssh {ssh_opts} {ssh_target} "uname -r"'
+    kernel_running = os.popen(cmd).read().strip()
 
-    # STEP 0: Ensure sshfs is available
-    rc = step0_install_sshfs_fuse(config, run_cmd)
-    if rc != 0:
-        print("[ERROR] STEP 0 failed")
-        return
+    print(f"[VERIFY] Running kernel on target: {kernel_running}")
 
-    # STEP 1: Mount kernel source via SSHFS
-    rc = step1_mount_kernel_source(config, run_cmd)
-    if rc != 0:
-        print("[ERROR] STEP 1 failed")
-        return
+    # expected kernel version (from build step)
+    os.chdir(config.kernel_src_dir)
+    expected_kernel = os.popen("make -s kernelrelease").read().strip()
 
-    # STEP 2: Fix build/source symlinks
-    rc = step2_fix_symlinks(config, run_cmd)
-    if rc != 0:
-        print("[ERROR] STEP 2 failed")
-        return
+    print(f"[VERIFY] Expected kernel: {expected_kernel}")
 
-    # STEP 3: Prepare kernel headers
-    rc = step3_prepare_headers(config, run_cmd)
-    if rc != 0:
-        print("[ERROR] STEP 3 failed")
-        return
-
-    # STEP 4: DKMS rebuild
-    rc = step4_dkms_autoinstall(config, run_cmd)
-    if rc != 0:
-        print("[ERROR] STEP 4 failed")
-        return
-    # PR creation (FINAL STEP ONLY) ----
-    if not args.skip_push_and_pr:
-        pr_title = f"[{config.work_item_id}] Merge RT {latest_tag}"
-
-        pr_description = (
-            f"AB#{config.work_item_id}\n\n"
-            f"RT tag merged: {latest_tag}\n"
-            f"Defconfig regenerated: "
-            f"{'Yes' if defconfig_changed else 'No'}\n"
-            f"Kernel build: Success\n"
-            f"Driver rebuild: Success\n"
+    if kernel_running != expected_kernel:
+        print(
+            f"[ERROR] Kernel version mismatch: expected {expected_kernel}, "
+            f"got {kernel_running}"
         )
+        return
 
-        git_obj = GitRepo(
-            local_repo=config.kernel_src_dir,
-            local_base_branch=config.pr_target_branch,
-        )
+    print("[INFO] Kernel version verified successfully")
 
-        status, msg = push_branch_and_create_pr(
-            git_obj,
-            branch_name=config.target_branch,
-            username=config.pr_username,
-            pr_title=pr_title,
-            pr_description=pr_description,
-        )
+    rebuild_status = run_rebuild_drivers(config, run_cmd)
+    if rebuild_status != 0:
+        return
+    create_kernel_pr(args, config, latest_tag, defconfig_changed)
 
-        if status != 0:
-            raise RuntimeError(f"Failed to create PR: {msg}")
-
-        print("[INFO] Branch pushed and PR created successfully")
     os.chdir(original_cwd)
     write_log_and_send_email(
         email_from=config.email_from,
@@ -414,52 +382,9 @@ def run_upstream_merge_script(args):
     return
 
 
-def build_kernel_x86_64(kernel_src_dir):
-    print("[INFO] Starting x86_64 kernel build")
-
-    if not os.path.isdir(kernel_src_dir):
-        return 1, f"Kernel source directory not found: {kernel_src_dir}"
-
-    # kernel_src_dir = <work-dir>/nilrt-kernel-build/linux
-    build_root = os.path.dirname(kernel_src_dir)
-
-    # Read from config
-    jobs = getattr(config, "kernel_build_jobs", os.cpu_count() or 8)
-    temp_modules_rel = getattr(config, "temp_modules_dir", "tmp-glibc/modules")
-
-    temp_modules_dir = os.path.join(build_root, temp_modules_rel)
-    os.makedirs(temp_modules_dir, exist_ok=True)
-
-    os.chdir(kernel_src_dir)
-
-    # Ensure ARCH is correct
-    os.environ["ARCH"] = "x86_64"
-
-    # Step 1: Configure kernel
-    ret = os.system(f"make {KERNEL_DEFCONFIG}")
-    if ret != 0:
-        return 1, "Kernel defconfig failed"
-
-    # Step 2: Build kernel and modules
-    ret = os.system(f"make -j{jobs} bzImage modules")
-    if ret != 0:
-        return 1, "Kernel build failed (bzImage/modules)"
-
-    # Step 3: Install modules to temp directory
-    ret = os.system(
-        f"make modules_install INSTALL_MOD_PATH={temp_modules_dir}")
-    if ret != 0:
-        return 1, "Kernel modules_install failed"
-
-    return 0, (
-        "Kernel built successfully (bzImage + modules)\n"
-        f"Modules staged at: {temp_modules_dir}"
-    )
-
-
 def install_kernel_to_target(kernel_src_dir):
     """
-    Install x86_64 kernel and modules to an NILRT target (cRIO).
+    Install x86_64 kernel and modules to an NILRT target .
     """
 
     ssh_target = config.ssh_target
@@ -548,6 +473,14 @@ def install_kernel_to_target(kernel_src_dir):
     if rc != 0:
         return 1, "depmod failed on target (ABORTING reboot)"
 
+    # Set bootdelay for safe mode recovery
+    rc = os.system(
+        f"ssh {ssh_opts} {ssh_target} "
+        f'"fw_setenv bootdelay 5"'
+    )
+    if rc != 0:
+        return 1, "Failed to set bootdelay for safe mode"
+
     # Reboot target ONLY after everything succeeded
     rc = os.system(f"ssh {ssh_opts} {ssh_target} reboot")
     if rc != 0:
@@ -570,6 +503,7 @@ def main():
     args = parse_args()
 
     config = JsonConfig(config_path=args.config, work_item_id=None)
+    build.config = config
 
     if args.work_dir:
         config.kernel_src_dir = os.path.join(

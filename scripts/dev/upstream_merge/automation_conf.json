@@ -15,15 +15,13 @@
     "ssh_connection":"",
 
     "kernel_build": {
-    "kernel_src_dir": "nilrt-kernel-build/linux",
-    "arch": "x86_64",
-    "temp_modules_dir": "tmp-glibc/modules",
-    "target_branch": "nilrt/master/6.12",
-    "toolchain_prefix": "/usr/local/oecore-x86_64/sysroots/x86_64-nilrtsdk-linux/usr/bin/x86_64-nilrt-linux/x86_64-nilrt-linux-",
+    "kernel_src_dir": "",
+    "arch": "",
+    "temp_modules_dir": "",
+    "target_branch": "",
+    "toolchain_prefix": "",
     "ssh_target": "",   
     "build_host_ip": "",
-    "pr_enabled": false,
-    "pr_target_branch": "nilrt/master/6.12",
     "work_item_id": ""
     }
 }
