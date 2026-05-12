@@ -3,33 +3,13 @@ Rebuild NI out-of-tree drivers using DKMS.
 This file is intentionally isolated from kernel build/install logic.
 """
 
-
-def rebuild_out_of_tree_drivers(config, run_cmd):
-    """
-    Entry point for rebuilding NI out-of-tree drivers.
-    Called after kernel install and reboot.
-    """
-
-    print("\n[REBUILD] Starting out-of-tree driver rebuild")
-
-    rc = step0_install_sshfs_fuse(config, run_cmd)
-    if rc != 0:
-        return 1, "STEP 0 failed"
-    # Next steps will be added one-by-one:
-    # step2_fix_symlinks
-    # step3_prepare_headers
-    # step4_dkms_autoinstall
-
-    return 0, "Rebuild drivers completed"
-
-
-def step0_install_sshfs_fuse(config, run_cmd):
+def install_sshfs_fuse(config, run_cmd):
     ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 0] Install sshfs-fuse and load fuse")
 
     # opkg update (SSH drop expected)
-    rc, out = run_cmd(f"ssh {ssh_target}'opkg update || true'")
+    rc, out = run_cmd(f"ssh {ssh_target} 'opkg update || true'")
     print(out)
 
     # opkg install
@@ -56,7 +36,7 @@ def step0_install_sshfs_fuse(config, run_cmd):
     return 0
 
 
-def step1_mount_kernel_source(config, run_cmd):
+def mount_kernel_source(config, run_cmd):
     ssh_target = config.ssh_target
     kernel_src_dir = config.kernel_src_dir
     host_user = config.build_host_user
@@ -89,7 +69,7 @@ def step1_mount_kernel_source(config, run_cmd):
     return 0
 
 
-def step2_fix_symlinks(config, run_cmd):
+def fix_symlinks(config, run_cmd):
     ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 2] Fix build/source symlinks")
@@ -119,7 +99,7 @@ def step2_fix_symlinks(config, run_cmd):
     return 0
 
 
-def step3_prepare_headers(config, run_cmd):
+def prepare_headers(config, run_cmd):
     ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 3] Prepare kernel headers")
@@ -139,7 +119,7 @@ def step3_prepare_headers(config, run_cmd):
     return 0
 
 
-def step4_dkms_autoinstall(config, run_cmd):
+def dkms_autoinstall(config, run_cmd):
     ssh_target = config.ssh_target
 
     print("[REBUILD][STEP 4] DKMS autoinstall")

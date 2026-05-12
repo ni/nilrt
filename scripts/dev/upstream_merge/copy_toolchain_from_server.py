@@ -70,7 +70,7 @@ def copy_toolchain_from_nirvana(build_root):
 
     # Idempotent: skip if already present
     if os.path.isdir(toolchain_dst):
-        return 0, f"Toolchain already present at {toolchain_dst}"
+        return 0, f"Toolchain already present at {toolchain_dst}", toolchain_dst
 
     os.makedirs(toolchain_root, exist_ok=True)
 
@@ -82,22 +82,21 @@ def copy_toolchain_from_nirvana(build_root):
         f"Toolchain copied from Nirvana\n"
         f"Version: {latest_version}/{latest_build}\n"
         f"Location: {toolchain_dst}"
-    )
+    ), toolchain_dst
 
 
-def prepare_toolchain_environment(build_root):
+def prepare_toolchain_environment(toolchain_dst):
     """
     Run the NILinuxRT SDK installer (non-interactive) if needed,
     extracting into the local build toolchain directory,
     then source the environment.
     """
 
-    toolchain_path = os.path.join(build_root, "toolchain", "NILinuxRT-x64")
-    if not os.path.isdir(toolchain_path):
-        return 1, f"Toolchain directory not found: {toolchain_path}"
+    if not os.path.isdir(toolchain_dst):
+        return 1, f"Toolchain directory not found: {toolchain_dst}"
 
     env_script = None
-    for root, dirs, files in os.walk(toolchain_path):
+    for root, dirs, files in os.walk(toolchain_dst):
         for f in files:
             if f.startswith("environment-setup"):
                 env_script = os.path.join(root, f)
@@ -107,26 +106,26 @@ def prepare_toolchain_environment(build_root):
 
     # If SDK is not yet extracted, run installer
     if not env_script:
-        installers = [
-            f for f in os.listdir(toolchain_path)
-            if f.endswith(".sh")
-        ]
-
-        if not installers:
+        installer = next(
+            (f for f in os.listdir(toolchain_dst) if f.endswith(".sh")),
+            None
+        )
+        if not installer:
             return 1, "No SDK installer (.sh) found in toolchain directory"
 
-        installer = os.path.join(toolchain_path, installers[0])
+        installer = os.path.join(toolchain_dst, installer)
+
         os.chmod(installer, 0o755)
 
-        # IMPORTANT: force extraction into toolchain_path
+        # IMPORTANT: force extraction into toolchain_dst
         ret = os.system(
-            f'bash "{installer}" -y -d "{toolchain_path}"'
+            f'bash "{installer}" -y -d "{toolchain_dst}"'
         )
         if ret != 0:
             return 1, "Failed to run SDK installer"
 
         # Look again for environment-setup after extraction
-        for root, dirs, files in os.walk(toolchain_path):
+        for root, dirs, files in os.walk(toolchain_dst):
             for f in files:
                 if f.startswith("environment-setup"):
                     env_script = os.path.join(root, f)
@@ -144,7 +143,14 @@ def prepare_toolchain_environment(build_root):
             key, _, value = line.strip().partition("=")
             os.environ[key] = value
 
+# CROSS_COMPILE is expected to be exported by the SDK environment-setup script
+
     if "CROSS_COMPILE" not in os.environ:
-        return 1, "CROSS_COMPILE not set after sourcing toolchain"
+        return 1, (
+            "CROSS_COMPILE not set after sourcing toolchain environment. "
+            "Ensure the SDK environment-setup script exports it correctly."
+        )
+
+    print(f"[TOOLCHAIN] CROSS_COMPILE set to: {os.environ['CROSS_COMPILE']}")
 
     return 0, "Toolchain environment ready"
