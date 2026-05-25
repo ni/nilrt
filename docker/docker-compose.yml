@@ -1,0 +1,39 @@
+x-nilrt-common: &nilrt-common
+  privileged: true
+  stdin_open: true
+  tty: true
+  restart: unless-stopped
+  networks:
+    - nilrt-net
+  labels:
+    nilrt.managed: "true"
+  healthcheck:
+    test: ["CMD-SHELL", "test -f /var/run/niauth.pid || pgrep -x niauth_daemon"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 60s
+  entrypoint:
+    - /bin/bash
+    - -c
+    - |
+      exec /init /bin/bash
+
+services:
+  nilrt:
+    <<: *nilrt-common
+    image: nilrt-runmode-container:${NILRT_VERSION}
+    labels:
+      nilrt.managed: "true"
+      nilrt.type: runmode
+
+  nilrt-slim:
+    <<: *nilrt-common
+    image: nilrt-slim-container:${NILRT_VERSION}-slim
+    labels:
+      nilrt.managed: "true"
+      nilrt.type: slim
+
+networks:
+  nilrt-net:
+    external: true
