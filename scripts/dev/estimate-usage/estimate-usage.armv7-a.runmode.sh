@@ -7,10 +7,10 @@ print_fs_usage() {
     # Format the UBI volume and create a clean ubifs...
     ubimkvol /dev/ubi0 -N mynandvol -m >/dev/null
     # ...reserving zero space for the root, similar to the cRIO-9068
-    mkfs.ubifs -R 0 /dev/ubi0_0
+    mkfs.ubifs --compr=zlib -R 0 /dev/ubi0_0
     local mountpoint="$(mktemp -d)"
     mount -t ubifs ubi0 "$mountpoint"
-    tar -xOf "$image" ./data.tar.gz | tar -xz -C "$mountpoint"
+    tar -xOf "$image" data.tar.xz | tar -xJ -C "$mountpoint"
     sync
     echo -ne "$image\tARMv7-A\trunmode\tdisk footprint\t"
     df -h "$mountpoint" | tail -1 | awk '{ print $3; }'
