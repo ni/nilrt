@@ -59,15 +59,12 @@ get_latest_x86_64_images() {
 }
 
 get_latest_armv7_a_images() {
-    local default="$EXPORTS_DIR/ni/nilr/nilrt_os_common/official/export"
+    local default="$EXPORTS_DIR/ni/rtos/rtos_nilinuxrt/official/export"
     local search="${EXPORT_SEARCH_PATH_ARMV7_A-$default}"
     local latest="$(identify_latest "$1" "$search")"
-    local run_presuffix="distribution-systemlink_dkms/release/RT Images/SystemLink"
-    # There's a versioned directory here for some reason, but at least it's the
-    # only thing there and we can just use head -1 to get it.
-    run_presuffix="$run_presuffix/$(ls "$latest/$run_presuffix" | head -1)"
-    local run_suffix="$run_presuffix/systemlink-linux-armv7-a.tar"
-    local safe_suffix="crio_zynq_safemode.itb"
+    local presuffix="targets/linuxU/armv7-a/gcc-13.4-oe/release"
+    local run_suffix="$presuffix/nilrt-base-system-image-xilinx-zynq.tar"
+    local safe_suffix="$presuffix/linux_safemode.itb"
     cp -f "$latest/$run_suffix" "$1"
     cp -f "$latest/$safe_suffix" "$2"
 }

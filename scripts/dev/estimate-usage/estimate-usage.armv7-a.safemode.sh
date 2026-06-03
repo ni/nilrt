@@ -14,8 +14,8 @@ print_fs_usage() {
     echo -ne "$image\tARMv7-A\tsafemode\tdisk footprint\t"
     du --apparent-size -h "$image" | awk '{ print $1; }'
     echo -ne "$image\tARMv7-A\tsafemode\tkernel + ramdisk\t"
-    local kernel_size="$(dumpimage "$image" -T flat_dt -p 0 -o /dev/fd/3 3>&1 >/dev/null | gzip -d | wc -c)"
-    local ramdisk_size="$(dumpimage "$image" -T flat_dt -p 16 -o /dev/fd/3 3>&1 >/dev/null | xz -d | wc -c)"
+    local kernel_size="$(dumpimage "$image" -T flat_dt -p 0 -o /dev/fd/3 3>&1 >/dev/null | wc -c)"
+    local ramdisk_size="$(dumpimage "$image" -T flat_dt -p 23 -o /dev/fd/3 3>&1 >/dev/null | xz -d | wc -c)"
     numfmt --to=iec "$(($kernel_size + $ramdisk_size))"
     if test "$input_image" != "$image"; then
         rm "$image"
