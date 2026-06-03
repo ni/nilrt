@@ -97,7 +97,7 @@ log "Copying x86_64 scripts into VM"
 scp -P 2222 $SSH_OPTIONS "$HERE/estimate-usage.x86_64.runmode.sh" root@localhost:.
 scp -P 2222 $SSH_OPTIONS "$HERE/estimate-usage.x86_64.safemode.sh" root@localhost:.
 get_latest_x86_64_images "$RUNIMAGE" "$SAFEIMAGE"
-log "Running x86_64 subscripts in VM"
+log "Running x86_64 scripts in VM"
 cat "$RUNIMAGE" | ssh -p 2222 $SSH_OPTIONS root@localhost ./estimate-usage.x86_64.runmode.sh | cut -d $'\t' -f 2-
 cat "$SAFEIMAGE" | ssh -p 2222 $SSH_OPTIONS root@localhost ./estimate-usage.x86_64.safemode.sh | cut -d $'\t' -f 2-
 
@@ -105,6 +105,6 @@ log "Copying ARMv7-A scripts into VM"
 scp -P 2222 $SSH_OPTIONS "$HERE/estimate-usage.armv7-a.runmode.sh" root@localhost:.
 scp -P 2222 $SSH_OPTIONS "$HERE/estimate-usage.armv7-a.safemode.sh" root@localhost:.
 get_latest_armv7_a_images "$RUNIMAGE" "$SAFEIMAGE"
-log "Running ARMv7-A subscripts in VM"
+log "Running ARMv7-A scripts in VM"
 cat "$RUNIMAGE" | ssh -p 2222 $SSH_OPTIONS root@localhost ./estimate-usage.armv7-a.runmode.sh | cut -d $'\t' -f 2-
 cat "$SAFEIMAGE" | ssh -p 2222 $SSH_OPTIONS root@localhost ./estimate-usage.armv7-a.safemode.sh | cut -d $'\t' -f 2-
