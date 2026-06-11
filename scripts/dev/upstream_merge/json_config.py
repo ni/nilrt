@@ -9,8 +9,8 @@ class JsonConfig:
     """Handles loading and validating the automation_conf.json
         configuration file."""
 
-    def __init__(self, config_path, work_item_id):
-        with open(config_path, "r", encoding="utf-8") as file:
+    def __init__(self, automation_conf_path, work_item_id):
+        with open(automation_conf_path, "r", encoding="utf-8") as file:
             config = json.load(file)
         self.nilrt_branch = config.get("nilrt_branch")
         self.meta_nilrt_branch = config.get("meta_nilrt_branch")
@@ -50,6 +50,7 @@ class JsonConfig:
         self.build_host_user = kernel_config.get(
             "build_host_user", os.getenv("USER", "builduser"))
         self.pr_enabled = config.get("pr_enabled", False)
+        self.build_user = kernel_config.get("build_user") or self.build_host_user  
         self.pr_target_branch = config.get(
             "pr_target_branch", self.target_branch)
         self.work_item_id = work_item_id or config.get("work_item_id", "")
