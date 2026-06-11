@@ -12,7 +12,8 @@ PRIMARY_DISK = $(VM_NAME).qcow2
 # DIRECTORIES
 bbdir ?= ../../../build
 bbdeploy = $(bbdir)/tmp/deploy/images/x64
-builddir = $(VM_NAME)
+builddir_tmp = $(bbdir)/$(VM_NAME)-tmp
+builddir_zip_contents = $(builddir_tmp)/$(VM_NAME)
 
 # BINARIES
 BITBAKE ?= $(PYREX_RUN) bitbake
@@ -26,13 +27,13 @@ ZIP ?= zip
 # REAL TARGETS
 # ==============================================================================
 
-$(builddir)/ni_provisioning.answers : ni_provisioning.answers
+$(builddir_tmp)/ni_provisioning.answers : ni_provisioning.answers
 	mkdir -p $(@D)
 	cp $< $@
 	chmod 0644 "$@"
 
 
-ni_provisioning.answers.iso : $(builddir)/ni_provisioning.answers
+$(builddir_tmp)/ni_provisioning.answers.iso : $(builddir_tmp)/ni_provisioning.answers
 	$(GENISOIMAGE) -quiet \
 		-input-charset utf-8 \
 		-full-iso9660-filenames \
@@ -45,27 +46,32 @@ $(bbdeploy)/ovmf.code.fd $(bbdeploy)/ovmf.vars.fd &:
 	$(BITBAKE) -C deploy ovmf
 
 
-$(builddir)/OVMF/%.fd : $(bbdeploy)/%.fd
+$(builddir_zip_contents)/OVMF/%.fd : $(bbdeploy)/%.fd
 	mkdir -p $(@D)
 	cp $< $@
 
 
-$(builddir)/start-vm.% : start-vm.%.in
+$(builddir_zip_contents)/start-vm.% : start-vm.%.in
 	mkdir -p $(@D)
 	install -c $< $@
 	sed -i "s%\$${PRIMARY_DISK}%$(PRIMARY_DISK)%g" "$@"
 	sed -i "s%\$${VM_MEM_SIZE_MB}%$(MEMORY_MB)%g" "$@"
 
 
-primary_disk_path = $(builddir)/$(PRIMARY_DISK)
+recovery_iso = $(bbdeploy)/nilrt-recovery-media-x64.iso
+$(recovery_iso) :
+	$(BITBAKE) nilrt-recovery-media
+
+
+primary_disk_path = $(builddir_zip_contents)/$(PRIMARY_DISK)
 vmdeps = \
-	$(builddir)/ni_provisioning.answers \
-	$(builddir)/OVMF/ovmf.code.fd \
-	$(builddir)/OVMF/ovmf.vars.fd \
-	$(builddir)/start-vm.bat \
-	$(builddir)/start-vm.sh \
+	$(builddir_tmp)/ni_provisioning.answers \
+	$(builddir_zip_contents)/OVMF/ovmf.code.fd \
+	$(builddir_zip_contents)/OVMF/ovmf.vars.fd \
+	$(builddir_zip_contents)/start-vm.bat \
+	$(builddir_zip_contents)/start-vm.sh \
 	$(recovery_iso) \
-	ni_provisioning.answers.iso
+	$(builddir_tmp)/ni_provisioning.answers.iso
 $(primary_disk_path) : $(vmdeps)
 	rm -f "$@"
 	qemu-img create -f qcow2 "$@" "$(DISK_SIZE_MB)""M"
@@ -76,21 +82,16 @@ $(primary_disk_path) : $(vmdeps)
 		-smp cpus=1 \
 		-m $(MEMORY_MB) \
 		-nographic \
-		-drive if=pflash,format=raw,readonly=on,file="$(builddir)/OVMF/ovmf.code.fd" \
-		-drive if=pflash,format=raw,file="$(builddir)/OVMF/ovmf.vars.fd" \
+		-drive if=pflash,format=raw,readonly=on,file="$(builddir_zip_contents)/OVMF/ovmf.code.fd" \
+		-drive if=pflash,format=raw,file="$(builddir_zip_contents)/OVMF/ovmf.vars.fd" \
 		-drive file="$(primary_disk_path)",media=disk,index=0 \
 		-drive file="$(recovery_iso)",media=cdrom,readonly=on,index=1 \
-		-drive file="ni_provisioning.answers.iso",media=cdrom,readonly=on,index=2
+		-drive file="$(builddir_tmp)/ni_provisioning.answers.iso",media=cdrom,readonly=on,index=2
 
 
-recovery_iso = $(bbdeploy)/nilrt-recovery-media-x64.iso
-$(recovery_iso) :
-	$(BITBAKE) nilrt-recovery-media
-
-
-$(VM_NAME).zip : $(primary_disk_path) $(vmdeps) $(recovery_iso)
+$(bbdir)/$(VM_NAME).zip : $(primary_disk_path) $(vmdeps) $(recovery_iso)
 	rm -f "$@"
-	$(ZIP) --quiet --recurse-paths "$@" "$(builddir)"
+	(cd "$(builddir_zip_contents)/.." && $(ZIP) --quiet --recurse-paths "$(abspath $@)" "$(notdir $(builddir_zip_contents))")
 	chmod 0644 "$@"
 
 
@@ -99,14 +100,14 @@ $(VM_NAME).zip : $(primary_disk_path) $(vmdeps) $(recovery_iso)
 # PHONY TARGETS
 # ==============================================================================
 
-all : $(VM_NAME).zip
+all : $(bbdir)/$(VM_NAME).zip
 .PHONY : all
 
 
 clean :
-	rm -rf $(builddir)
-	rm -f $(VM_NAME).zip
-	rm -f ni_provisioning.answers.iso
+	rm -rf $(builddir_zip_contents)
+	rm -f $(bbdir)/$(VM_NAME).zip
+	rm -rf $(builddir_tmp)
 .PHONY : clean
 
 
