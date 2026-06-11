@@ -52,7 +52,8 @@ def mount_kernel_source(config, run_cmd):
 
     rc, out = run_cmd(
         f'ssh {ssh_target} '
-        f'"sshfs {host_user}@{host_ip}:{kernel_src_dir} /usr/src/linux"'
+        f'"sshfs -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null '
+        f'{host_user}@{host_ip}:{kernel_src_dir} /usr/src/linux"'
     )
     print(out)
 
