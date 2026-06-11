@@ -8,7 +8,6 @@ DISK_SIZE_MB ?= 4096
 MEMORY_MB ?= 1024
 VM_NAME ?= nilrt-x64-qemu
 PRIMARY_DISK = $(VM_NAME).qcow2
-KVMOPTS = $(shell test -w /dev/kvm && echo "-enable-kvm" || echo "")
 
 # DIRECTORIES
 bbdir ?= ../../../build
@@ -72,7 +71,7 @@ $(primary_disk_path) : $(vmdeps)
 	qemu-img create -f qcow2 "$@" "$(DISK_SIZE_MB)""M"
 	chmod 0644 "$@"
 	$(QEMU_SYSTEM_X86_64) \
-		$(KVMOPTS) \
+		$$($(PYREX_RUN) sh -c "test -w /dev/kvm 2>/dev/null && echo -enable-kvm") \
 		-cpu Nehalem,check=false \
 		-smp cpus=1 \
 		-m $(MEMORY_MB) \
