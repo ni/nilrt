@@ -11,7 +11,7 @@ PRIMARY_DISK = $(VM_NAME).qcow2
 
 # DIRECTORIES
 bbdir ?= ../../../build
-bbdeploy = $(bbdir)/tmp/deploy/images/x64
+bbdeploy = $(bbdir)/tmp-glibc/deploy/images/x64
 builddir_tmp = $(bbdir)/$(VM_NAME)-tmp
 builddir_zip_contents = $(builddir_tmp)/$(VM_NAME)
 
