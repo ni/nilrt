@@ -42,7 +42,7 @@ ni_provisioning.answers.iso : $(builddir)/ni_provisioning.answers
 	chmod 0644 "$@"
 
 
-$(bbdeploy)/ovmf.% &:
+$(bbdeploy)/ovmf.code.fd $(bbdeploy)/ovmf.vars.fd &:
 	$(BITBAKE) ovmf
 
 
