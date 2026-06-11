@@ -4,6 +4,7 @@ import sys
 import re
 import argparse
 import time
+import getpass
 from log_and_email_utils import setup_logging, write_log_and_send_email
 from utils import build
 from utils.git_commands import (
@@ -91,6 +92,101 @@ def run_cmd(cmd):
         return 1, output
     return 0, output
 
+def setup_passwordless_ssh_to_build_machine(build_host_ip, build_user):
+    """
+    Setup passwordless SSH from target → build machine
+    """
+
+    print("[SSH-SETUP] Setting up passwordless SSH (target → build machine)")
+
+    print("[SSH-SETUP] Refreshing known_hosts entries")
+
+    # Extract IP from ssh_target (admin@ip → ip)
+    target_ip = config.ssh_target.split("@")[-1] if config.ssh_target else None
+
+    # Remove stale entries
+    if target_ip:
+        os.system(f"ssh-keygen -f ~/.ssh/known_hosts -R {target_ip} || true")
+
+    if build_host_ip:
+        os.system(f"ssh-keygen -f ~/.ssh/known_hosts -R {build_host_ip} || true")
+
+    # Add fresh keys
+    if target_ip:
+        os.system(f"ssh-keyscan -H {target_ip} >> ~/.ssh/known_hosts")
+
+    if build_host_ip:
+        os.system(f"ssh-keyscan -H {build_host_ip} >> ~/.ssh/known_hosts")
+
+    print("[SSH-SETUP] known_hosts refreshed")
+    print("[SSH-SETUP] Ensuring target trusts build machine")
+
+    # Extract target and build info
+    target = config.ssh_target
+    build_ip = build_host_ip
+
+    # Add build host key into target's known_hosts
+    rc = os.system(
+        f"ssh {target} "
+        f"\"mkdir -p ~/.ssh && chmod 700 ~/.ssh && "
+        f"touch ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts\""
+    )
+
+    if rc != 0:
+        print("[ERROR] Failed to prepare known_hosts on target")
+        return 1
+
+    print("[SSH-SETUP] Using non-interactive SSH options for target → build")
+    
+    print("[SSH-SETUP] Target → build SSH trust established")
+    # Step 1: Generate key on target (if not exists)
+    rc = os.system(
+        f"ssh {config.ssh_target} "
+        "\"[ -f ~/.ssh/id_rsa ] || ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/id_rsa\""
+    )
+    if rc != 0:
+        print("[ERROR] Failed to generate SSH key on target")
+        return 1
+
+    # Step 2: Fetch public key from target
+    key = os.popen(
+        f'ssh {config.ssh_target} "cat ~/.ssh/id_rsa.pub"'
+    ).read().strip()
+
+    if not key:
+        print("[ERROR] Failed to retrieve public key from target")
+        return 1
+
+    # Step 3: Add key to build machine
+    # Step 3: Add key locally (NO SSH needed ✅)
+    ssh_dir = (
+    os.path.expanduser(f"~{build_user}/.ssh")
+    if build_user else os.path.expanduser("~/.ssh")
+    )
+    auth_file = os.path.join(ssh_dir, "authorized_keys")
+
+    os.makedirs(ssh_dir, exist_ok=True)
+    os.chmod(ssh_dir, 0o700)
+
+    # Read existing keys
+    existing_keys = []
+    if os.path.exists(auth_file):
+        with open(auth_file, "r") as f:
+            existing_keys = f.read().splitlines()
+
+    # Add key only if not present
+    if key not in existing_keys:
+        with open(auth_file, "a") as f:
+            f.write(key + "\n")
+
+        print("[SSH-SETUP] Key added to authorized_keys")
+    else:
+        print("[SSH-SETUP] Key already present")
+
+    os.chmod(auth_file, 0o600)
+    print("[SSH-SETUP] Passwordless SSH setup complete")
+
+    return 0
 
 # --------------------
 # Kernel repo handling
@@ -179,7 +275,17 @@ def create_kernel_pr(args, config, latest_tag, defconfig_changed):
 def run_upstream_merge_script(args):
     original_cwd = os.getcwd()
     print("[INFO] Running upstream RT merge")
+    build_user = os.getenv("BUILD_USER", getpass.getuser())
+    print(f"[INFO] Using build user: {build_user}")
 
+    ssh_setup_rc = setup_passwordless_ssh_to_build_machine(
+        config.build_host_ip,
+        build_user
+    )
+    if ssh_setup_rc != 0:
+        print("[ERROR] Passwordless SSH setup failed")
+        return
+    
     clone_kernel_repository()
 
     kernel_repo = GitRepo(
@@ -217,9 +323,21 @@ def run_upstream_merge_script(args):
 
     print(f"[INFO] Latest RT tag: {latest_tag}")
 
-    result = git_merge(
-        latest_tag, signoff=True, message=f"Merge latest upstream {latest_tag}"
+    safe_msg = f"Merge latest upstream {latest_tag}"
+
+    cmd = (
+        f'bash -c \'git merge {latest_tag} --signoff -m "{safe_msg}"\''
     )
+
+    print("[DEBUG] Running safe merge:", cmd)
+
+    rc, out = run_cmd(cmd)
+
+    print("[DEBUG] RC:", rc)
+    print("[DEBUG] OUT:", out)
+
+    result = (rc, out)
+
 
     # --------------------
     # Failure case
@@ -257,8 +375,13 @@ def run_upstream_merge_script(args):
     # Copy toolchain from Nirvana
     # --------------------
     build_root = os.path.dirname(config.kernel_src_dir)
-    tc_copy_status, tc_copy_msg, toolchain_dst = copy_toolchain_from_nirvana(
-        build_root)
+    tc_result = copy_toolchain_from_nirvana(build_root)
+
+    if len(tc_result) == 3:
+        tc_copy_status, tc_copy_msg, toolchain_dst = tc_result
+    else:
+        tc_copy_status, tc_copy_msg = tc_result
+        toolchain_dst = None
     if tc_copy_status != 0:
         merge_report = {
             kernel_repo: (
@@ -502,7 +625,7 @@ def main():
     setup_logging()
     args = parse_args()
 
-    config = JsonConfig(config_path=args.config, work_item_id=None)
+    config = JsonConfig(automation_conf_path=args.config, work_item_id=None)
     build.config = config
 
     if args.work_dir:
