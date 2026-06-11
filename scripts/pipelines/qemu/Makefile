@@ -43,7 +43,7 @@ ni_provisioning.answers.iso : $(builddir)/ni_provisioning.answers
 
 
 $(bbdeploy)/ovmf.code.fd $(bbdeploy)/ovmf.vars.fd &:
-	$(BITBAKE) ovmf
+	$(BITBAKE) -C deploy ovmf
 
 
 $(builddir)/OVMF/%.fd : $(bbdeploy)/%.fd
