@@ -74,7 +74,7 @@ vmdeps = \
 	$(builddir_tmp)/ni_provisioning.answers.iso
 $(primary_disk_path) : $(vmdeps)
 	rm -f "$@"
-	qemu-img create -f qcow2 "$@" "$(DISK_SIZE_MB)""M"
+	$(PYREX_RUN) qemu-img create -f qcow2 "$@" "$(DISK_SIZE_MB)""M"
 	chmod 0644 "$@"
 	$(QEMU_SYSTEM_X86_64) \
 		$$($(PYREX_RUN) sh -c "test -w /dev/kvm 2>/dev/null && echo -enable-kvm") \
