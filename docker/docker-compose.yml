@@ -1,10 +1,12 @@
 x-nilrt-common: &nilrt-common
   privileged: true
+  container_name: "${NILRT_NAME:?NILRT_NAME not set; launch with nilrt-ctr.sh run}"
   stdin_open: true
   tty: true
   restart: unless-stopped
   networks:
-    - nilrt-net
+    nilrt-net:
+      ipv4_address: "${NILRT_IP:?NILRT_IP not set; launch with nilrt-ctr.sh run}"
   labels:
     nilrt.managed: "true"
   healthcheck:
