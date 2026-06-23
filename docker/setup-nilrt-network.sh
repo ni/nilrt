@@ -15,11 +15,14 @@
 # Usage:
 #   ./setup-nilrt-network.sh [OPTIONS]
 #
-# After setup, run containers on this network:
-#   docker run -it --network=nilrt-net nilrt-slim-container:11.5-slim
-#   docker run -it --network=nilrt-net nilrt-runmode-container:11.5
+# After setup, launch containers with collision-free IPs. nilrt-ctr.sh is
+# Docker/Compose-specific (it uses 'docker network inspect' and
+# 'docker compose'):
+#   bash docker/nilrt-ctr.sh run nilrt
+#   bash docker/nilrt-ctr.sh run nilrt-slim -n 3
 #
-#   podman run -it --network=nilrt-net nilrt-slim-container:11.5-slim
+# For podman, assign a free address yourself with an explicit --ip, e.g.:
+#   podman run -it --network=nilrt-net --ip 192.0.2.65 nilrt-runmode-container:11.6
 #
 # Examples:
 #   ./setup-nilrt-network.sh
@@ -313,6 +316,11 @@ log "To remove the shim later:"
 log "  sudo ip link del ${SHIM_IFACE}"
 
 log ""
-log "Run containers on this network:"
-log "  ${RUNTIME} run -it --network=${NETWORK_NAME} nilrt-slim-container:11.5-slim"
-log "  ${RUNTIME} run -it --network=${NETWORK_NAME} nilrt-runmode-container:11.5"
+if [[ "$RUNTIME" == "podman" ]]; then
+	log "Launch containers with an explicit free --ip (nilrt-ctr.sh is Docker-only):"
+	log "  podman run -it --network=${NETWORK_NAME} --ip <free-ip> nilrt-runmode-container"
+else
+	log "Launch containers with collision-free IPs:"
+	log "  bash docker/nilrt-ctr.sh run nilrt"
+	log "  bash docker/nilrt-ctr.sh run nilrt-slim -n 3"
+fi
