@@ -8,13 +8,13 @@
 #   bash docker/nilrt-ctr.sh <command> [arguments...]
 #
 # Commands:
+#   run [nilrt|nilrt-slim] [-n N]               Launch N collision-free containers
 #   status|info <target>                       Show target summary
 #   set-feed|feed <target|all> <YYYYQN>        Set package feed
 #   install <target> [--feed YYYYQN] <pkg...>  Install packages on a target
 #   remove|uninstall <target> <pkg...>         Remove packages from a target
 #   change-hostname <target> <hostname>        Set target hostname
 #   shell|ssh <target>                         Open an interactive shell on a target
-#   scale <service> <n>                        Scale a service to n instances
 #
 # Targets can be specified by container name, container ID (prefix), or
 # index from managed container list (e.g. "1", "2").
@@ -32,7 +32,16 @@ COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yml"
 DOCKER_CMD="docker"
 LABEL_FILTER="label=nilrt.managed=true"
 
-# Auto-detect NILRT image version from local docker images (used by 'scale').
+# Macvlan network and LAN-scan settings used by the 'run' command to
+# assign collision-free IP addresses. Overridable via environment.
+NETWORK_NAME="${NILRT_NETWORK:-nilrt-net}"
+SCAN="${NILRT_SCAN:-1}"
+SCAN_TIMEOUT="${NILRT_SCAN_TIMEOUT:-1}"
+MAX_SWEEP_HOSTS=1024
+DRY_RUN=""
+USED_IPS=()
+
+# Auto-detect NILRT image version from local docker images (used by 'run').
 if [[ -z "${NILRT_VERSION:-}" ]]; then
     NILRT_VERSION=$(docker images --format '{{.Tag}}' nilrt-runmode-container 2>/dev/null \
         | grep -v '^<none>$' | sort -V | tail -n1)
@@ -54,21 +63,24 @@ Usage: bash docker/nilrt-ctr.sh <command> [arguments...]
   Management CLI for NILRT containers.
 
 Commands:
+  run [nilrt|nilrt-slim] [-n N]              Launch N containers with
+                                             collision-free LAN IP addresses
   status|info <target>                       Show target summary
   set-feed|feed <target|all> <YYYYQN>        Set package feed
   install <target> [--feed YYYYQN] <pkg...>  Install packages
   remove|uninstall <target> <pkg...>         Remove packages
   change-hostname <target> <hostname>        Set target hostname
   shell|ssh <target>                         Interactive shell
-  scale <service> <n>                        Scale service instances
 
 Targets: container name, ID prefix, or managed index.
+
+'run' scans the LAN, picks free IPs, and pins them via Compose (NILRT_IP).
+Options: -n/--count N, -r/--ip-range CIDR, --no-scan, --dry-run.
 
 Use native docker for non-NILRT-specific operations, for example:
     docker ps -a --filter label=nilrt.managed=true
     docker logs <container>
     docker exec -it <container> /bin/bash
-    docker compose -f docker/docker-compose.yml up -d --scale nilrt=3
 EOF
     exit "${1:-0}"
 }
@@ -165,6 +177,130 @@ resolve_target() {
     fi
 
     err "Target '${target}' not found. Use 'docker ps -a --filter label=nilrt.managed=true' to list targets."
+}
+
+# ---- Collision-free IP assignment ----
+# Macvlan IPAM hands out the lowest free address from each host's local view,
+# so independent hosts collide on .2/.3/.4... These helpers scan the LAN at
+# launch time and pin a verified-free address via Compose (NILRT_IP).
+
+# Print every host IP within a CIDR, one per line (network/broadcast excluded
+# for ranges larger than a /31).
+hosts_in_cidr() {
+    python3 -c "
+import ipaddress, sys
+net = ipaddress.ip_network(sys.argv[1], strict=False)
+hosts = net.hosts() if net.num_addresses > 2 else iter(net)
+for ip in hosts:
+    print(ip)" "$1"
+}
+
+# Print the number of addresses in a CIDR.
+range_size() {
+    python3 -c "
+import ipaddress, sys
+print(ipaddress.ip_network(sys.argv[1], strict=False).num_addresses)" "$1"
+}
+
+# Filter a newline-separated list of IPs on stdin to those within a CIDR.
+filter_ips_in_cidr() {
+    python3 -c "
+import ipaddress, sys
+net = ipaddress.ip_network(sys.argv[1], strict=False)
+for line in sys.stdin:
+    ip = line.strip()
+    if not ip:
+        continue
+    try:
+        if ipaddress.ip_address(ip) in net:
+            print(ip)
+    except ValueError:
+        pass" "$1"
+}
+
+# Return success if an address answers an ICMP echo within SCAN_TIMEOUT.
+ip_is_live() {
+    ping -c1 -W"$SCAN_TIMEOUT" "$1" &>/dev/null
+}
+
+# Discover in-use addresses on the LAN within a CIDR: the gateway, an active
+# arp-scan when available, otherwise a parallel ICMP ping sweep read back from
+# the kernel ARP table. Active probing is skipped for ranges larger than
+# MAX_SWEEP_HOSTS. Prints one IP per line, sorted and de-duplicated.
+scan_used_ips() {
+    local cidr="$1" size active=1
+    size=$(range_size "$cidr")
+    if [[ "${size:-0}" -gt "$MAX_SWEEP_HOSTS" ]]; then
+        active=""
+        echo "==> Range ${cidr} has ${size} addresses (> ${MAX_SWEEP_HOSTS}); reading the ARP table only." >&2
+    fi
+
+    {
+        [[ -n "$GATEWAY" ]] && echo "$GATEWAY"
+
+        if [[ -n "$active" ]] && command -v arp-scan &>/dev/null; then
+            sudo arp-scan --interface="$PARENT_IFACE" --retry=2 "$cidr" 2>/dev/null \
+                | awk '$1 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ {print $1}'
+        else
+            if [[ -n "$active" ]]; then
+                local ip
+                while IFS= read -r ip; do
+                    ping -c1 -W"$SCAN_TIMEOUT" "$ip" &>/dev/null &
+                done < <(hosts_in_cidr "$cidr")
+                wait
+            fi
+            ip neigh show 2>/dev/null \
+                | awk 'toupper($0) !~ /FAILED|INCOMPLETE/ && $1 ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/ {print $1}'
+        fi
+    } | filter_ips_in_cidr "$cidr" | sort -u -t. -k1,1n -k2,2n -k3,3n -k4,4n
+}
+
+# Populate SUBNET, GATEWAY, NET_RANGE, PARENT_IFACE and RESERVED_IPS (network
+# reservations plus IPs of locally-attached containers) from the macvlan
+# network's inspect output.
+get_network_config() {
+    local json
+    json=$($DOCKER_CMD network inspect "$NETWORK_NAME" 2>/dev/null) \
+        || err "Network '${NETWORK_NAME}' not found. Create it first with setup-nilrt-network.sh."
+
+    read -r SUBNET GATEWAY NET_RANGE PARENT_IFACE <<<"$(printf '%s' "$json" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)[0]
+cfg = (d.get('IPAM', {}).get('Config') or [{}])[0]
+print(cfg.get('Subnet', '_'), cfg.get('Gateway', '_'),
+      cfg.get('IPRange', '') or '_', d.get('Options', {}).get('parent', '') or '_')")"
+    # '_' is an empty-field placeholder so positional read() doesn't collapse
+    # adjacent blanks (e.g. a missing IPRange) and shift later fields.
+    [[ "$NET_RANGE" == "_" ]] && NET_RANGE=""
+    [[ "$PARENT_IFACE" == "_" ]] && PARENT_IFACE=""
+
+    [[ -n "$SUBNET" ]] || err "Could not determine subnet for network '${NETWORK_NAME}'."
+
+    mapfile -t RESERVED_IPS < <(printf '%s' "$json" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)[0]
+out = set()
+for v in (d.get('IPAM', {}).get('Config') or [{}])[0].get('AuxiliaryAddresses', {}).values():
+    out.add(v)
+for c in (d.get('Containers') or {}).values():
+    addr = c.get('IPv4Address', '')
+    if addr:
+        out.add(addr.split('/')[0])
+for ip in sorted(out):
+    print(ip)")
+}
+
+# Print the host addresses in CIDR that are not in USED_IPS, in random order so
+# simultaneous launches on different hosts rarely pick the same address.
+free_ips_in() {
+    printf '%s\n' "${USED_IPS[@]:-}" | python3 -c "
+import ipaddress, random, sys
+net = ipaddress.ip_network(sys.argv[1], strict=False)
+used = {line.strip() for line in sys.stdin if line.strip()}
+hosts = net.hosts() if net.num_addresses > 2 else iter(net)
+free = [str(ip) for ip in hosts if str(ip) not in used]
+random.shuffle(free)
+print(*free, sep='\n')" "$1"
 }
 
 # ---- Commands ----
@@ -296,17 +432,70 @@ cmd_open_shell() {
     $DOCKER_CMD exec -it "$cid" /bin/bash
 }
 
-cmd_scale() {
-    [[ $# -lt 2 ]] && err "Usage: nilrt-ctr.sh scale <service> <count>"
-    local service="$1" count="$2"
+cmd_run() {
+    local service="nilrt" count=1 range=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -n|--count)     shift; count="${1:?--count requires a value}"; shift ;;
+            -r|--ip-range)  shift; range="${1:?--ip-range requires a value}"; shift ;;
+            --no-scan)      SCAN=""; shift ;;
+            --dry-run)      DRY_RUN=1; shift ;;
+            nilrt|nilrt-slim) service="$1"; shift ;;
+            -*)             err "Unknown run option: $1" ;;
+            *)              err "Unknown service '$1' (expected 'nilrt' or 'nilrt-slim')." ;;
+        esac
+    done
+    [[ "$count" =~ ^[0-9]+$ && "$count" -ge 1 ]] || err "Count must be a positive integer."
 
-    if ! [[ "$count" =~ ^[0-9]+$ ]]; then
-        err "Count must be a positive integer."
+    # Read the network's subnet/gateway/range and the addresses already taken
+    # by reservations or locally-attached containers.
+    local SUBNET GATEWAY NET_RANGE PARENT_IFACE
+    local RESERVED_IPS=()
+    get_network_config
+
+    local alloc="${range:-${NET_RANGE:-$SUBNET}}"
+
+    # Seed the in-use set, then scan the LAN for everything else that's live.
+    USED_IPS=()
+    [[ -n "$GATEWAY" ]] && USED_IPS+=("$GATEWAY")
+    USED_IPS+=("${RESERVED_IPS[@]:-}")
+    if [[ -n "$SCAN" ]]; then
+        info "Scanning ${alloc} for in-use IP addresses (this may take a moment)..."
+        local scanned=()
+        mapfile -t scanned < <(scan_used_ips "$alloc")
+        USED_IPS+=("${scanned[@]:-}")
+        info "Detected ${#scanned[@]} in-use address(es) on the LAN."
+    else
+        warn "LAN scan disabled; only reservations and local container IPs are avoided."
     fi
+    mapfile -t USED_IPS < <(printf '%s\n' "${USED_IPS[@]}" | awk 'NF' \
+        | sort -u -t. -k1,1n -k2,2n -k3,3n -k4,4n)
 
-    info "Scaling ${service} to ${count} instance(s)..."
-    $DOCKER_CMD compose -f "$COMPOSE_FILE" up -d --scale "${service}=${count}" "$service"
-    info "${service} scaled to ${count}."
+    # Choose COUNT distinct free addresses, giving each a final liveness probe
+    # to catch anything the scan missed (or a cross-host race).
+    local ips=() ip
+    while IFS= read -r ip; do
+        [[ -z "$DRY_RUN" ]] && ip_is_live "$ip" && continue
+        ips+=("$ip")
+        [[ ${#ips[@]} -ge $count ]] && break
+    done < <(free_ips_in "$alloc")
+    [[ ${#ips[@]} -ge $count ]] \
+        || err "Only ${#ips[@]} free address(es) available in ${alloc}; needed ${count}."
+
+    # Launch one container per address. Compose's --scale cannot pin distinct
+    # static IPs, so each instance is its own single-container project keyed by
+    # the address's last octet, with NILRT_IP substituted into ipv4_address.
+    local project
+    for ip in "${ips[@]}"; do
+        project="${service}-${ip##*.}"
+        info "Launching ${service} at ${ip} (project ${project})"
+        if [[ -n "$DRY_RUN" ]]; then
+            echo "[dry-run] NILRT_IP=${ip} ${DOCKER_CMD} compose -f ${COMPOSE_FILE} -p ${project} up -d ${service}"
+            continue
+        fi
+        NILRT_IP="$ip" $DOCKER_CMD compose -f "$COMPOSE_FILE" -p "$project" up -d "$service"
+    done
+    info "Launched ${#ips[@]} ${service} container(s)."
 }
 
 # ---- Main ----
@@ -314,13 +503,13 @@ cmd_scale() {
 [[ $# -eq 0 ]] && usage
 
 case "$1" in
+    run|up)                     shift; cmd_run "$@" ;;
     status|info)                shift; cmd_show_status "$@" ;;
     set-feed|feed)              shift; cmd_set_feed "$@" ;;
     install)                    shift; cmd_install "$@" ;;
     remove|uninstall)           shift; cmd_remove "$@" ;;
     change-hostname|hostname)   shift; cmd_change_hostname "$@" ;;
     shell|ssh)                  shift; cmd_open_shell "$@" ;;
-    scale)                      shift; cmd_scale "$@" ;;
     -h|--help|help)       usage 0 ;;
     *)                    err "Unknown command: $1. Run 'nilrt-ctr.sh --help' for usage." ;;
 esac

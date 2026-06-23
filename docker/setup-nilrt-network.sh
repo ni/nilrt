@@ -15,11 +15,9 @@
 # Usage:
 #   ./setup-nilrt-network.sh [OPTIONS]
 #
-# After setup, run containers on this network:
-#   docker run -it --network=nilrt-net nilrt-slim-container:11.5-slim
-#   docker run -it --network=nilrt-net nilrt-runmode-container:11.5
-#
-#   podman run -it --network=nilrt-net nilrt-slim-container:11.5-slim
+# After setup, launch containers with collision-free IPs:
+#   bash docker/nilrt-ctr.sh run nilrt
+#   bash docker/nilrt-ctr.sh run nilrt-slim -n 3
 #
 # Examples:
 #   ./setup-nilrt-network.sh
@@ -313,6 +311,6 @@ log "To remove the shim later:"
 log "  sudo ip link del ${SHIM_IFACE}"
 
 log ""
-log "Run containers on this network:"
-log "  ${RUNTIME} run -it --network=${NETWORK_NAME} nilrt-slim-container:11.5-slim"
-log "  ${RUNTIME} run -it --network=${NETWORK_NAME} nilrt-runmode-container:11.5"
+log "Launch containers with collision-free IPs:"
+log "  bash docker/nilrt-ctr.sh run nilrt"
+log "  bash docker/nilrt-ctr.sh run nilrt-slim -n 3"
