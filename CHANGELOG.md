@@ -9,9 +9,27 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 341
-* meta-nilrt: 976
-* linux: 270
+* nilrt: 358
+* meta-nilrt: 1035
+* linux: 282
+
+----
+## 11.6
+Branch: `nilrt/26.5/scarthgap`
+
+### nilrt
+
+#### Added
+- [Enabled](https://github.com/ni/linux/pull/279) header info in core dumps.
+
+### meta-nilrt
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/990) NILRT container images.
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/987) ARM safemode to scarthgap.
+- [Improved](https://github.com/ni/meta-nilrt/pull/1029) ARP handling for multi-interface setups.
 
 ----
 ## 11.5
