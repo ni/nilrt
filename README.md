@@ -95,11 +95,15 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 5. #### Build package or packagegroups
    For example, to build Python, Ruby, and Apache for x64 targets, run the following commands:
 
-        bitbake python3 ruby apache2
+    ```bash
+    bitbake python3 ruby apache2
+    ```
 
     To build all supported OpenEmbedded packages in NI's feed, run the following commands to build these packagegroups:
 
-        bitbake packagefeed-ni-core
+    ```bash
+    bitbake packagefeed-ni-core
+    ```
 
     **NOTE.** If a package within a package group is updated, rebuilding the package group will automatically rebuild that package and all of its dependencies.
 
@@ -109,7 +113,9 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     The resulting ipk files that can be installed through opkg exist at the following directory:
 
-        tmp-glibc/deploy/ipk/...
+    ```text
+    tmp-glibc/deploy/ipk/...
+    ```
 
 6. #### Building package feeds
     The NILRT repo has scripting in the [`:scripts/pipelines/`](https://github.com/ni/nilrt/tree/HEAD/scripts/pipelines) directory, which can be used to automate the process of building package feeds. The NI build pipelines use these scripts directly - so they are canonical.
@@ -168,24 +174,34 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
     * Build runmode image by running the following command:
 
-            bitbake nilrt-base-system-image
+        ```bash
+        bitbake nilrt-base-system-image
+        ```
 
         The resulting root file system images for the NILRT runmode image is located at the following paths:
 
-            tmp-glibc/deploy/images/$MACHINE/nilrt-base-system-image-$MACHINE.tar
+        ```text
+        tmp-glibc/deploy/images/$MACHINE/nilrt-base-system-image-$MACHINE.tar
+        ```
 
         You can install this on target by copying the file over to the target while the target is in safe mode and running the following commands:
 
-            tar xf nilrt-base-system-image-$MACHINE.tar
-            tar xf data.tar.gz -C /mnt/userfs && ./postinst
+        ```bash
+        tar xf nilrt-base-system-image-$MACHINE.tar
+        tar xf data.tar.gz -C /mnt/userfs && ./postinst
+        ```
 
     * **[x64 only]** Build bootable recovery media image by running the following command:
 
-            bitbake nilrt-recovery-media
+        ```bash
+        bitbake nilrt-recovery-media
+        ```
 
         The bootable recovery media, which you can install onto a USB memory stick or burn to a CD, is located at the following path:
 
-            tmp-glibc/deploy/images/x64/nilrt-recovery-media-x64.iso
+        ```text
+        tmp-glibc/deploy/images/x64/nilrt-recovery-media-x64.iso
+        ```
 
         Boot your NI Linux Real-Time compatible hardware from the recovery media and follow on-screen instructions to perform a factory reset.
 
