@@ -123,21 +123,50 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
 
 7. #### Building various images
 
-    **NOTE** You must build packagefeed-ni-core and package-index first to build images.
+    **NOTE** You must build `packagefeed-ni-core` and `package-index` first to build images.
 
-    * **[x64 only]** Build a safemode image by running the following command:
+    * Build safemode image
+        * x64:
 
+            Build a safemode image by running the following command:
+
+            ```bash
             bitbake nilrt-safemode-rootfs
+            ```
 
-        The resulting root file system images for the NILRT safemode image is located at the following paths:
+            The resulting root file system image for the NILRT safemode image is located at:
 
+            ```text
             tmp-glibc/deploy/images/x64/nilrt-safemode-rootfs-x64.tar.gz
+            ```
 
-        You can install this on target by copying the file over to the target and running the following command:
+            You can install this on target by copying the file over to the target and running:
 
+            ```bash
             tar xf nilrt-safemode-rootfs-x64.tar.gz -C /boot/.safe/
+            ```
 
-    * Build a runmode image by running the following command:
+        * ARM:
+
+            Build a safemode image by running the following command:
+
+            ```bash
+            bitbake nilrt-safemode-rootfs
+            ```
+
+            The resulting itb image for the NILRT safemode image is located at:
+
+            ```text
+            tmp-glibc/deploy/images/xilinx-zynq/kernel-standard/linux_safemode.itb
+            ```
+
+            You can install this on target by copying the file over to the target at:
+
+            ```text
+            /boot/.safe/
+            ```
+
+    * Build runmode image by running the following command:
 
             bitbake nilrt-base-system-image
 
@@ -150,7 +179,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
             tar xf nilrt-base-system-image-$MACHINE.tar
             tar xf data.tar.gz -C /mnt/userfs && ./postinst
 
-    * **[x64 only]** Build a bootable recovery media by running the following command:
+    * **[x64 only]** Build bootable recovery media image by running the following command:
 
             bitbake nilrt-recovery-media
 
