@@ -3,7 +3,7 @@
 ## Introduction
 
 Use these instructions to build a kernel that can boot on
-x64 and ARM-based NI Linux Real-Time (NILRT) targets.
+x64 NI Linux Real-Time (NILRT) targets.
 
 Note: National Instruments does not support kernels other than one
 provided by National Instruments. Any kernel other than what is
@@ -83,7 +83,6 @@ A Linux machine to build the kernel with:
 - the [flex](https://github.com/westes/flex) tool.
 - the [bison](https://www.gnu.org/software/bison/) parser.
 - the `depmod` kernel module tool.
-- (ARM only) the u-boot-tools (`mkimage`, `dumpimage`, et c.)
 - headers for: `libelf` and `libssl`
 
 On Debian/Ubuntu, you can satisfy the above dependencies like:
@@ -177,7 +176,6 @@ download the toolchains from ni.com, or build them yourself.
 
 The toolchains are available for download:
  - [GNU C & C++ Compile Tools x64](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-x64.html)
- - [GNU C & C++ Compile Tools for ARMv7](https://www.ni.com/en-us/support/downloads/software-products/download.gnu-c---c---compile-tools-for-armv7.html)
 
 Refer to the [README](../README.md) to get started with building
 OpenEmbedded components and [building the NILRT SDK](../README.md#building-the-cross-compile-toolchain)
@@ -306,70 +304,6 @@ KERNEL_VERSION=`make -s kernelrelease`
    ```
 
 
-### ARM32 Targets
-
-#### Building the kernel 
-
-1. Create the configuration for the kernel.
-
-   - Make sure the appropriate environment variables are set for cross compilation:
-
-     ```bash
-     export ARCH=arm
-     export CROSS_COMPILE=/path/to/toolchain/usr/bin/arm-nilrt-linux-gnueabi/arm-nilrt-linux-gnueabi-
-     ```
-
-   - Start with a configuration matching NI's settings:
-
-     ```bash
-     make nati_zynq_defconfig
-     ```
-
-   - If it is desirable to adjust the kernel configuration (this is uncommon),
-     the menuconfig target can be used to open a curses interface:
-
-     ```bash
-     make menuconfig
-     ```
-
-2. Compile the kernel.
-
-   ```bash
-   make ni-pkg
-   ```
-
-#### Installing the kernel
-
-In this section, these variables will be used:
-
-```bash
-TARGET=<the target's hostname or IP address>
-```
-
-1. Copy the new kernel to the target.
-
-   ```bash
-   scp ni-install/arm/boot/ni_zynq_custom_runmodekernel.itb admin@$TARGET:/boot/linux_runmode.itb
-   cd ni-install/arm/lib/modules/
-   tar cz lib | ssh admin@$TARGET tar xz -C /
-   ```
-
-   Note that the build and source symlinks in the modules directory do
-   not need to be copied over to the target. The `tar` command above
-   will not follow the symlinks.
-
-2. Reboot the target.
-
-   ```bash
-   ssh admin@$TARGET reboot
-   ```
-
-3. (optional) Check version of the updated kernel on the target.
-
-   ```bash
-   ssh admin@$TARGET uname -r
-   ```
-
 ## Rebuilding NI out-of-tree Drivers with DKMS
 
 In this section, these variables will be used:
@@ -445,8 +379,6 @@ ssh admin@$TARGET
    make prepare
    make modules_prepare
    ```
-
-   Note that you may need to install the bc package on ARM targets.
 
 3. Re-version the NI modules.
 
