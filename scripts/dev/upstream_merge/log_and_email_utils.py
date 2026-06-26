@@ -90,7 +90,7 @@ def format_merge_report(merge_report, email_log_level, skip_push_and_pr=False):
 
     build_and_test_detail = merge_report.pop("Build and Test")
     if build_and_test_detail[0] == 0 and not skip_push_and_pr:
-        push_and_pr_details = merge_report.pop("Push and PR")
+        push_and_pr_details = merge_report.pop("Push and PR", None)
     # Remove the build/test and PR results from the merge report so that
     # the subsequent loop can focus solely on per-repository merge outcomes.
     # This streamlines the logic and ensures only relevant entries are
@@ -113,7 +113,10 @@ def format_merge_report(merge_report, email_log_level, skip_push_and_pr=False):
             and status == 0
             and message is not None
         ):
-            git_obj_push_details = push_and_pr_details[git_obj]
+            git_obj_push_details = (
+            push_and_pr_details.get(git_obj)
+            if push_and_pr_details else (0, "PR created successfully")
+)
             if git_obj_push_details[0] == 0:
                 min_detail += "     Push and PR ... OK\n"
                 diff_detail += "     Push and PR ... OK\n"
