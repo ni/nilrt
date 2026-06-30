@@ -108,7 +108,13 @@ echo "BB_NUMBER_THREADS=${BB_NUMBER_THREADS}"
 # into the build workspace, if one needs to be created.
 export TEMPLATECONF=${TEMPLATECONF:-${NILRT_ROOT}/sources/meta-nilrt/conf/templates/default}
 
-export SSTATE_MIRRORS="${SSTATE_MIRRORS:-} ${sstate_mirrors[@]/%/ \\n}"
+# Only export SSTATE_MIRRORS when there is an actual value. Exporting an
+# empty/whitespace-only string trips bitbake's hash-equivalence sanity check,
+# which treats any non-empty SSTATE_MIRRORS (even whitespace) as a configured
+# mirror and emits a spurious warning.
+if [ -n "${SSTATE_MIRRORS:-}" ] || [ ${#sstate_mirrors[@]} -gt 0 ]; then
+	export SSTATE_MIRRORS="${SSTATE_MIRRORS:-} ${sstate_mirrors[@]/%/ \\n}"
+fi
 
 # Define here all NILRT-specific variables which need to be passed to bitbake
 # (should include everything we've set above which is non-standard)
