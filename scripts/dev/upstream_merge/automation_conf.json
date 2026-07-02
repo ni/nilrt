@@ -4,7 +4,7 @@
     "conf_file_path": "scripts/dev/upstream_merge/repos.conf",
     "force_checkout": false,
     "upstream_repo_name": "automerge_upstream",
-    "merge_branch_name": "dev/automerge/ni",
+    "merge_branch_name": "",
     "fork_name": "myfork",
     "email_log_level": 0,
     "log_level": 10,
@@ -22,8 +22,7 @@
     "toolchain_prefix": "",
     "ssh_target": "",   
     "build_host_ip": "",
-    "build_user": "",
-    "work_item_id": ""
+    "build_user": ""
     }
 }
 
