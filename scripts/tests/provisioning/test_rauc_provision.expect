@@ -16,7 +16,7 @@ set ipk_feeds [lrange $argv 2 end]
 # default, if none is specified.
 set vm_host_ip "10.0.2.2"
 # Set the login username
-set USER admin
+set USER root
 
 set RE_PROMPT "(admin|root)@.*# $"
 

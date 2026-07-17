@@ -104,7 +104,7 @@ def test_safemode_installation(ssh_connection):
     current_directory = os.getcwd()
     copy = execute_and_stream_cmd_output(
         f"scp {current_directory}{BUILD_DIR}{SAFEMODE_IMAGE} "
-        f"{ssh_connection}:/home/admin"
+        f"{ssh_connection}:/root"
     )
     if copy[0] != 0:
         return copy
