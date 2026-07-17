@@ -103,7 +103,7 @@ def setup_passwordless_ssh_to_build_machine(build_host_ip, build_user):
 
     print("[SSH-SETUP] Refreshing known_hosts entries")
 
-    # Extract IP from ssh_target (admin@ip → ip)
+    # Extract IP from ssh_target (root@ip → ip)
     target_ip = config.ssh_target.split("@")[-1] if config.ssh_target else None
 
     # Remove stale entries

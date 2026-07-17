@@ -255,25 +255,25 @@ KERNEL_VERSION=`make -s kernelrelease`
    this command:
 
    ```bash
-   ssh admin@$TARGET 'test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`'
+   ssh root@$TARGET 'test ! -h /boot/runmode/bzImage && mv /boot/runmode/bzImage /boot/runmode/bzImage-`uname -r`'
    ```
 
 2. Copy the new kernel to the target with SSH.
 
    ```bash
-   scp arch/x86/boot/bzImage admin@$TARGET:/boot/runmode/bzImage-$KERNEL_VERSION
+   scp arch/x86/boot/bzImage root@$TARGET:/boot/runmode/bzImage-$KERNEL_VERSION
    ```
 
    Rewrite the symlink used by the bootloader.
 
    ```bash
-   ssh admin@$TARGET ln -sf bzImage-$KERNEL_VERSION /boot/runmode/bzImage
+   ssh root@$TARGET ln -sf bzImage-$KERNEL_VERSION /boot/runmode/bzImage
    ```
 
 3. Copy the kernel modules to the target.
 
    ```bash
-   tar cz -C $TEMP_MODULES lib | ssh admin@$TARGET tar xz -C /
+   tar cz -C $TEMP_MODULES lib | ssh root@$TARGET tar xz -C /
    ```
 
    Note that the build and source symlinks in the modules directory do
@@ -288,19 +288,19 @@ KERNEL_VERSION=`make -s kernelrelease`
    provides an interactive menu to choose whether to boot into safemode:
 
    ```bash
-   ssh admin@$TARGET fw_setenv bootdelay 5
+   ssh root@$TARGET fw_setenv bootdelay 5
    ```
 
 5. Reboot the target.
 
    ```bash
-   ssh admin@$TARGET reboot
+   ssh root@$TARGET reboot
    ```
 
 6. (optional) Check version of the updated kernel on the target.
 
    ```bash
-   ssh admin@$TARGET uname -r
+   ssh root@$TARGET uname -r
    ```
 
 
@@ -332,16 +332,16 @@ over the network, saving limited disk space resources.
 2. Install sshfs on the target and load the module for fuse.
 
    ```bash
-   ssh admin@$TARGET "opkg update && opkg install sshfs-fuse"
-   ssh admin@$TARGET modprobe fuse
+   ssh root@$TARGET "opkg update && opkg install sshfs-fuse"
+   ssh root@$TARGET modprobe fuse
    ```
 
 3. Mount the kernel source on the target. Note that user and host
    in this case are the values for the host build machine.
 
    ```bash
-   ssh admin@$TARGET mkdir /usr/src/linux
-   ssh admin@$TARGET sshfs <user>@<host>:<path_to_linux_source> /usr/src/linux
+   ssh root@$TARGET mkdir /usr/src/linux
+   ssh root@$TARGET sshfs <user>@<host>:<path_to_linux_source> /usr/src/linux
    ```
 
 #### With `scp` and `tar`
@@ -350,8 +350,8 @@ If the target has sufficient disk space, the source can be copied to the
 target, as was done earlier when copying the modules to the target.
 
 ```bash
-ssh admin@$TARGET mkdir /usr/src/linux
-tar cz --exclude=./.git --exclude=$TEMP_MODULES . | ssh admin@$TARGET tar xz --no-same-owner -C /usr/src/linux
+ssh root@$TARGET mkdir /usr/src/linux
+tar cz --exclude=./.git --exclude=$TEMP_MODULES . | ssh root@$TARGET tar xz --no-same-owner -C /usr/src/linux
 ```
 
 ### Using the Source with DKMS
@@ -360,7 +360,7 @@ The following steps are all run on the target. This can be done either by
 opening an ssh session as below or through a serial connection.
 
 ```bash
-ssh admin@$TARGET
+ssh root@$TARGET
 ```
 
 1. Fix dangling build and source symlinks.

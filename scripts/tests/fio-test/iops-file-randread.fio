@@ -11,5 +11,5 @@ numjobs=4
 [random_reads]
 rw=randread
 name=iops-file-randread
-filename=/home/root/test_file
+filename=/root/test_file
 size=2GB

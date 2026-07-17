@@ -11,5 +11,5 @@ numjobs=1
 [random_read_write]
 rw=randrw
 name=latency-randrw
-filename=/home/root/test_file
+filename=/root/test_file
 size=2GB
