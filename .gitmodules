@@ -58,3 +58,7 @@
 	path = sources/pyrex
 	url = ../pyrex.git
 	branch = nilrt/master/next
+[submodule "sources/meta-secure-core"]
+	path = sources/meta-secure-core
+	url = ../meta-secure-core.git
+	branch = nilrt/master/next
