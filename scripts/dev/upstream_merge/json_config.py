@@ -9,7 +9,7 @@ class JsonConfig:
     """Handles loading and validating the automation_conf.json
         configuration file."""
 
-    def __init__(self, automation_conf_path, work_item_id):
+    def __init__(self, automation_conf_path):
         with open(automation_conf_path, "r", encoding="utf-8") as file:
             config = json.load(file)
         self.nilrt_branch = config.get("nilrt_branch")
@@ -39,8 +39,6 @@ class JsonConfig:
         self.merge_workdir = kernel_config.get(
             "merge_workdir")
         self.target_branch = kernel_config.get("target_branch")
-        self.nilrt_root = kernel_config.get("nilrt_root")
-        self.required_packages = kernel_config.get("required_packages", [])
         self.make_jobs = kernel_config.get("make_jobs", "$(nproc)")
         self.kernel_config = kernel_config.get("kernel_config", "defconfig")
         self.target_name = kernel_config.get("target_name")
@@ -49,9 +47,7 @@ class JsonConfig:
             "ssh_options", "-o StrictHostKeyChecking=no")
         self.build_host_user = kernel_config.get(
             "build_host_user", os.getenv("USER", "builduser"))
-        self.pr_enabled = config.get("pr_enabled", False)
         self.build_user = kernel_config.get("build_user") or self.build_host_user  
         self.pr_target_branch = config.get(
             "pr_target_branch", self.target_branch)
-        self.work_item_id = work_item_id or config.get("work_item_id", "")
         self.ssh_target = kernel_config.get("ssh_target")
