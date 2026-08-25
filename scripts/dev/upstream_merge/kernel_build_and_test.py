@@ -14,7 +14,7 @@ from utils.git_commands import (
     git_status,
     git_clone,
     git_checkout,
-    git_pull,
+    git_reset,
     git_branch,
 )
 from utils.git_repo import GitRepo
@@ -266,7 +266,6 @@ def create_kernel_pr(args, config, latest_tag, defconfig_changed):
     pr_description = (
         f"Merge tag '{latest_tag}' into {config.target_branch}\n"
         f"No merge conflicts\n"
-        f"AB#{config.work_item_id}\n\n"
         f"Testing\n"
         f"- Built the kernel locally and verified system boot\n"
         f"- Rebuilt DKMS and verified modules load successfully\n"
@@ -327,11 +326,15 @@ def run_upstream_merge_script(args):
     git_fetch("origin")
     git_checkout(config.target_branch, create=True, force_checkout=True)
     
-    git_pull("origin", config.target_branch, rebase=True)
-
+    git_reset(
+        hard=True,
+        target=f"origin/{config.target_branch}"
+    )
+    
     # ✅ AUTO-CREATE WORKING BRANCH
     branch_name = f"rt-merge-{config.target_branch.split('/')[-1]}"
     os.system(f"git checkout -b {branch_name} || git checkout {branch_name}")
+
 
     print(f"[INFO] Switched to working branch: {branch_name}")
 
@@ -666,7 +669,7 @@ def main():
     setup_logging()
     args = parse_args()
 
-    config = JsonConfig(automation_conf_path=args.config, work_item_id=None)
+    config = JsonConfig(automation_conf_path=args.config)
     build.config = config
 
     if args.work_dir:
