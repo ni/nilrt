@@ -157,7 +157,7 @@ This project uses the [pyrex](https://github.com/garmin/pyrex) tool to transpare
             Build a safemode image by running the following command:
 
             ```bash
-            bitbake nilrt-safemode-rootfs
+            bitbake linux-nilrt-arm-safemode
             ```
 
             The resulting itb image for the NILRT safemode image is located at:
