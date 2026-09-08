@@ -255,8 +255,7 @@ def main():
     skip_merge = args.s
 
     json_config_obj = JsonConfig(
-        automation_conf_path=args.c,
-        work_item_id=args.w
+        automation_conf_path=args.c
     )
 
     setup_logging(json_config_obj.log_level)
@@ -303,7 +302,7 @@ def main():
             push_and_pr_results = push_submodules_and_create_PRs(
                 merge_report,
                 json_config_obj.merge_branch_name,
-                get_pr_description(json_config_obj.work_item_id),
+                get_pr_description(work_item_id=args.w),
                 json_config_obj.username,
             )
             merge_report["Push and PR"] = push_and_pr_results
