@@ -9,9 +9,35 @@ This changelog attempts to conform to the changelog spec on [keepachangelog.org]
 The evergreen, canonical changelog for *all NILRT branches* can be [found here](https://github.com/ni/nilrt/blob/HEAD/CHANGELOG.md).
 
 ## Latest Updates
-* nilrt: 358
-* meta-nilrt: 1035
-* linux: 282
+* nilrt: 378
+* meta-nilrt: 1101
+* linux: 298
+
+----
+## 11.7
+Branch: `nilrt/26.8/scarthgap`
+
+### nilrt
+
+#### Added
+- [Added](https://github.com/ni/linux/pull/297) support for the Phoenix platform in `nirtfeatures`.
+
+### meta-nilrt
+
+#### Added
+- [Added](https://github.com/ni/meta-nilrt/pull/1048) a `datacomm` user group to control access to distributed communication interfaces such as fieldbuses and industrial protocols.
+
+#### Changed
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/1049) `linux-nilrt` to `6.18` on x64 targets.
+- [Upgraded](https://github.com/ni/meta-nilrt/pull/1101) `nilrt-snac` to `v3.2.0`.
+- [Authorized](https://github.com/ni/meta-nilrt/pull/1037) the `admin` user to control `usbguard`.
+- [Disabled](https://github.com/ni/meta-nilrt/pull/1055) Docker (`moby`) iptables management by default on PREEMPT_RT kernels.
+- [Increased](https://github.com/ni/meta-nilrt/pull/1079) the EFI System Partition size on systems with disks larger than 32 GB.
+
+#### Removed
+- [Removed](https://github.com/ni/meta-nilrt/pull/1028) the `ni-grpc-device` recipes.
+- [Removed](https://github.com/ni/meta-nilrt/pull/1045) the XFCE desktop from the runmode container image.
+- [Removed](https://github.com/ni/meta-nilrt/pull/1063) the end-of-life `ni-sysapi-webservice`.
 
 ----
 ## 11.6
