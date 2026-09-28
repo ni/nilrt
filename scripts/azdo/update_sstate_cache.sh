@@ -81,13 +81,23 @@ pull_cache() {
 
 	# Rsync the latest cache directory, excluding any directory
 	# with a .latest suffix from the search.
-	latest_cache_dir=$(ls -r -I *.latest | sed -n 1p)
+	latest_cache_dir=$(ls -r -I '*.latest' | sed -n 1p)
+	if [ -z "$latest_cache_dir" ]; then
+		echo "No completed sstate cache found. Skipping cache pull."
+		popd >/dev/null
+		return 0
+	fi
 	# Exclude a directory with the DONOTUSE file.
-	if [ -e $latest_cache_dir/DONOTUSE ]; then
-		latest_cache_dir=$(ls -r -I *.latest | sed -n 2p)
+	if [ -e "$latest_cache_dir/DONOTUSE" ]; then
+		latest_cache_dir=$(ls -r -I '*.latest' | sed -n 2p)
+		if [ -z "$latest_cache_dir" ]; then
+			echo "No completed sstate cache found. Skipping cache pull."
+			popd >/dev/null
+			return 0
+		fi
 	fi
 
-	echo Copying over the cache contents from $latest_cache_dir. Might take a while...
+	echo "Copying over the cache contents from $latest_cache_dir. Might take a while..."
 	rsync -rltxSWh --info=STATS1 "$latest_cache_dir"/ "$local_sstate_cache_dir"/
 
 	popd >/dev/null
@@ -123,4 +133,3 @@ case "$1" in
 		usage
 	;;
 esac
-
