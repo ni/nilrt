@@ -71,7 +71,21 @@ echo "INFO: Building the extra package feed."
 bitbake packagegroup-ni-desirable
 
 if [ ! "$desirable_only" = true ]; then
-	bitbake --continue packagefeed-ni-extra || true
+	build_log=$(mktemp)
+	bitbake --continue packagefeed-ni-extra 2>&1 | awk -v build_log="$build_log" '
+		{
+			print
+			fflush()
+			if ($0 ~ /^ERROR: Nothing (RPROVIDES|PROVIDES)( |$)/)
+				print > build_log
+		}
+	' || true
+	if [[ -s "$build_log" ]]; then
+		rm -f "$build_log"
+		echo "ERROR: Extra feed dependencies have missing providers." >&2
+		exit 1
+	fi
+	rm -f "$build_log"
 else
 	echo "INFO: 'desirable-only' requested; skipping full extra feed build."
 fi
