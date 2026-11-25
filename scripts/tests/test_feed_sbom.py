@@ -3,12 +3,16 @@
 #
 # SPDX-License-Identifier: MIT
 #
-"""Test feed SBOM lookup, validation, caching and SPDX 3.0 conversion.
+"""is a manually run regression suite for the new feed-SBOM integration.
+NI packages installed from feeds don’t have recipes, so OpenEmbedded can’t generate their SPDX inventory from the build;
+the PR fetches their CycloneDX SBOMs and converts them into the image’s SPDX document.
 
-Tests use a fake package pool, so they do not contact NI's server. Run from the
-NILRT repository root after initializing the meta-nilrt, BitBake and OE-Core
-source checkouts, with the SPDX 3.0 external-package hook available:
-    python3 -B scripts/tests/test_feed_sbom.py
+The tests use a fake feed and temporary cache, so they check URL lookup, package identity/MD5 validation,
+caching and offline behavior, and CycloneDX-to-SPDX conversion without relying on the live package server or a full image build.
+It’s marked manual because it’s a standalone unittest script, not part of the regular automated test runner.
+OpenEmbedded source checkouts:
+To test against a specific OpenEmbedded-Core checkout, set OECORE_SRC:
+    OECORE_SRC=/path/to/openembedded-core python3 -B scripts/tests/test_feed_sbom.py
 """
 #
 import io
@@ -25,8 +29,9 @@ from unittest.mock import patch
 HERE = os.path.dirname(os.path.abspath(__file__))
 NILRT_ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 SOURCES = os.path.join(NILRT_ROOT, "sources")
-META_NILRT_LIB = os.path.join(SOURCES, "meta-nilrt", "lib")
-OE_LIB = os.path.join(SOURCES, "openembedded-core", "meta", "lib")
+META_NILRT_LIB = os.path.join(SOURCES, "meta-nilrt-pr1134", "lib")
+OECORE_SRC = os.environ.get("OECORE_SRC", os.path.join(SOURCES, "openembedded-core"))
+OE_LIB = os.path.join(OECORE_SRC, "meta", "lib")
 BITBAKE_LIB = os.path.join(SOURCES, "bitbake", "lib")
 sys.path[:0] = [META_NILRT_LIB, OE_LIB, BITBAKE_LIB]
 
